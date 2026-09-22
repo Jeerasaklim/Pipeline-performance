@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=174457" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=192717" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -2700,7 +2700,7 @@ var cnt=cByMonth(),ms=bMonths();var _n=new Date();var nowYM=_n.getFullYear()+"-"
 function pickYM(){var _c=cByMonth(),_m=bMonths();var _n=new Date();var _ny=_n.getFullYear()+"-"+("0"+(_n.getMonth()+1)).slice(-2);curYM=(_c[_ny]?_ny:null);if(!curYM){for(var _i2=0;_i2<_m.length;_i2++){if(_c[_m[_i2]]){curYM=_m[_i2];break;}}}if(!curYM)curYM=_m[0]||_ny;}
 function setModel(model){if(!model)return;SITES=model.sites||[];POOL=model.pool||[];VANISHED=model.vanished||[];CHANGELOG=model.changelog||[];ALLDATES=model.alldates||{};OPENED_NOW=model.opened_now||0;OPENED_2026=model.opened_2026||0;NEWGOT=model.newgot||[];NEWGOT_SET={};for(var _j=0;_j<NEWGOT.length;_j++)NEWGOT_SET[NEWGOT[_j]]=1;byCode={};SITES.forEach(function(s){byCode[s.code]=s;});pickYM();rAll();}
 function applyOverlay(ov){if(!ov)return;pinned=ov.pinned||{};gnote=ov.gnote||{};gstat=ov.gstat||{};gver=ov.gver||{};g2=ov.g2||{};rslog=ov.rslog||{};if(ov.rsDmgPerDay!=null&&!isNaN(+ov.rsDmgPerDay))RS_DMG_PER_DAY=+ov.rsDmgPerDay;cancelled=ov.cancelled||{};Object.keys(cancelled).forEach(function(_cc){delete pinned[_cc];if(byCode[_cc]){var _si=SITES.indexOf(byCode[_cc]);if(_si>=0)SITES.splice(_si,1);delete byCode[_cc];}for(var _pi=POOL.length-1;_pi>=0;_pi--){if(POOL[_pi].code===_cc)POOL.splice(_pi,1);}});rAll();}
-post=function(k,v){try{if(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL){fetch(window.DPT_GAS_URL,{method:"post",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"note",key:k,value:v})});}}catch(e){}};postSheet=function(code,date,cb,_try){if(!(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL)){if(cb)cb(true);return;}_try=_try||0;fetch(window.DPT_GAS_URL,{method:"post",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"sheet",code:code,date:date})}).then(function(r){return r.json();}).then(function(j){if(j&&j.ok){if(cb)cb(true,j);}else if(_try<2){postSheet(code,date,cb,_try+1);}else{if(cb)cb(false,j);}}).catch(function(){if(_try<2){setTimeout(function(){postSheet(code,date,cb,_try+1);},600);}else{if(cb)cb(false);}});};
+post=function(k,v){try{var _r=window.DPT_ROLE;if(_r==="member"||_r==="construction_management"){if(typeof gtoast==="function")gtoast("แท็บนี้ดูอย่างเดียว — ไม่มีสิทธิ์แก้ไข",false);return;}if(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL){fetch(window.DPT_GAS_URL,{method:"post",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"note",key:k,value:v})});}}catch(e){}};postSheet=function(code,date,cb,_try){var _r2=window.DPT_ROLE;if(_r2==="member"||_r2==="construction_management"){if(cb)cb(false);return;}if(!(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL)){if(cb)cb(true);return;}_try=_try||0;fetch(window.DPT_GAS_URL,{method:"post",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"sheet",code:code,date:date})}).then(function(r){return r.json();}).then(function(j){if(j&&j.ok){if(cb)cb(true,j);}else if(_try<2){postSheet(code,date,cb,_try+1);}else{if(cb)cb(false,j);}}).catch(function(){if(_try<2){setTimeout(function(){postSheet(code,date,cb,_try+1);},600);}else{if(cb)cb(false);}});};
 window.GO={goMonth:goMonth,edit:edit,save:save,clr:clr,close:closeE,addOn:addOn,addFilter:addFilter,addPick:addPick,filt:setFilt,pinFilt:pinFilt,sum:sumNosub,sumAll:sumAll,pinPool:pinPool,hoUpd:hoUpd,xfind:xfind,exportCsv:exportCsv,exportNotGot:exportNotGot,exportClog:exportClog,exportRsMove:exportRsMove,clogReason:clogReason,dwSet:dwSet,repin:repin,rsMove:rsMove,goNote:goNote,goNego:goNego,useSug:useSug,goVerify:goVerify,goP2:goP2,hasDate:goHasDate,jump:goJump,goCancel:goCancel,goUncancel:goUncancel,vanCancel:vanCancel,goRsDay:goRsDay,setModel:setModel,applyOverlay:applyOverlay};
 rAll();load();
 /* ป๊อปอัปรายชื่อ (#detail-modal): กด Site Code → เด้งปฏิทินถ้าปักวันแล้ว + ปุ่ม filter "ยังไม่มีวันแกรนด์" */
@@ -4963,6 +4963,9 @@ setTimeout(applyBoard,300);
       }).then(function (j) {
         if (!j || j.ok !== true) throw new Error("GAS backend error: " +
           ((j && (j.error || ("status " + j.status))) || "unknown"));
+        // RBAC (SPEC §7 ชั้น 1 = client gate เพื่อ UX เท่านั้น): role มาจาก server (j.user.role),
+        // default "member". การบังคับสิทธิ์จริงอยู่ที่ doGet/doPost (server) — ปุ่มที่ซ่อนตาม role ไม่ใช่ security.
+        root.DPT_ROLE = (j.user && j.user.role) || "member";
         return j;
       });
       return _bundle;
@@ -5366,6 +5369,7 @@ setTimeout(applyBoard,300);
   window.addEventListener("message", function (e) {
     var d = e && e.data;
     if (!d || d.t !== "sm-write") return;
+    if (window.DPT_ROLE === "member") return;   // RBAC §7 ชั้น 1 (UX) — server (doPost) ยัง 403 อยู่ดี
     if (window.USE_GAS_BACKEND !== true || !window.DPT_GAS_URL) return;
     try {
       fetch(window.DPT_GAS_URL, { method: "post", mode: "no-cors",
@@ -5526,6 +5530,50 @@ setTimeout(applyBoard,300);
   function tryStored(){try{var t=sessionStorage.getItem("dpt_tok");if(!t)return false;var p=dj(t);var now=Math.floor(Date.now()/1000);if(!p.exp||p.exp<=now+60){sessionStorage.removeItem("dpt_tok");return false;}var em=(p.email||"").toLowerCase();if(ALLOW&&em.indexOf("@"+ALLOW)<0)return false;window.DPT_ID_TOKEN=t;grant(em,p.name);return true;}catch(e){return false;}}
   if(tryStored())return;
   var iv=setInterval(function(){if(window.google&&google.accounts&&google.accounts.id){clearInterval(iv);try{google.accounts.id.initialize({client_id:CLIENT_ID,callback:onCred,hd:ALLOW});google.accounts.id.renderButton(document.getElementById("dpt-gbtn"),{theme:"filled_blue",size:"large",text:"signin_with",shape:"pill",width:270});google.accounts.id.prompt();}catch(e){var info=document.getElementById("dpt-lginfo");if(info)info.textContent="โหลด Google ไม่สำเร็จ: "+e.message;}}},200);
+})();</script>
+
+
+<style>/*VIEW-ONLY-CSS*/
+/* member = ดูอย่างเดียว → ซ่อน "ปุ่ม/ช่องแก้ไข" รายสาขาที่ re-render ตอนโหลด live. CSS ผูกกับ
+   body[data-dpt-role="member"] (set โดย VIEW-ONLY-GATE script ด้านล่าง เฉพาะ GAS mode) → applies
+   อัตโนมัติทุกครั้งที่ DOM re-render โดยไม่ต้องวน interval. security จริงอยู่ที่ GAS (doPost 403 +
+   seam no-op). ซ่อนเฉพาะ control แก้ไข — ตัวเลข/ตาราง/แผนที่/ชื่อ/สถานะ/tooltip ยังเห็นครบ.
+   Export (.go-export/.ssdl/.modal-dl) + cost (#go-perf/#go-rssum) ถูกซ่อนโดย script ด้านล่างแล้ว
+   → บล็อกนี้ต่อ "ปุ่มแก้ที่เหลือ" ที่ script ไม่ได้ครอบ. edit-role (admin/head_*) body ไม่มี attr นี้ → เห็นครบ. */
+/* Grand Opening — ปุ่มแก้รายสาขา */
+body[data-dpt-noedit] .go-btn-note,        /* Save โน้ต · รับทราบ/ยกเลิก(vanCancel) · clogReason · useSug · edit */
+body[data-dpt-noedit] .go-btn-clear,       /* ยกเลิก ปัก3 (goCancel) · ล้างวันปัก (clr) */
+body[data-dpt-noedit] .go-verify-btn,      /* ปัก2 (goP2) · ปัก3 (goVerify) */
+body[data-dpt-noedit] .go-nego-btn,        /* toggle "เจรจา" (write) — สถานะยังโชว์ที่ .go-nego-tag */
+body[data-dpt-noedit] .go-btn-save:not([onclick*="goMonth"]),  /* ปัก/บันทึก/เลื่อน/uncancel/exportCsv — เว้นปุ่ม goMonth (นำทาง ไม่ใช่แก้) */
+/* Grand Opening — ช่องกรอกแก้รายสาขา */
+body[data-dpt-noedit] .go-dw,              /* widget ปักวันเปิด (ช่องวันที่ + ปุ่มปฏิทิน) */
+body[data-dpt-noedit] .go-note-in,         /* ช่อง Note (id gn-/gx-/rsr-) */
+body[data-dpt-noedit] .go-cr-who,          /* เลื่อนวัน: เพราะใคร/ฝ่ายไหน */
+body[data-dpt-noedit] .go-cr-reason,       /* เลื่อนวัน: เหตุผล */
+body[data-dpt-noedit] input[class^="rs-off-"],  /* reschedule: เลือก offer ปลายทาง */
+/* After อ.1 / ทะเบียน — โน้ตรายสาขา */
+body[data-dpt-noedit] .note-input,         /* ช่องกรอกโน้ต */
+body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
+  display: none !important;
+}
+</style>
+<script>/*VIEW-ONLY-GATE*/(function(){
+  "use strict";
+  if (window.USE_GAS_BACKEND !== true) return;                 // dev/CSV: ไม่มี role → ไม่ gate
+  var SEL_EXPORT=".go-export,.ssdl,.modal-dl", SEL_COST="#go-perf,#go-rssum";
+  function hide(sel){try{var n=document.querySelectorAll(sel);for(var i=0;i<n.length;i++)n[i].style.display="none";}catch(e){}}
+  function gate(){
+    var role=window.DPT_ROLE;
+    if(!role||role==="admin"||role.indexOf("head_")===0)return; // Edit-ALL (admin/head_*) / ยังไม่รู้ = ไม่ซ่อน (server คุมจริง)
+    // member หรือ construction_management: GO/After/Overall/Nego = view only → ซ่อน Export + แผงต้นทุน.
+    // construction_management ยังแก้ Site Management (ผรม.) ในแผนที่ได้ — map เป็น iframe ไม่โดน CSS/ตัวซ่อนนี้.
+    if(document.body){document.body.setAttribute("data-dpt-role",role);document.body.setAttribute("data-dpt-noedit","1");}  // noedit=1 → view-only GO/After (member + construction_management; admin/head returned ก่อนแล้ว)
+    hide(SEL_EXPORT); hide(SEL_COST);
+    var t=0,iv=setInterval(function(){hide(SEL_EXPORT);hide(SEL_COST);if(++t>=10)clearInterval(iv);},700);
+  }
+  var p = window.__coreTabs || (window.DPT_awaitAuth ? window.DPT_awaitAuth() : Promise.resolve());
+  Promise.resolve(p).then(gate).catch(gate);                   // gate หลัง bundle (DPT_ROLE ถูก set แล้ว)
 })();</script>
 
 <script>/*UX-POLISH*/
