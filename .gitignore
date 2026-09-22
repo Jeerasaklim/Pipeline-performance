@@ -1,0 +1,10 @@
+# Publish dir for GitHub Pages (PUBLIC repo).
+# Allowlist: block EVERYTHING, then re-allow only the vetted static files.
+# This is a safety net so no build script / .gs / source / data / .bak / .env
+# can ever be committed here by accident.
+/*
+!.gitignore
+!index.html
+!live_dashboard.html
+!CJX_Map_Prototype.html
+!README.md
