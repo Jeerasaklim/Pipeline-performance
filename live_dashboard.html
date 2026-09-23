@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=124557" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=130741" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -4964,8 +4964,11 @@ setTimeout(applyBoard,300);
         if (!res.ok) throw new Error("GAS backend HTTP " + res.status);
         return res.json();
       }).then(function (j) {
-        if (!j || j.ok !== true) throw new Error("GAS backend error: " +
-          ((j && (j.error || ("status " + j.status))) || "unknown"));
+        if (!j || j.ok !== true) {
+          // 403 = ไม่มี Role ในชีต (นโยบายจี 23 ก.ย.) → ตั้ง flag ให้ overlay โชว์หน้า "ไม่มีสิทธิ์" (ไม่ใช่ error งง ๆ)
+          if (j && j.status === 403) { try { root.DPT_ACCESS_DENIED = (j.error || "บัญชีนี้ยังไม่ได้รับสิทธิ์เข้าใช้งาน"); } catch (e) {} }
+          throw new Error("GAS backend error: " + ((j && (j.error || ("status " + j.status))) || "unknown"));
+        }
         // RBAC (SPEC §7 ชั้น 1 = client gate เพื่อ UX เท่านั้น): role มาจาก server (j.user.role),
         // default "member". การบังคับสิทธิ์จริงอยู่ที่ doGet/doPost (server) — ปุ่มที่ซ่อนตาม role ไม่ใช่ security.
         root.DPT_ROLE = (j.user && j.user.role) || "member";
@@ -5390,6 +5393,13 @@ setTimeout(applyBoard,300);
     if((m=/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(s))){ var y2=+m[3]; if(y2<100)y2+=2000; return new Date(y2,+m[2]-1,+m[1]); }
     return null; }
   function _fdate(d){ return d ? (("0"+d.getDate()).slice(-2)+" "+_PMON[d.getMonth()]+" "+String(d.getFullYear()+543).slice(-2)) : "—"; }
+  // ระยะเวลาทำงานกับเรา = to - from แบบ ปี/เดือน/วัน (Active: to=วันนี้ · Non Active: to=วันสุดท้าย)
+  function _durText(from,to){ if(!from||!to||to<from) return "—";
+    var y=to.getFullYear()-from.getFullYear(), m=to.getMonth()-from.getMonth(), d=to.getDate()-from.getDate();
+    if(d<0){ m--; d+=new Date(to.getFullYear(),to.getMonth(),0).getDate(); }
+    if(m<0){ y--; m+=12; }
+    var p=[]; if(y>0)p.push(y+" ปี"); if(m>0)p.push(m+" เดือน"); if(d>0||!p.length)p.push(d+" วัน");
+    return p.join(" "); }
   function _esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
   function openPrm(){ var p=document.getElementById("sm-prm-panel"); if(p)p.style.transform="translateX(0)"; var f=document.getElementById("sm-prm-fab"); if(f)f.style.display="none"; }
   function closePrm(){ var p=document.getElementById("sm-prm-panel"); if(p)p.style.transform="translateX(102%)"; var f=document.getElementById("sm-prm-fab"); if(f)f.style.display=""; }
@@ -5434,16 +5444,22 @@ setTimeout(applyBoard,300);
     var sub=document.getElementById("sm-prm-sub");
     if(sub) sub.textContent="ทั้งหมด "+rows.filter(function(r){return !r.noprm;}).length+" ราย · Active "+nActive+" ราย";
     function chip(lb,v,cl,bg){ return '<span style="display:inline-flex;align-items:baseline;gap:3px;background:'+bg+';border-radius:7px;padding:3px 8px;font-size:11px;color:var(--t2)">'+lb+' <b style="font-size:13px;color:'+cl+'">'+v+'</b></span>'; }
+    var _today=new Date();
     var cards=rows.map(function(r){
       var badge=r.noprm?''
         :(r.active?'<span style="font-size:10.5px;font-weight:800;color:#047857;background:#d1fae5;border:1px solid #6ee7b7;border-radius:999px;padding:2px 10px;white-space:nowrap">● Active</span>'
                    :'<span style="font-size:10.5px;font-weight:800;color:#64748b;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:999px;padding:2px 10px;white-space:nowrap">○ Non Active</span>');
       var span=(r.first||r.last)?(_fdate(r.first)+" → "+_fdate(r.last)):"—";
+      var durTo=r.active?_today:r.last;                              // Active→วันนี้ · Non Active→วันสุดท้าย
+      var dur=r.noprm?"":_durText(r.first,durTo);
+      if(!r.noprm && dur==="—" && r.active) dur="เพิ่งเริ่ม (ยังไม่มีร้านเปิด)";   // มีแต่งาน in-progress วันเปิดอนาคต
+      var durLine=r.noprm?"":'<div style="font-size:11.5px;color:var(--text);font-weight:600;background:'+(r.active?"#ecfdf5":"#f8fafc")+';border:1px solid '+(r.active?"#a7f3d0":"#e3e6ed")+';border-radius:8px;padding:5px 9px;margin-bottom:6px">⏱ ทำงานกับเรา <b>'+dur+'</b>'+(r.active?"":' <span style="color:var(--t3);font-weight:500">(ถึงงานสุดท้าย)</span>")+'</div>';
       return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px 11px;margin:0 0 8px;'+(r.noprm?'opacity:.65;':'')+'">'+
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
           '<span style="flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--text)">'+_esc(r.prm)+'</span>'+badge+'</div>'+
         '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">'+
           chip("เปิดแล้ว",r.opened,"#7c3aed","#f3e8ff")+chip("กำลังทำ",r.doing,"#2563eb","#eff6ff")+chip("รวม",r.total,"var(--text)","var(--s3)")+'</div>'+
+        durLine+
         '<div style="font-size:11px;color:var(--t2)">🗓 '+span+'</div>'+
       '</div>';
     }).join("");
@@ -5584,8 +5600,21 @@ setTimeout(applyBoard,300);
     var o=el("dpt-loading"); if(!o) return; o.style.display="flex";
     var st=el("dpt-loading-stage"); if(st) st.style.display="none";
     var p=el("dpt-loading-pct"); if(p) p.style.display="none";
-    var m=el("dpt-loading-msg"); if(m) m.textContent="โหลดข้อมูลไม่ได้ · กดรีเฟรชหน้าอีกครั้ง";
-    var a=el("dpt-loading-actions");
+    var m=el("dpt-loading-msg"), a=el("dpt-loading-actions");
+    // นโยบายจี 23 ก.ย.: ไม่มี Role ในชีต = 403 → หน้า "ไม่มีสิทธิ์" + ปุ่มออกจากระบบ (ไม่ใช่ error งง ๆ)
+    if(window.DPT_ACCESS_DENIED){
+      o.style.background="#f7f9fc"; o.style.backdropFilter="none"; o.style.webkitBackdropFilter="none";
+      if(m){ m.style.textAlign="center";
+        m.innerHTML='<div style="font-size:40px;margin-bottom:6px">🔒</div>'+
+          '<div style="font-size:16px;font-weight:800;color:#0d1421;margin-bottom:7px">ยังไม่ได้รับสิทธิ์เข้าใช้งาน</div>'+
+          '<div style="font-size:12.5px;color:#475569;max-width:330px;line-height:1.65">'+String(window.DPT_ACCESS_DENIED)+
+          (window.DPT_USER?('<br>บัญชี: <b>'+window.DPT_USER+'</b>'):'')+
+          '<br>ติดต่อผู้ดูแลระบบเพื่อขอเพิ่มสิทธิ์</div>'; }
+      if(a){ a.innerHTML='<button id="dpt-denied-out" type="button" style="font-size:13px;font-weight:700;color:#fff;background:#0f172a;border:none;border-radius:999px;padding:11px 24px;min-height:44px;cursor:pointer;margin-top:6px">ออกจากระบบ / เข้าด้วยบัญชีอื่น</button>';
+        el("dpt-denied-out").onclick=function(){ if(window.dptLogout)window.dptLogout(); else location.reload(); }; }
+      return;
+    }
+    if(m) m.textContent="โหลดข้อมูลไม่ได้ · กดรีเฟรชหน้าอีกครั้ง";
     if(a && !el("dpt-loading-reload")){
       a.innerHTML='<button id="dpt-loading-reload" type="button" style="font-size:13px;font-weight:700;color:#fff;background:#d97706;border:none;border-radius:999px;padding:11px 24px;min-height:44px;cursor:pointer">รีเฟรชหน้า</button>';
       el("dpt-loading-reload").onclick=function(){ location.reload(); };
