@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=093029" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=094458" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5102,6 +5102,19 @@ setTimeout(applyBoard,300);
       var sd = window.CalcEngine.buildStepDetails(r.tabs, L);
       if (window.STEP_DETAILS) Object.keys(sd.STEP_DETAILS).forEach(function (k) { window.STEP_DETAILS[k] = sd.STEP_DETAILS[k]; });
       if (window.SLA_SUMMARY) Object.keys(sd.SLA_SUMMARY).forEach(function (k) { window.SLA_SUMMARY[k] = sd.SLA_SUMMARY[k]; });
+      // normalize วันอนุมัติรถตู้ (.date) ของทุกแถวเป็น d-Mon-yy แบบ Python — หลาย box ใน CalcEngine
+      // ส่ง cell(COL_APPROVED) ดิบ (Python ห่อ _norm_date ทุกจุด) ทำให้ทั้งวันที่ใน popup ตรง daily HTML
+      // และตัวกรองจัดกลุ่มปี/เดือนได้ ไม่ว่า raw ในชีตจะเป็นรูปไหน (%Y-%m-%d, %d/%m/%Y ฯลฯ).
+      try {
+        var _nd = window.CalcEngine && window.CalcEngine.normDate;
+        if (_nd && window.STEP_DETAILS) Object.keys(window.STEP_DETAILS).forEach(function (k) {
+          var arr = window.STEP_DETAILS[k]; if (!arr || !arr.length) return;
+          for (var _i = 0; _i < arr.length; _i++) { if (arr[_i] && arr[_i].date != null) arr[_i].date = _nd(arr[_i].date); }
+        });
+      } catch (e) { console.warn("[live] date-normalize skipped:", e); }
+      // rebuild ตัวกรอง "วันอนุมัติรถตู้" (DF_DATES) จาก STEP_DETAILS สด — seed ที่ bake ตอน PAGES_BUILD ว่าง
+      // (de-baked -> []), dfInit เดิมรันตอน bootstrap ก่อน live โหลด เลยได้ 0 วันที่ ("ไม่พบวันที่").
+      if (typeof window.dfInit === "function") window.dfInit();
       // de-bake 3b — STEP_PIC (person-in-charge per box): GAS mode only (tabs.pic comes from the
       // authenticated bundle; CSV mode has no pic source -> {} -> labels blank, as after the strip).
       window.STEP_PIC = window.CalcEngine.buildStepPic(r.tabs.pic || []);
