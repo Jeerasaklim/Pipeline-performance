@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=094458" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=100435" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5647,5 +5647,177 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);
 })();
 </script>
+
+<style>/*ADMIN-UI*/
+  #au-modal .modal-box{max-width:780px;width:100%;}
+  .au-form{display:grid;grid-template-columns:1.4fr 1fr 1.1fr auto;gap:9px;align-items:center;
+           margin:12px 0 6px;padding:12px;background:var(--s2);border:1px solid var(--border);border-radius:10px;}
+  .au-inp,.au-sel{border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:13px;
+           font-family:inherit;color:var(--text);background:var(--surface);min-width:0;}
+  .au-inp:focus,.au-sel:focus{outline:none;border-color:var(--blue);}
+  .au-save{border:0;background:var(--blue);color:#fff;font-weight:700;font-size:13px;padding:9px 16px;
+           border-radius:8px;cursor:pointer;white-space:nowrap;}
+  .au-save:hover{background:#1a45c0;} .au-save:disabled{opacity:.55;cursor:default;}
+  .au-hint{font-size:11.5px;color:var(--t3);margin:2px 2px 12px;}
+  .au-tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .au-tbl th{position:sticky;top:0;background:var(--surface);text-align:left;font-weight:700;color:var(--t2);
+           padding:7px 10px;border-bottom:1px solid var(--border2);white-space:nowrap;z-index:2;}
+  .au-tbl td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text);}
+  .au-tbl tr:hover td{background:var(--s2);}
+  .au-tbl tr.au-inactive td{opacity:.5;}
+  .au-badge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;}
+  .au-editbtn{border:1px solid var(--border2);background:var(--s3);color:var(--t2);font-size:11.5px;font-weight:600;
+           padding:4px 12px;border-radius:7px;cursor:pointer;} .au-editbtn:hover{background:var(--border2);}
+  .au-state{padding:26px 10px;text-align:center;color:var(--t3);font-size:13px;}
+  #dpt-admin{font-size:11px;font-weight:700;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;
+           border-radius:999px;padding:3px 12px;cursor:pointer;white-space:nowrap;}
+  #dpt-admin:hover{background:#dbeafe;}
+</style>
+<script>/*ADMIN-UI*/
+(function(){
+  var ROLES=[['Admin','admin'],['Head of Construction','head_construction'],
+    ['Head of Site Expansion','head_site_expansion'],['Head of Site Negotiation','head_site_negotiation'],
+    ['Construction Management','construction_management'],['Member','member']];
+  var RM={admin:['Admin','#1d4ed8','#dbeafe','#93c5fd'],
+    head_construction:['Head of Construction','#047857','#d1fae5','#6ee7b7'],
+    head_site_expansion:['Head of Site Expansion','#047857','#d1fae5','#6ee7b7'],
+    head_site_negotiation:['Head of Site Negotiation','#047857','#d1fae5','#6ee7b7'],
+    construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],
+    member:['ดูอย่างเดียว (Member)','#475569','#f1f5f9','#cbd5e1']};
+  var DOMAIN='cjmart.co.th';
+  function gurl(){return window.DPT_GAS_URL||'';}
+  function tok(){return window.DPT_ID_TOKEN||'';}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function toast(m,ok){ if(typeof gtoast==='function') gtoast(m,ok); else alert(m); }
+  var _users=[], _built=false;
+
+  function build(){
+    if(_built) return;
+    var ov=document.createElement('div'); ov.id='au-modal'; ov.className='modal-overlay';
+    ov.onclick=function(e){ if(e.target===ov) close(); };
+    var opts=ROLES.map(function(r){return '<option value="'+esc(r[0])+'">'+esc(r[0])+'</option>';}).join('');
+    ov.innerHTML=
+      '<div class="modal-box">'+
+        '<div class="modal-head"><div id="detail-title">จัดการผู้ใช้และสิทธิ์</div>'+
+          '<div class="modal-actions">'+
+            '<input id="au-search" class="modal-search" type="text" placeholder="ค้นหา อีเมล/ชื่อ" oninput="AUfilter()">'+
+            '<button class="modal-close" type="button" onclick="AUclose()">&#10005;</button>'+
+          '</div></div>'+
+        '<div class="modal-body" style="padding:0 18px 18px">'+
+          '<div class="au-form">'+
+            '<input id="au-email" class="au-inp" type="email" placeholder="อีเมล @'+DOMAIN+'" autocomplete="off">'+
+            '<input id="au-name" class="au-inp" type="text" placeholder="ชื่อ (แสดงผล)" autocomplete="off">'+
+            '<select id="au-role" class="au-sel">'+opts+'</select>'+
+            '<button id="au-save" class="au-save" type="button" onclick="AUsave()">บันทึก</button>'+
+          '</div>'+
+          '<div id="au-hint" class="au-hint">เพิ่มผู้ใช้ใหม่ หรือกด "แก้" ในตารางเพื่อเปลี่ยนสิทธิ์ · ถอนสิทธิ์ = ตั้งเป็น Member (ดูอย่างเดียว)</div>'+
+          '<div id="au-list"><div class="au-state">กำลังโหลด…</div></div>'+
+        '</div>'+
+      '</div>';
+    document.body.appendChild(ov); _built=true;
+  }
+  function open_(){ build(); document.getElementById('au-modal').classList.add('open'); resetForm(); load(); }
+  function close(){ var m=document.getElementById('au-modal'); if(m) m.classList.remove('open'); }
+  function resetForm(){ var e=document.getElementById('au-email'),n=document.getElementById('au-name'),r=document.getElementById('au-role');
+    if(e){e.value='';e.readOnly=false;} if(n)n.value=''; if(r)r.value='Member';
+    var h=document.getElementById('au-hint'); if(h)h.textContent='เพิ่มผู้ใช้ใหม่ หรือกด "แก้" ในตารางเพื่อเปลี่ยนสิทธิ์ · ถอนสิทธิ์ = ตั้งเป็น Member (ดูอย่างเดียว)'; }
+
+  function load(){
+    var host=document.getElementById('au-list'); if(host) host.innerHTML='<div class="au-state">กำลังโหลด…</div>';
+    var u=gurl(); if(!u){ if(host) host.innerHTML='<div class="au-state">ยังไม่ได้ตั้งค่า backend</div>'; return; }
+    fetch(u+(u.indexOf('?')<0?'?':'&')+'action=listUsers&token='+encodeURIComponent(tok()),{redirect:'follow'})
+      .then(function(r){return r.json();})
+      .then(function(j){ if(!j||!j.ok) throw new Error((j&&(j.error||j.status))||'โหลดไม่สำเร็จ');
+        _users=j.users||[]; render(); })
+      .catch(function(e){ if(host) host.innerHTML='<div class="au-state">โหลดรายชื่อไม่สำเร็จ — '+esc(e.message||e)+'<br>ลองปิดแล้วเปิดใหม่</div>'; });
+  }
+  function render(){
+    var host=document.getElementById('au-list'); if(!host) return;
+    var q=((document.getElementById('au-search')||{}).value||'').toLowerCase().trim();
+    var rows=_users.filter(function(x){ if(!q) return true;
+      return (String(x.email||'').toLowerCase().indexOf(q)>=0)||(String(x.name||'').toLowerCase().indexOf(q)>=0); });
+    if(!rows.length){ host.innerHTML='<div class="au-state">'+(_users.length?'ไม่พบที่ค้นหา':'ยังไม่มีผู้ใช้ในระบบ')+'</div>'; return; }
+    var body=rows.map(function(x){
+      var key=String(x.role||'member'), m=RM[key]||[key,'#475569','#f1f5f9','#cbd5e1'];
+      var disp=x.role_display||m[0];
+      var badge='<span class="au-badge" style="color:'+m[1]+';background:'+m[2]+';border:1px solid '+m[3]+'">'+esc(m[0])+'</span>';
+      var inact=(String(x.active).toUpperCase()==='FALSE');
+      return '<tr'+(inact?' class="au-inactive"':'')+'>'+
+        '<td>'+esc(x.email)+'</td><td>'+esc(x.name||'')+'</td><td>'+badge+'</td>'+
+        '<td style="text-align:right"><button class="au-editbtn" type="button" onclick="AUedit(\''+esc(x.email).replace(/'/g,"\\'")+'\')">แก้</button></td></tr>';
+    }).join('');
+    host.innerHTML='<div style="max-height:46vh;overflow:auto;border:1px solid var(--border);border-radius:10px">'+
+      '<table class="au-tbl"><thead><tr><th>อีเมล</th><th>ชื่อ</th><th>สิทธิ์ปัจจุบัน</th><th></th></tr></thead>'+
+      '<tbody>'+body+'</tbody></table></div>'+
+      '<div class="au-hint" style="margin-top:8px">รวม '+_users.length+' คน</div>';
+  }
+  function edit(email){
+    var x=null; for(var i=0;i<_users.length;i++){ if(String(_users[i].email||'').toLowerCase()===String(email).toLowerCase()){x=_users[i];break;} }
+    if(!x) return;
+    var e=document.getElementById('au-email'),n=document.getElementById('au-name'),r=document.getElementById('au-role');
+    if(e){e.value=x.email;e.readOnly=true;} if(n)n.value=x.name||'';
+    // preselect ต้องใช้ display จาก ROLES (ตรงกับ <option> value) — ไม่ใช่ RM ที่ member = 'ดูอย่างเดียว (Member)'
+    var disp='Member', xk=String(x.role||'member'); for(var k=0;k<ROLES.length;k++){ if(ROLES[k][1]===xk){disp=ROLES[k][0];break;} }
+    if(r)r.value=disp;
+    var h=document.getElementById('au-hint'); if(h)h.textContent='กำลังแก้: '+x.email+' — เลือกสิทธิ์ใหม่แล้วกดบันทึก';
+    var f=document.getElementById('au-role'); if(f)f.focus();
+  }
+  function save(){
+    var e=document.getElementById('au-email'),n=document.getElementById('au-name'),r=document.getElementById('au-role');
+    var email=(e.value||'').toLowerCase().trim(), name=(n.value||'').trim(), roleDisp=r.value;
+    if(!email){ toast('กรอกอีเมลก่อน',false); e.focus(); return; }
+    if(email.split('@')[1]!==DOMAIN){ toast('อนุญาตเฉพาะอีเมล @'+DOMAIN,false); e.focus(); return; }
+    var roleKey='member'; for(var i=0;i<ROLES.length;i++){ if(ROLES[i][0]===roleDisp){roleKey=ROLES[i][1];break;} }
+    if(email===String(window.DPT_USER||'').toLowerCase() && roleKey!=='admin'){
+      if(!confirm('นี่คืออีเมลของคุณเอง — ลดสิทธิ์ตัวเองจาก Admin จะเข้าหน้านี้ไม่ได้อีก ยืนยัน?')) return;
+    }
+    var btn=document.getElementById('au-save'); if(btn){btn.disabled=true;btn.textContent='กำลังบันทึก…';}
+    var u=gurl();
+    try{
+      fetch(u,{method:'post',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({token:tok(),action:'upsertUser',email:email,name:name,role:roleDisp})});
+    }catch(err){}
+    verify(email,roleKey,0);
+  }
+  function verify(email,expectKey,tries){
+    var u=gurl();
+    fetch(u+(u.indexOf('?')<0?'?':'&')+'action=listUsers&token='+encodeURIComponent(tok()),{redirect:'follow'})
+      .then(function(r){return r.json();})
+      .then(function(j){
+        var ok=false; if(j&&j.ok){ var arr=j.users||[];
+          for(var i=0;i<arr.length;i++){ if(String(arr[i].email||'').toLowerCase()===email){ ok=(String(arr[i].role||'')===expectKey); break; } } }
+        if(ok){ _users=(j.users||[]); done(true,email); }
+        else if(tries<3){ setTimeout(function(){verify(email,expectKey,tries+1);},1200); }
+        else { done(false,email); }
+      })
+      .catch(function(){ if(tries<3){ setTimeout(function(){verify(email,expectKey,tries+1);},1200); } else { done(false,email); } });
+  }
+  function done(ok,email){
+    var btn=document.getElementById('au-save'); if(btn){btn.disabled=false;btn.textContent='บันทึก';}
+    if(ok){ toast('✓ บันทึกสิทธิ์แล้ว: '+email,true); resetForm(); render();
+      // ถ้าแก้สิทธิ์ตัวเอง อัปเดต badge หัวเช่นกัน (แต่ role ฝั่ง server cache ~5 นาที ค่อยมีผลเต็ม)
+    } else { toast('✗ บันทึกไม่สำเร็จ หรือยังไม่ยืนยัน — ลองใหม่/เช็คเน็ต',false); load(); }
+  }
+  // ---- ปุ่มเข้า (admin เท่านั้น) inject ใน #dpt-userbox ----
+  function tryButton(){
+    if(window.DPT_ROLE!=='admin') return false;
+    var boxu=document.getElementById('dpt-userbox'); if(!boxu) return false;
+    if(document.getElementById('dpt-admin')) return true;
+    var b=document.createElement('button'); b.id='dpt-admin'; b.type='button'; b.textContent='\u2699 จัดการผู้ใช้';
+    b.onclick=AUopen;
+    var lo=document.getElementById('dpt-logout');
+    if(lo&&lo.parentNode===boxu) boxu.insertBefore(b,lo); else boxu.appendChild(b);
+    return true;
+  }
+  window.AUopen=open_; window.AUclose=close; window.AUsave=save; window.AUedit=edit; window.AUfilter=render;
+  function initBtn(){
+    if(tryButton()) return;
+    var t=setInterval(function(){ if(tryButton()) clearInterval(t); },500);
+    setTimeout(function(){ clearInterval(t); },60000);
+  }
+  if(document.readyState!=='loading') initBtn(); else document.addEventListener('DOMContentLoaded',initBtn);
+})();
+</script>
+
 </body>
 </html>
