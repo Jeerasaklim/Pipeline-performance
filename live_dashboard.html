@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=124002" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=124557" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5402,7 +5402,7 @@ setTimeout(applyBoard,300);
     fab.textContent="👷 สรุป ผรม.";
     fab.onclick=openPrm;
     p=document.createElement("aside"); p.id="sm-prm-panel";
-    p.style.cssText="position:fixed;top:0;right:0;height:100vh;width:360px;max-width:92vw;z-index:9001;background:var(--surface);border-left:1px solid var(--border2);box-shadow:-6px 0 24px rgba(0,0,0,.16);transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column";
+    p.style.cssText="position:fixed;top:0;right:0;height:100vh;width:500px;max-width:96vw;z-index:9001;background:var(--surface);border-left:1px solid var(--border2);box-shadow:-6px 0 24px rgba(0,0,0,.16);transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column";
     p.innerHTML=
       '<div style="display:flex;align-items:center;gap:9px;padding:14px 16px;border-bottom:1px solid var(--border)">'+
         '<span style="font-size:16px">👷</span>'+
@@ -5432,12 +5432,12 @@ setTimeout(applyBoard,300);
     rows.sort(function(a,b){ if(a.noprm!==b.noprm) return a.noprm?1:-1; if(b.total!==a.total) return b.total-a.total; return b.doing-a.doing; });
     var nActive=0; rows.forEach(function(r){ if(r.active&&!r.noprm) nActive++; });
     var sub=document.getElementById("sm-prm-sub");
-    if(sub) sub.textContent="ทั้งหมด "+rows.filter(function(r){return !r.noprm;}).length+" ราย · กำลังทำงาน "+nActive+" ราย";
+    if(sub) sub.textContent="ทั้งหมด "+rows.filter(function(r){return !r.noprm;}).length+" ราย · Active "+nActive+" ราย";
     function chip(lb,v,cl,bg){ return '<span style="display:inline-flex;align-items:baseline;gap:3px;background:'+bg+';border-radius:7px;padding:3px 8px;font-size:11px;color:var(--t2)">'+lb+' <b style="font-size:13px;color:'+cl+'">'+v+'</b></span>'; }
     var cards=rows.map(function(r){
       var badge=r.noprm?''
-        :(r.active?'<span style="font-size:10px;font-weight:700;color:#047857;background:#d1fae5;border:1px solid #6ee7b7;border-radius:999px;padding:2px 8px;white-space:nowrap">🟢 กำลังทำ</span>'
-                   :'<span style="font-size:10px;font-weight:700;color:#64748b;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:999px;padding:2px 8px;white-space:nowrap">⚪ ไม่มีงานค้าง</span>');
+        :(r.active?'<span style="font-size:10.5px;font-weight:800;color:#047857;background:#d1fae5;border:1px solid #6ee7b7;border-radius:999px;padding:2px 10px;white-space:nowrap">● Active</span>'
+                   :'<span style="font-size:10.5px;font-weight:800;color:#64748b;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:999px;padding:2px 10px;white-space:nowrap">○ Non Active</span>');
       var span=(r.first||r.last)?(_fdate(r.first)+" → "+_fdate(r.last)):"—";
       return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px 11px;margin:0 0 8px;'+(r.noprm?'opacity:.65;':'')+'">'+
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
