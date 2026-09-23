@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=192717" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=093029" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -1215,7 +1215,7 @@ tr.go-nd-hide{display:none!important}
   renderSlaActual();
 
   // --- data refresh stamp (rewritten by the refresh script) ---
-  var DATA_STAMP = "22 Sep 2026 09:27";
+  var DATA_STAMP = "23 Sep 2026 09:19";
   (function(){
     var el = document.getElementById('data-stamp');
     if (el) el.innerHTML = DATA_STAMP ? ('DATA ' + DATA_STAMP) : 'DATA &mdash; not refreshed';
@@ -2439,7 +2439,7 @@ DETAIL_COLS_BY_KEY["d_head"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner",
 STEP_DETAILS["d_wait_o1"]=[];
 DETAIL_LABELS["d_wait_o1"]="รอใบอนุญาต อ.1 (ยังไม่ได้/ยังไม่อนุโลม)";
 DETAIL_COLS_BY_KEY["d_wait_o1"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["prov", "จังหวัด"], ["aging", "aging (วัน)"], ["sla_over", "เกิน SLA"], ["cstatus", "สถานะ อ.1"], ["ratkit_note", "Note (งานประจำวันรัฐกิจ)"]];
-SLA_SUMMARY["d_wait_o1"]={"sla_text": "ต่างจังหวัด 45 / กทม. 60 วันปฏิทิน", "avg_aging": 33, "n_exceed": 10, "n_within": 39, "avg_over": 18};
+SLA_SUMMARY["d_wait_o1"]={"sla_text": "ต่างจังหวัด 45 / กทม. 60 วันปฏิทิน", "avg_aging": 34, "n_exceed": 10, "n_within": 38, "avg_over": 20};
 STEP_DETAILS["d_got_o1"]=[];
 DETAIL_LABELS["d_got_o1"]="ได้ อ.1 แล้ว (ได้รับใบอนุญาตจริง)";
 DETAIL_COLS_BY_KEY["d_got_o1"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["cstatus", "สถานะ อ.1"], ["note", "Note"]];
@@ -2455,14 +2455,14 @@ DETAIL_COLS_BY_KEY["d_survey"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner
 STEP_DETAILS["d_precon_start"]=[];
 DETAIL_LABELS["d_precon_start"]="งาน Pre Con — ค้าง = ยังไม่เสร็จ (SLA 14 วันจากส่งมอบพื้นที่)";
 DETAIL_COLS_BY_KEY["d_precon_start"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["handover", "ส่งมอบพื้นที่"], ["survey", "สำรวจพื้นที่"], ["precon_start", "งาน Pre Con"], ["s2", "สถานะ อ.1"], ["aging", "aging จากส่งมอบพื้นที่ (วัน)"], ["sla_over", "เกิน SLA 14"], ["note", "Note"]];
-SLA_SUMMARY["d_precon_start"]={"sla_text": "14 วันปฏิทิน", "avg_aging": 70, "n_exceed": 13, "n_within": 0, "avg_over": 56};
+SLA_SUMMARY["d_precon_start"]={"sla_text": "14 วันปฏิทิน", "avg_aging": 76, "n_exceed": 11, "n_within": 0, "avg_over": 62};
 STEP_DETAILS["d_precon_done"]=[];
 DETAIL_LABELS["d_precon_done"]="ตรวจรับ Pre Con — Pre Con เสร็จแล้ว (จำนวนที่เสร็จ)";
 DETAIL_COLS_BY_KEY["d_precon_done"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["handover", "ส่งมอบพื้นที่"], ["survey", "สำรวจพื้นที่"], ["precon_start", "งาน Pre Con"], ["precon_done", "ตรวจรับ Pre Con"], ["s2", "สถานะ อ.1"], ["note", "Note"]];
 STEP_DETAILS["d_layout"]=[];
 DETAIL_LABELS["d_layout"]="นัดวางผัง (ตรวจผังกับ ผรม.)";
 DETAIL_COLS_BY_KEY["d_layout"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["handover", "ส่งมอบพื้นที่"], ["survey", "สำรวจพื้นที่"], ["precon_start", "งาน Pre Con"], ["precon_done", "ตรวจรับ Pre Con"], ["layout", "นัดวางผัง"], ["s2", "สถานะ อ.1"], ["open_date", "วันเปิดร้าน"], ["deadline", "เดดไลน์วางผัง (D-40)"], ["sla_over", "เกิน SLA"], ["note", "Note"]];
-SLA_SUMMARY["d_layout"]={"sla_text": "ทำ D-42 · SLA 2 วัน (หลุดถ้าเลย D-40)", "n_exceed": 0, "n_within": 6, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["d_layout"]={"sla_text": "ทำ D-42 · SLA 2 วัน (หลุดถ้าเลย D-40)", "n_exceed": 0, "n_within": 8, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["d_build_start"]=[];
 DETAIL_LABELS["d_build_start"]="เริ่มงานก่อสร้างแล้ว";
 DETAIL_COLS_BY_KEY["d_build_start"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["handover", "ส่งมอบพื้นที่"], ["survey", "สำรวจพื้นที่"], ["precon_start", "งาน Pre Con"], ["precon_done", "ตรวจรับ Pre Con"], ["layout", "นัดวางผัง"], ["build", "เริ่มก่อสร้าง"], ["s2", "สถานะ อ.1"], ["open_date", "วันเปิดร้าน"], ["deadline", "เดดไลน์เริ่มก่อสร้าง (D-40)"], ["sla_over", "เกิน SLA"], ["note", "Note"]];
@@ -2486,11 +2486,11 @@ DETAIL_COLS_BY_KEY["d_reg_ready"]=[["code", "SITE CODE"], ["name", "NAME"], ["ow
 STEP_DETAILS["rg_house_s"]=[];
 DETAIL_LABELS["rg_house_s"]="ยื่นขอ ทะเบียนบ้าน";
 DETAIL_COLS_BY_KEY["rg_house_s"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_house_s"]={"sla_text": "เดดไลน์ D-18 (วันเปิด−18) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 9, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_house_s"]={"sla_text": "เดดไลน์ D-18 (วันเปิด−18) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 10, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_house_g"]=[];
 DETAIL_LABELS["rg_house_g"]="ได้รับ ทะเบียนบ้าน";
 DETAIL_COLS_BY_KEY["rg_house_g"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_house_g"]={"sla_text": "เดดไลน์ D-9 (วันเปิด−9) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 6, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_house_g"]={"sla_text": "เดดไลน์ D-9 (วันเปิด−9) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 9, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_branch_s"]=[];
 DETAIL_LABELS["rg_branch_s"]="ยื่นจดเพิ่มสาขา ภ.พ.09";
 DETAIL_COLS_BY_KEY["rg_branch_s"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
@@ -2751,7 +2751,7 @@ else{res.className="show";res.innerHTML='<span class="xs-code">'+code+'</span>'+
 .svm-hit{filter:drop-shadow(0 0 5px rgba(13,148,136,.65))}
 #detail-modal .svm-row-tag{color:#0d9488;font-weight:700;margin-right:3px}
 </style>
-<button id="svm-filter" type="button" onclick="svmToggle()" title="ไฮไลต์/กรองเฉพาะสาขาสวมอาคาร">🏢 สวมอาคาร (5)</button>
+<button id="svm-filter" type="button" onclick="svmToggle()" title="ไฮไลต์/กรองเฉพาะสาขาสวมอาคาร">🏢 สวมอาคาร (0)</button>
 <script>(function(){
 var SVM=[];var SS={};for(var i=0;i<SVM.length;i++)SS[SVM[i]]=1;var on=false;window.__setSvm=function(codes){SVM=codes||[];SS={};for(var _si=0;_si<SVM.length;_si++)SS[SVM[_si]]=1;var _sb=document.getElementById('svm-filter');if(_sb)_sb.textContent='\uD83C\uDFE2 \u0e2a\u0e27\u0e21\u0e2d\u0e32\u0e04\u0e32\u0e23 ('+SVM.length+')';try{applyBoard();applyModal();}catch(e){}};
 function keyOf(el){var m=(el.getAttribute("onclick")||"").match(/openDetail\('([^']+)'\)/);return m?m[1]:null;}
@@ -5606,11 +5606,28 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
         box.id='dpt-userbox';
         box.style.cssText='display:inline-flex;align-items:center;gap:8px;margin-left:12px';
         box.innerHTML='<span id="dpt-uemail" style="font-size:11px;color:#64748b;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>'+
+          '<span id="dpt-urole" style="font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px;white-space:nowrap"></span>'+
           '<button id="dpt-logout" type="button" style="font-size:11px;font-weight:700;color:#dc2626;background:#fff;border:1px solid #fecaca;border-radius:999px;padding:3px 12px;cursor:pointer">ออกจากระบบ</button>';
         stamps.appendChild(box);
         document.getElementById('dpt-logout').onclick=function(){ if(window.dptLogout) window.dptLogout(); else location.reload(); };
-        var t=setInterval(function(){ if(window.DPT_USER){ var e=document.getElementById('dpt-uemail'); if(e) e.textContent=window.DPT_USER; clearInterval(t); } },400);
-        setTimeout(function(){ clearInterval(t); },20000);
+        // แสดง role ของผู้ใช้ที่ login (จาก window.DPT_ROLE) เป็น badge สี — บอกระดับสิทธิ์ให้เห็นเลย (จี 23 ก.ย.)
+        var RM={admin:['Admin','#1d4ed8','#dbeafe','#93c5fd'],
+          head_construction:['Head of Construction','#047857','#d1fae5','#6ee7b7'],
+          head_site_expansion:['Head of Site Expansion','#047857','#d1fae5','#6ee7b7'],
+          head_site_negotiation:['Head of Site Negotiation','#047857','#d1fae5','#6ee7b7'],
+          construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],
+          member:['ดูอย่างเดียว (Member)','#475569','#f1f5f9','#cbd5e1']};
+        function paintUser(){
+          var e=document.getElementById('dpt-uemail'), r=document.getElementById('dpt-urole');
+          if(window.DPT_USER&&e){ e.textContent=window.DPT_USER; }
+          if(window.DPT_ROLE&&r&&!r.textContent){ var m=RM[window.DPT_ROLE]||[String(window.DPT_ROLE),'#475569','#f1f5f9','#cbd5e1']; r.textContent=m[0]; r.style.color=m[1]; r.style.background=m[2]; r.style.border='1px solid '+m[3]; }
+          return !!(window.DPT_USER&&window.DPT_ROLE);
+        }
+        // paint ทันทีที่ auth เสร็จ (event-driven) — ไม่พึ่ง poll ที่อาจ time out ก่อน GAS ตอบ (floor ~14s)
+        try{ if(window.DPT_awaitAuth){ window.DPT_awaitAuth().then(function(){ setTimeout(paintUser,0); }).catch(function(){}); } }catch(e){}
+        // poll สำรอง: เผื่อ DPT_USER มาคนละจังหวะกับ role — cap 60s (เดิม 20s สั้นกว่า GAS floor เลยพลาด)
+        var t=setInterval(function(){ if(paintUser()) clearInterval(t); },400);
+        setTimeout(function(){ clearInterval(t); },60000);
       }
     }catch(e){ console.warn('[ux] polish skipped:',e); }
   }
