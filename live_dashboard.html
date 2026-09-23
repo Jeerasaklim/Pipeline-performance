@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=121624" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=124002" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5625,7 +5625,7 @@ setTimeout(applyBoard,300);
    body[data-dpt-role="member"] (set โดย VIEW-ONLY-GATE script ด้านล่าง เฉพาะ GAS mode) → applies
    อัตโนมัติทุกครั้งที่ DOM re-render โดยไม่ต้องวน interval. security จริงอยู่ที่ GAS (doPost 403 +
    seam no-op). ซ่อนเฉพาะ control แก้ไข — ตัวเลข/ตาราง/แผนที่/ชื่อ/สถานะ/tooltip ยังเห็นครบ.
-   Export (.go-export/.ssdl/.modal-dl) + cost (#go-perf/#go-rssum) ถูกซ่อนโดย script ด้านล่างแล้ว
+   cost (#go-perf/#go-rssum) ถูกซ่อนโดย script ด้านล่างแล้ว (Export CSV เปิดให้ทุก role — read-only)
    → บล็อกนี้ต่อ "ปุ่มแก้ที่เหลือ" ที่ script ไม่ได้ครอบ. edit-role (admin/head_*) body ไม่มี attr นี้ → เห็นครบ. */
 /* Grand Opening — ปุ่มแก้รายสาขา */
 body[data-dpt-noedit] .go-btn-note,        /* Save โน้ต · รับทราบ/ยกเลิก(vanCancel) · clogReason · useSug · edit */
@@ -5648,7 +5648,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
 <script>/*VIEW-ONLY-GATE*/(function(){
   "use strict";
   if (window.USE_GAS_BACKEND !== true) return;                 // dev/CSV: ไม่มี role → ไม่ gate
-  var SEL_EXPORT=".go-export,.ssdl,.modal-dl", SEL_COST="#go-perf,#go-rssum";
+  // Export CSV = อ่านอย่างเดียว → เปิดให้ทุก role (จี 23 ก.ย.: "member ควร export ได้"). cost ถูก strip
+  // ฝั่ง server สำหรับ member/CM แล้ว (RS_DMG=0) → CSV ที่ export ออกมาไม่มีต้นทุนจริงอยู่แล้ว.
+  var SEL_COST="#go-perf,#go-rssum";
   function hide(sel){try{var n=document.querySelectorAll(sel);for(var i=0;i<n.length;i++)n[i].style.display="none";}catch(e){}}
   function gate(){
     var role=window.DPT_ROLE;
@@ -5656,8 +5658,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     // member หรือ construction_management: GO/After/Overall/Nego = view only → ซ่อน Export + แผงต้นทุน.
     // construction_management ยังแก้ Site Management (ผรม.) ในแผนที่ได้ — map เป็น iframe ไม่โดน CSS/ตัวซ่อนนี้.
     if(document.body){document.body.setAttribute("data-dpt-role",role);document.body.setAttribute("data-dpt-noedit","1");}  // noedit=1 → view-only GO/After (member + construction_management; admin/head returned ก่อนแล้ว)
-    hide(SEL_EXPORT); hide(SEL_COST);
-    var t=0,iv=setInterval(function(){hide(SEL_EXPORT);hide(SEL_COST);if(++t>=10)clearInterval(iv);},700);
+    hide(SEL_COST);
+    var t=0,iv=setInterval(function(){hide(SEL_COST);if(++t>=10)clearInterval(iv);},700);
   }
   var p = window.__coreTabs || (window.DPT_awaitAuth ? window.DPT_awaitAuth() : Promise.resolve());
   Promise.resolve(p).then(gate).catch(gate);                   // gate หลัง bundle (DPT_ROLE ถูก set แล้ว)
