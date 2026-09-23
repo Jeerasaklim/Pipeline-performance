@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=100435" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=104053" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5632,7 +5632,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
           member:['ดูอย่างเดียว (Member)','#475569','#f1f5f9','#cbd5e1']};
         function paintUser(){
           var e=document.getElementById('dpt-uemail'), r=document.getElementById('dpt-urole');
-          if(window.DPT_USER&&e){ e.textContent=window.DPT_USER; }
+          if(window.DPT_USER&&e){ e.textContent=window.DPT_NAME||window.DPT_USER; e.title=window.DPT_USER; }
           if(window.DPT_ROLE&&r&&!r.textContent){ var m=RM[window.DPT_ROLE]||[String(window.DPT_ROLE),'#475569','#f1f5f9','#cbd5e1']; r.textContent=m[0]; r.style.color=m[1]; r.style.background=m[2]; r.style.border='1px solid '+m[3]; }
           return !!(window.DPT_USER&&window.DPT_ROLE);
         }
