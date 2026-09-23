@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=132116" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=132853" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5435,16 +5435,20 @@ setTimeout(applyBoard,300);
       if(s.pak===4) o.opened++; else o.doing++;
       var d=_pdate(s.open); if(d) o.dates.push(d);
     }
+    var _today=new Date();
     var rows=Object.keys(by).map(function(k){ var o=by[k]; o.dates.sort(function(a,b){return a-b;});
+      var active=o.doing>0, first=o.dates[0]||null, last=o.dates[o.dates.length-1]||null;
+      var _to=active?_today:last;                                    // Active→วันนี้ · Non Active→วันสุดท้าย
+      var tenure=(first&&_to&&_to>=first)?(_to-first):-1;            // อายุงาน (ms); -1 = ไม่มีวันใช้ได้
       return {prm:k, opened:o.opened, doing:o.doing, total:o.opened+o.doing,
-        active:o.doing>0, first:o.dates[0]||null, last:o.dates[o.dates.length-1]||null,
+        active:active, first:first, last:last, tenure:tenure,
         noprm:(k.indexOf("ยังไม่ระบุ")>=0)}; });
-    rows.sort(function(a,b){ if(a.noprm!==b.noprm) return a.noprm?1:-1; if(b.total!==a.total) return b.total-a.total; return b.doing-a.doing; });
+    // จี 23 ก.ย.: Active ขึ้นก่อน แล้วเรียงตามอายุงาน (มาก→น้อย) · Non Active ต่อ (เรียงอายุงานเหมือนกัน) · (ยังไม่ระบุ) ล่างสุด
+    rows.sort(function(a,b){ if(a.noprm!==b.noprm) return a.noprm?1:-1; if(a.active!==b.active) return a.active?-1:1; return b.tenure-a.tenure; });
     var nActive=0; rows.forEach(function(r){ if(r.active&&!r.noprm) nActive++; });
     var sub=document.getElementById("sm-prm-sub");
     if(sub) sub.textContent="ทั้งหมด "+rows.filter(function(r){return !r.noprm;}).length+" ราย · Active "+nActive+" ราย";
     function chip(lb,v,cl,bg){ return '<span style="display:inline-flex;align-items:baseline;gap:3px;background:'+bg+';border-radius:7px;padding:3px 8px;font-size:11px;color:var(--t2)">'+lb+' <b style="font-size:13px;color:'+cl+'">'+v+'</b></span>'; }
-    var _today=new Date();
     var cards=rows.map(function(r){
       var badge=r.noprm?''
         :(r.active?'<span style="font-size:10.5px;font-weight:800;color:#047857;background:#d1fae5;border:1px solid #6ee7b7;border-radius:999px;padding:2px 10px;white-space:nowrap">● Active</span>'
