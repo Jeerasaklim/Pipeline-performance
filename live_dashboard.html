@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=104053" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=113945" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5374,8 +5374,88 @@ setTimeout(applyBoard,300);
   if (!frame) { console.warn("[map] #sm-frame not found — Site Management tab stripped?"); return; }
   var CE = window.CalcEngine;
   function post(msg) { try { if (frame.contentWindow) frame.contentWindow.postMessage(msg, "*"); } catch (e) {} }
-  function pushModel(m) { window.__smModel = m; post({ t: "sm-model", sites: m.sites, prmlist: m.prmlist }); }
+  function pushModel(m) { window.__smModel = m; post({ t: "sm-model", sites: m.sites, prmlist: m.prmlist }); try { renderPrmSummary(m.sites); } catch (e) { console.warn("[prm] summary skip:", e); } }
   function pushStale() { post({ t: "sm-stale" }); }
+
+  // ===== สรุปผลงานราย ผรม. (คำขอผู้ใช้ 23 ก.ย.): เปิดแล้ว/กำลังทำ/รวม + active + ช่วงเวลา =====
+  // pak: 4=เปิดแล้ว(เสร็จ) · 0-3=กำลังทำ(ยังไม่เปิด) · active=มีงานกำลังทำ>0. ช่วงเวลา=วันเปิด(open)
+  // ของ site ที่มีวันแล้ว (pinned/เปิด) — site ช่วงต้น (pool/pak1-2) ยังไม่มีวันเปิด เลยไม่นับในช่วง.
+  var _PMON = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  function _pdate(s){ s=String(s==null?"":s).trim(); if(!s) return null; var m;
+    if((m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s))) return new Date(+m[1],+m[2]-1,+m[3]);
+    if((m=/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/.exec(s))){ var M={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11}[m[2].toLowerCase()]; if(M==null)return null; var y=+m[3]; if(y<100)y+=2000; return new Date(y,M,+m[1]); }
+    if((m=/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(s))){ var y2=+m[3]; if(y2<100)y2+=2000; return new Date(y2,+m[2]-1,+m[1]); }
+    return null; }
+  function _fdate(d){ return d ? (("0"+d.getDate()).slice(-2)+" "+_PMON[d.getMonth()]+" "+String(d.getFullYear()+543).slice(-2)) : "—"; }
+  function _esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function ensurePrmPanel(){
+    var tab=document.getElementById("tab-sitemgmt"); if(!tab) return null;
+    var p=document.getElementById("sm-prm-panel");
+    if(p) return p;
+    p=document.createElement("section"); p.id="sm-prm-panel";
+    p.style.cssText="background:var(--surface);border:1px solid var(--border);border-radius:12px;margin:0 0 14px;padding:0;overflow:hidden";
+    p.innerHTML=
+      '<div id="sm-prm-head" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;user-select:none;border-bottom:1px solid var(--border)">'+
+        '<span style="font-size:15px">👷</span>'+
+        '<span style="font-size:14px;font-weight:800;color:var(--text)">สรุปผลงานราย ผรม.</span>'+
+        '<span id="sm-prm-sub" style="font-size:11.5px;color:var(--t3)"></span>'+
+        '<span id="sm-prm-tgl" style="margin-left:auto;font-size:12px;color:var(--t2)">▾ ซ่อน</span>'+
+      '</div>'+
+      '<div id="sm-prm-body" style="padding:0"></div>';
+    var frame=document.getElementById("sm-frame");
+    if(frame&&frame.parentNode===tab) tab.insertBefore(p,frame); else tab.insertBefore(p,tab.firstChild);
+    document.getElementById("sm-prm-head").onclick=function(){
+      var b=document.getElementById("sm-prm-body"), t=document.getElementById("sm-prm-tgl");
+      var hid=(b.style.display==="none"); b.style.display=hid?"":"none"; if(t)t.textContent=hid?"▾ ซ่อน":"▸ กาง";
+    };
+    return p;
+  }
+  function renderPrmSummary(sites){
+    var p=ensurePrmPanel(); if(!p) return;
+    sites=sites||[];
+    var by={};  // prm -> {opened, doing, dates:[]}
+    for(var i=0;i<sites.length;i++){ var s=sites[i];
+      var key=(s.prm&&String(s.prm).trim())?String(s.prm).trim():"(ยังไม่ระบุ ผรม.)";
+      var o=by[key]||(by[key]={opened:0,doing:0,dates:[]});
+      if(s.pak===4) o.opened++; else o.doing++;
+      var d=_pdate(s.open); if(d) o.dates.push(d);
+    }
+    var rows=Object.keys(by).map(function(k){ var o=by[k]; o.dates.sort(function(a,b){return a-b;});
+      return {prm:k, opened:o.opened, doing:o.doing, total:o.opened+o.doing,
+        active:o.doing>0, first:o.dates[0]||null, last:o.dates[o.dates.length-1]||null,
+        noprm:(k.indexOf("ยังไม่ระบุ")>=0)}; });
+    rows.sort(function(a,b){ if(a.noprm!==b.noprm) return a.noprm?1:-1; if(b.total!==a.total) return b.total-a.total; return b.doing-a.doing; });
+    var nActive=0; rows.forEach(function(r){ if(r.active&&!r.noprm) nActive++; });
+    var sub=document.getElementById("sm-prm-sub");
+    if(sub) sub.textContent="ทั้งหมด "+rows.filter(function(r){return !r.noprm;}).length+" ราย · กำลังทำงาน "+nActive+" ราย";
+    var th='style="padding:8px 12px;text-align:left;font-weight:700;color:var(--t2);border-bottom:1px solid var(--border2);white-space:nowrap;position:sticky;top:0;background:var(--surface);z-index:1"';
+    var thr='style="padding:8px 12px;text-align:right;font-weight:700;color:var(--t2);border-bottom:1px solid var(--border2);white-space:nowrap;position:sticky;top:0;background:var(--surface);z-index:1"';
+    var body=rows.map(function(r){
+      var mut=r.noprm?"opacity:.6;":"";
+      var badge=r.noprm?'<span style="color:var(--t3)">—</span>'
+        :(r.active?'<span style="display:inline-block;font-size:10.5px;font-weight:700;color:#047857;background:#d1fae5;border:1px solid #6ee7b7;border-radius:999px;padding:2px 9px">🟢 กำลังทำ</span>'
+                   :'<span style="display:inline-block;font-size:10.5px;font-weight:700;color:#64748b;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:999px;padding:2px 9px">⚪ ไม่มีงานค้าง</span>');
+      var span=(r.first||r.last)?(_fdate(r.first)+" → "+_fdate(r.last)):'<span style="color:var(--t3)">—</span>';
+      return '<tr style="'+mut+'">'+
+        '<td style="padding:7px 12px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text)">'+_esc(r.prm)+'</td>'+
+        '<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:right;color:#7c3aed;font-weight:700">'+r.opened+'</td>'+
+        '<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:right;color:#2563eb;font-weight:700">'+r.doing+'</td>'+
+        '<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:right;font-weight:800;color:var(--text)">'+r.total+'</td>'+
+        '<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:center">'+badge+'</td>'+
+        '<td style="padding:7px 12px;border-bottom:1px solid var(--border);color:var(--t2);white-space:nowrap;font-size:11.5px">'+span+'</td></tr>';
+    }).join("");
+    document.getElementById("sm-prm-body").innerHTML=
+      '<div style="max-height:340px;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'+
+      '<thead><tr>'+
+        '<th '+th+'>ผรม. (ผู้รับเหมา)</th>'+
+        '<th '+thr+'>เปิดแล้ว</th>'+
+        '<th '+thr+'>กำลังทำ</th>'+
+        '<th '+thr+'>รวม</th>'+
+        '<th '+th.replace("text-align:left","text-align:center")+'>สถานะ</th>'+
+        '<th '+th+'>ช่วงเวลา (วันเปิด แรก→ล่าสุด)</th>'+
+      '</tr></thead><tbody>'+body+'</tbody></table></div>'+
+      '<div style="padding:8px 14px;font-size:10.5px;color:var(--t3);border-top:1px solid var(--border)">เปิดแล้ว=ร้านเปิดแล้ว · กำลังทำ=อยู่ใน pipeline (ยังไม่เปิด) · ช่วงเวลาคิดจากวันเปิด (site ช่วงต้นที่ยังไม่มีวันจะยังไม่นับ)</div>';
+  }
   // GO-b2 (map ผรม write): the served map postMessages ผรม writes here (its WH was blanked by
   // sanitize_map). Forward to the authenticated GAS doPost (action note) with the login token.
   // GAS mode only; CSV mode is read-only so it no-ops (same as the GO tab write seam).
