@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=132853" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=175210" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5094,6 +5094,28 @@ setTimeout(applyBoard,300);
   var core = window.__coreTabs || window.DPT_awaitAuth().then(function () {
     return window.Repository.coreRepo({ CsvUtil: window.CsvUtil }).getTabs();
   });
+  // STALE BADGE (24 ก.ย. 26) — warmCache พังเงียบ (guard แถวน้อยเกิน GO_webapp.gs:429) → doGet เสิร์ฟ HEAVY
+  // ชุดเก่าต่อ พร้อมป้าย "(สด)" (เคสจริง: แท็บ Legal #REF! → ค้าง 15:56→17:33 ไม่มีใครรู้ = 🔴-as-🟢).
+  // snapshot_date = เวลาที่ warmCache สร้าง HEAVY ("dd MMM yyyy HH:mm" เวลาไทย, GO_webapp.gs:472) →
+  // เก่ากว่า STALE_MIN นาที = ป้ายแดง. เช็กซ้ำทุก 60s (เปิดหน้าค้างไว้นานก็เห็นว่าเลขเก่า).
+  // parse ไม่ได้ (เช่น CSV/dev "(สด)") = ไม่เดา → แสดงแบบเดิม.
+  var STALE_MIN = 15;
+  var _MON = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+  function _stampMs(s) {
+    var m = /^(\d{1,2}) ([A-Z][a-z]{2}) (\d{4}) (\d{1,2}):(\d{2})/.exec(String(s || ""));
+    if (!m || !Object.prototype.hasOwnProperty.call(_MON, m[2])) return null;
+    return Date.UTC(+m[3], _MON[m[2]], +m[1], +m[4] - 7, +m[5]);   // Asia/Bangkok = UTC+7
+  }
+  function _renderStamp(snap) {
+    var el = document.getElementById("data-stamp");
+    if (!el) return;
+    var t = _stampMs(snap);
+    var age = t == null ? null : Math.floor((Date.now() - t) / 60000);
+    if (age == null || age <= STALE_MIN) { el.innerHTML = "DATA " + window.DATA_STAMP; el.title = ""; return; }
+    var ageTxt = age < 120 ? age + " นาที" : Math.floor(age / 60) + " ชม.";
+    el.innerHTML = "DATA " + snap + ' — <span style="color:#b91c1c;font-weight:600">⚠️ ข้อมูลไม่อัปเดตมา ' + ageTxt + "</span>";
+    el.title = "ตัวเลขที่เห็นเป็นข้อมูล ณ " + snap + " — ลองรีเฟรชหน้า ถ้ายังขึ้นแบบนี้ แจ้งผู้ดูแลระบบ";
+  }
   core.then(function (r) {
     var L = window.CalcEngine.buildLookups(r.tabs);
     var res = window.CalcEngine.computeCounts(r.tabs.sla, L);
@@ -5177,8 +5199,8 @@ setTimeout(applyBoard,300);
     try { SITE_SETS = null; } catch (e) {}
     try { OVER_SETS = null; } catch (e) {}
     if (typeof renderDataSource === "function") renderDataSource();
-    var el = document.getElementById("data-stamp");
-    if (el) el.innerHTML = "DATA " + window.DATA_STAMP;
+    _renderStamp(r.meta.snapshot_date);
+    if (!window.__stampTimer) window.__stampTimer = setInterval(function () { _renderStamp(r.meta.snapshot_date); }, 60000);
     // Funnel is rendered — hide the loading overlay (GAS mode only; no-op if never shown).
     if (window.USE_GAS_BACKEND === true && typeof window.DPT_loadDone === "function") window.DPT_loadDone();
     console.log("[live] funnel loaded from Google Sheets — approve_all=" +
