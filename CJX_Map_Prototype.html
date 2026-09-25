@@ -51,9 +51,33 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s;z-index:9999}.toast.on{opacity:1}
 .routebox{position:absolute;left:12px;bottom:12px;z-index:760;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:9px 13px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.12);display:none}
 .routebox.on{display:block}.routebox b{color:#2563eb}
-</style></head><body><div class="wrap">
+</style><style>/*SM-PAKDATE-CSS*/
+.pdsel{position:relative}
+.pdbtn{display:inline-flex;align-items:center;gap:5px;cursor:pointer;font:inherit;color:#0f172a;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:7px 10px}
+.pdbtn:hover{border-color:#2563eb}.pdbtn.on{border-color:#2563eb;background:#eff6ff;color:#2563eb;font-weight:600}
+.pdcnt{color:#64748b;font-weight:500}.pdbtn.on .pdcnt{color:#2563eb}.pdcar{font-size:9px;color:#64748b}
+.pdnote{font-size:12px;font-weight:600;color:#2563eb}
+.pdpanel{display:none;position:absolute;z-index:2000;top:calc(100% + 6px);left:0;width:290px;max-width:88vw;max-height:420px;overflow:hidden;background:#fff;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 10px 28px rgba(13,20,33,.16);flex-direction:column}
+.pdpanel.open{display:flex}
+.pdpanel-hd{display:flex;align-items:center;gap:6px;padding:8px;border-bottom:1px solid #e2e8f0;flex:0 0 auto}
+.pdsearch{flex:1 1 auto;min-width:0;font:inherit;font-size:12px;padding:4px 7px!important;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc}
+.pdlink{cursor:pointer;font:inherit;font-size:11px;font-weight:600;color:#2563eb;background:none;border:0;padding:3px 4px;white-space:nowrap}
+.pdlink:hover{text-decoration:underline}
+.pdpanel-bd{overflow-y:auto;padding:4px 0 6px;flex:1 1 auto}
+.pdfoot{flex:0 0 auto;border-top:1px solid #e2e8f0;padding:6px 10px;font-size:10.5px;color:#64748b;line-height:1.45}
+.pdgrp{border-top:1px solid #e2e8f0;padding:2px 0 4px}.pdgrp:first-child{border-top:0}
+.pdrow{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#0f172a;padding:3px 10px 3px 22px}
+.pdrow:hover{background:#f1f5f9}.pdrow input{margin:0;cursor:pointer}
+.pdrow.pdyr{padding-left:6px;font-weight:700}.pdrow.pdmon{padding-left:20px;color:#475569}.pdrow.pdday{padding-left:52px}
+.pdlab{display:flex;align-items:center;gap:7px;cursor:pointer;flex:1 1 auto;min-width:0}
+.pdcar2{flex:0 0 14px;width:14px;text-align:center;cursor:pointer;color:#64748b;font-size:9px;display:inline-block;transition:transform .12s ease}
+.pdcar2.open{transform:rotate(90deg)}.pdcar2:hover{color:#2563eb}
+.pdn{margin-left:auto;font-size:11px;color:#64748b}
+.pdempty{padding:14px 10px;font-size:12px;color:#64748b;text-align:center}
+</style>
+</head><body><div class="wrap">
 <h1>🏢 Site Management<span class="beta">v7 · แผนที่จริง + directions</span></h1>
-<div class="sub">ข้อมูลจริง ณ 22 Sep 2026 09:27 · 458 สาขา (เปิดแล้ว 163 + ปักวันแล้ว 129 + ยังไม่ปักวัน 166) · คลิกหมุด=รายละเอียด+ใกล้เคียง · 📏 วัดระยะ · 🚗 เส้นทาง A→B</div>
+<div class="sub">ข้อมูลจริง ณ 23 Sep 2026 09:22 · 458 สาขา (เปิดแล้ว 163 + ปักวันแล้ว 129 + ยังไม่ปักวัน 166) · คลิกหมุด=รายละเอียด+ใกล้เคียง · 📏 วัดระยะ · 🚗 เส้นทาง A→B</div>
 <div class="kpis">
   <div class="kpi" data-k=""><div class="n" id="k-all" style="color:#4f46e5">0</div><div class="l">ตามตัวกรอง</div></div>
   <div class="kpi" data-k="1"><div class="n" id="k-1" style="color:#dc2626">0</div><div class="l">🔴 ปัก1</div></div>
@@ -67,7 +91,7 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
   <select id="f-pak"><option value="">สถานะ — ทั้งหมด</option><option value="4">🟣 เปิดแล้ว</option><option value="pinned">✅ ปักวันแล้ว (รวม)</option><option value="0">⚪ ยังไม่ปักวัน</option><option value="1">🔴 ปัก1</option><option value="2">🔵 ปัก2</option><option value="3">🟢 ปัก3</option></select>
   <select id="f-prm"><option value="">ผรม. — ทั้งหมด</option><option value="__HAS__">✅ มี ผรม.แล้ว</option><option value="__NONE__">⚠️ ยังไม่มี ผรม.</option></select>
   <select id="f-region"><option value="">ภาค — ทั้งหมด</option></select>
-  <select id="f-prov"><option value="">จังหวัด — ทั้งหมด</option></select>
+  <select id="f-prov"><option value="">จังหวัด — ทั้งหมด</option></select><div class="pdsel" onclick="event.stopPropagation()"><button type="button" class="pdbtn" id="pd-btn" onclick="pdToggle(event)">🗓 วันปัก: <span id="pd-btn-lb">ทั้งหมด</span> <span class="pdcnt" id="pd-btn-n"></span><span class="pdcar">&#9662;</span></button><div class="pdpanel" id="pd-panel"><div class="pdpanel-hd"><input class="pdsearch" id="pd-search" type="text" placeholder="ค้นหาวันที่ / เดือน" oninput="pdRender()"><button type="button" class="pdlink" onclick="pdAll(true)">เลือกทั้งหมด</button><button type="button" class="pdlink" onclick="pdAll(false)">ล้างทั้งหมด</button></div><div class="pdpanel-bd" id="pd-list"></div><div class="pdfoot">เฉพาะสาขา ปัก1–3 ที่มีวันเปิด · เลือกบางวัน = ซ่อนสาขาที่ยังไม่ปักวัน/เปิดแล้ว</div></div></div><span class="pdnote" id="pd-note"></span>
   <input type="text" id="f-q" placeholder="ค้นหา code / ชื่อสาขา...">
   <button class="btn" id="f-clear">ล้าง</button><button class="btn" id="f-csv">⬇ CSV</button>
 </div>
@@ -251,4 +275,62 @@ window.addEventListener("message",function(e){var d=e&&e.data;if(!d||typeof d!==
 /* App-only: route ผรม (post PRM:) to the parent -> authenticated GAS. Runs after the original
  * post() def so it overrides it; daily map never gets this (build_live only touches the app copy). */
 post=function(k,v){try{if(window.parent&&window.parent!==window)window.parent.postMessage({t:'sm-write',key:k,value:v},'*');}catch(e){}};
+/*SM-PAKDATE*/
+/* ตัวกรอง "วันปัก" (จี 25 ก.ย. 26) — ดูหมายเหตุใน build_live_dashboard.py inject_map_pakdate_filter */
+var PD_DATES=[],PD_COUNT={},PD_SEL={},PD_OPEN={},PD_SRC=null;
+var PD_MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function pdKey(v){v=String(v==null?"":v).trim();var m;
+  if((m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(v)))return m[1]+"-"+("0"+m[2]).slice(-2)+"-"+("0"+m[3]).slice(-2);
+  if((m=/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/.exec(v))){var i=PD_MON.indexOf(m[2].charAt(0).toUpperCase()+m[2].slice(1).toLowerCase());if(i<0)return "";var y=+m[3];if(y<100)y+=2000;return y+"-"+("0"+(i+1)).slice(-2)+"-"+("0"+m[1]).slice(-2);}
+  return "";}
+function pdDay(k){return (+k.slice(8,10))+"-"+PD_MON[+k.slice(5,7)-1]+"-"+k.slice(2,4);}
+function pdMonth(k){return PD_MON[+k.slice(5,7)-1]+"-"+k.slice(2,4);}
+function pdYear(k){return k.slice(0,4);}
+function pdIsPak(s){return !!s&&(s.pak===1||s.pak===2||s.pak===3);}
+function pdAllOn(){for(var i=0;i<PD_DATES.length;i++){if(!PD_SEL[PD_DATES[i]])return false;}return true;}
+function pdNSel(){var n=0;for(var i=0;i<PD_DATES.length;i++){if(PD_SEL[PD_DATES[i]])n++;}return n;}
+function pdInit(){var wasAll=pdAllOn(),prev=PD_SEL,cnt={};PD_SRC=SITES;
+  (SITES||[]).forEach(function(s){if(!pdIsPak(s))return;var k=pdKey(s.open);if(k)cnt[k]=(cnt[k]||0)+1;});
+  PD_DATES=Object.keys(cnt).sort().reverse();PD_COUNT=cnt;PD_SEL={};
+  PD_DATES.forEach(function(k){PD_SEL[k]=wasAll?true:!!prev[k];});}   // ข้อมูลสดมา: ถ้ากำลังกรองอยู่ คงวันที่เลือกไว้
+function pdLabel(){var all=pdAllOn(),n=pdNSel(),tot=PD_DATES.length;
+  var lb=$("pd-btn-lb");if(lb)lb.textContent=all?"ทั้งหมด":"เลือกบางวัน";
+  var bn=$("pd-btn-n");if(bn)bn.textContent=all?("("+tot+" วันที่)"):("("+n+"/"+tot+")");
+  var b=$("pd-btn");if(b)b.className="pdbtn"+(all?"":" on");
+  var nt=$("pd-note");if(nt)nt.textContent=all?"":(n?"ซ่อนสาขาที่ยังไม่ปักวัน":"ยังไม่ได้เลือกวัน");}
+function pdApply(){pdRender();pdLabel();apply();}
+function pdSet(k,on){PD_SEL[k]=!!on;pdApply();}
+function pdSetMany(kind,val,on){PD_DATES.forEach(function(k){if((kind==="y"?pdYear(k):pdMonth(k))===val)PD_SEL[k]=!!on;});pdApply();}
+function pdOpen(id){PD_OPEN[id]=!PD_OPEN[id];pdRender();}
+function pdAll(on){PD_DATES.forEach(function(k){PD_SEL[k]=!!on;});pdApply();}
+function pdToggle(e){if(e)e.stopPropagation();var p=$("pd-panel");if(p)p.classList.toggle("open");}
+function pdRender(){var host=$("pd-list");if(!host)return;var sb=$("pd-search"),q=(sb?sb.value:"").toLowerCase().trim();
+  var years=[],by={};
+  PD_DATES.forEach(function(k){var y=pdYear(k),m=pdMonth(k),d=pdDay(k);
+    if(q&&d.toLowerCase().indexOf(q)<0&&m.toLowerCase().indexOf(q)<0&&y.indexOf(q)<0)return;
+    if(!by[y]){by[y]={order:[],months:{}};years.push(y);}
+    if(!by[y].months[m]){by[y].months[m]=[];by[y].order.push(m);}
+    by[y].months[m].push(k);});
+  function tally(ks){var n=0,on=true,some=false;ks.forEach(function(k){n+=(PD_COUNT[k]||0);if(PD_SEL[k])some=true;else on=false;});return {n:n,on:on,some:some};}
+  function cbox(t,h){return '<input type="checkbox"'+(t.on?' checked':'')+(!t.on&&t.some?' data-part="1"':'')+' onchange="'+h+'">';}
+  function caret(id,open){return '<span class="pdcar2'+(open?' open':'')+'" onclick="pdOpen(\''+id+'\')">&#9656;</span>';}
+  var html="";
+  years.forEach(function(y){var all=[];by[y].order.forEach(function(m){all=all.concat(by[y].months[m]);});
+    var ty=tally(all),yo=q?true:!!PD_OPEN["y:"+y];
+    html+='<div class="pdgrp"><div class="pdrow pdyr">'+caret("y:"+y,yo)+'<label class="pdlab">'+cbox(ty,"pdSetMany('y','"+y+"',this.checked)")+'<b>'+y+'</b></label><span class="pdn">('+ty.n+')</span></div>';
+    if(yo){by[y].order.forEach(function(m){var ks=by[y].months[m],tm=tally(ks),mo=q?true:!!PD_OPEN["m:"+m];
+      html+='<div class="pdrow pdmon">'+caret("m:"+m,mo)+'<label class="pdlab">'+cbox(tm,"pdSetMany('m','"+m+"',this.checked)")+m+'</label><span class="pdn">('+tm.n+')</span></div>';
+      if(mo){ks.forEach(function(k){html+='<label class="pdrow pdday"><input type="checkbox"'+(PD_SEL[k]?' checked':'')+' onchange="pdSet(\''+k+'\',this.checked)">'+pdDay(k)+'<span class="pdn">('+(PD_COUNT[k]||0)+')</span></label>';});}
+    });}
+    html+='</div>';});
+  host.innerHTML=html||'<div class="pdempty">'+(PD_DATES.length?'ไม่พบวันที่':'ยังไม่มีสาขาที่ปักวัน')+'</div>';
+  var bx=host.querySelectorAll("input[data-part]");for(var i=0;i<bx.length;i++)bx[i].indeterminate=true;}
+document.addEventListener("click",function(e){var p=$("pd-panel");if(!p||!p.classList.contains("open"))return;
+  if(e.target&&e.target.nodeType===1&&!document.contains(e.target))return;   // กดขยายกลุ่ม = re-render → target หลุด DOM = คลิกข้างใน
+  var bar=document.querySelector(".pdsel");if(bar&&!bar.contains(e.target))p.classList.remove("open");});
+var _pdBase=filtered;
+filtered=function(){if(PD_SRC!==SITES){pdInit();pdRender();pdLabel();}var rows=_pdBase();if(pdAllOn())return rows;
+  return rows.filter(function(r){if(!pdIsPak(r))return false;var k=pdKey(r.open);return !!(k&&PD_SEL[k]);});};
+$("f-clear").addEventListener("click",function(){pdAll(true);});
+pdInit();pdRender();pdLabel();
 </script></body></html>
