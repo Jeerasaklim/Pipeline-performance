@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=144523" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=170533" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -4955,6 +4955,10 @@ setTimeout(applyBoard,300);
   const GAS_MAX_ATTEMPTS = 3;
   const GAS_RETRY_WAIT_MS = [5000, 15000];   // before attempt 2, attempt 3
   const GAS_RETRY_JITTER_MS = 3000;
+  // Afternoon of 25 Sep the echo hop simply never answered ("(pending)" forever, spinner stuck at 94%) —
+  // an error-only retry never fires on that. Cap each attempt: a normal warm load is ~7s exec + ~6s echo,
+  // so 35s is well past healthy and short enough that attempt 2 still has a chance.
+  const GAS_ATTEMPT_TIMEOUT_MS = 35000;
   function _deliveryError(msg) { const e = new Error(msg); e.transient = true; return e; }
   function GasRepo(opts) {
     opts = opts || {};
@@ -4962,9 +4966,14 @@ setTimeout(applyBoard,300);
     const getToken = opts.getToken || function () { return root.DPT_ID_TOKEN || ""; };
     const doFetch = opts.fetch || function (u, o) { return root.fetch(u, o); };          // injectable for tests
     const sleep = opts.sleep || function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+    const timeoutMs = opts.timeoutMs || GAS_ATTEMPT_TIMEOUT_MS;
     let _bundle = null;
     function _attempt(full) {
-      return doFetch(full, { redirect: "follow" }).then(function (res) {
+      const ctl = (typeof AbortController === "function") ? new AbortController() : null;
+      let timedOut = false;
+      const timer = ctl ? setTimeout(function () { timedOut = true; ctl.abort(); }, timeoutMs) : null;
+      function done() { if (timer) clearTimeout(timer); }
+      return doFetch(full, ctl ? { redirect: "follow", signal: ctl.signal } : { redirect: "follow" }).then(function (res) {
         if (!res.ok) {
           const e = new Error("GAS backend HTTP " + res.status);
           e.transient = (res.status === 404 || res.status === 408 || res.status === 429 || res.status >= 500);
@@ -4974,8 +4983,11 @@ setTimeout(applyBoard,300);
           try { return JSON.parse(txt); }
           catch (pe) { throw _deliveryError("GAS backend ตอบกลับไม่ใช่ข้อมูล (" + String(txt).slice(0, 60) + "…)"); }
         });
-      }, function (netErr) {
-        throw _deliveryError("เชื่อมต่อ GAS backend ไม่ได้: " + ((netErr && netErr.message) || netErr));
+      }).then(function (j) { done(); return j; }, function (err) {
+        done();
+        if (timedOut) throw _deliveryError("Google ไม่ตอบภายใน " + Math.round(timeoutMs / 1000) + " วินาที");
+        if (err && err.transient !== undefined) throw err;              // already classified (HTTP / non-JSON)
+        throw _deliveryError("เชื่อมต่อ GAS backend ไม่ได้: " + ((err && err.message) || err));
       });
     }
     function _run(n) {
