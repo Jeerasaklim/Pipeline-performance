@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=170533" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=174321" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -2881,6 +2881,9 @@ setTimeout(applyBoard,300);
   const EXP_CANCEL = "10.ยกเลิก";
   const EXP_SITE_EX = "09.รอนำเสนอใหม่";        // counted in อนุมัติรถตู้ only, pulled from every box
   const EXP_PULLOUT = new Set([EXP_SITE_EX]);
+  // 25 ก.ย. 26 (จี): "12. รอนำเสนอเพิ่ม (งาน KA )" = นำเสนอใหม่เหมือนกัน → นับ/ดึงออกเหมือน 09 ทุกจุด
+  // (ก่อนแก้ สถานะ 12 ไม่มีใครรู้จัก → ไหลเข้า WIP/รอเซ็น/รอรังวัด). match แบบ prefix กันช่องว่าง/วงเล็บท้ายเปลี่ยน.
+  function isRepropose(v) { v = String(v == null ? "" : v).trim(); return EXP_PULLOUT.has(v) || /^12\.\s*รอนำเสนอ/.test(v); }
   const EXP_EXCLUDE = new Set([EXP_OPENED, EXP_CANCEL]);
   const APPSHEET_HOLD_NEGO = "6.1 Hold เจรจาราคา";
   const NEGO_POTENTIAL = "0.Potential with cons";
@@ -3135,7 +3138,7 @@ setTimeout(applyBoard,300);
     const data = pipelineRows(rows, L);
 
     const approved = data.filter(r => !EXP_EXCLUDE.has(cell(r, COL_EXPANSION)));           // อนุมัติรถตู้ (incl 09)
-    const pulled = approved.filter(r => !EXP_PULLOUT.has(cell(r, COL_EXPANSION)));         // drop Site Ex first
+    const pulled = approved.filter(r => !isRepropose(cell(r, COL_EXPANSION)));         // drop Site Ex first
     const holdNego = pulled.filter(r => isHoldNego(r));
     const active = pulled.filter(r => !isHoldNego(r));                                     // drop Hold second
     const base = active.filter(r => {                                                      // WIP
@@ -3157,7 +3160,7 @@ setTimeout(applyBoard,300);
     counts.cancelled = cancelled.length;
     counts.approve = approved.length;
     counts.approve_all = counts.opened + counts.cancelled + counts.approve;
-    counts.site_ex = approved.filter(r => cell(r, COL_EXPANSION) === EXP_SITE_EX).length;
+    counts.site_ex = approved.filter(r => isRepropose(cell(r, COL_EXPANSION))).length;
     counts.hold_nego = holdNego.length;
     counts.nego_stuck = active.filter(r => negoStatus(r, L) === NEGO_STUCK).length;
     counts.potential = active.filter(r => negoStatus(r, L) === NEGO_POTENTIAL).length;
@@ -3426,7 +3429,7 @@ setTimeout(applyBoard,300);
   function afterCohort(slaRows, L) {
     const data = pipelineRows(slaRows, L);
     const approved = data.filter(r => !EXP_EXCLUDE.has(cell(r, COL_EXPANSION)));
-    const pulled = approved.filter(r => !EXP_PULLOUT.has(cell(r, COL_EXPANSION)));
+    const pulled = approved.filter(r => !isRepropose(cell(r, COL_EXPANSION)));
     const active = pulled.filter(r => !isHoldNego(r));
     const base = active.filter(r => { const ns = negoStatus(r, L); return ns !== NEGO_POTENTIAL && ns !== NEGO_STUCK; });
     return base
@@ -4026,7 +4029,7 @@ setTimeout(applyBoard,300);
   }
   const SD_APPROVE_ORDER = ["รอนำเสนอใหม่", "รอเอกสารหน่วยงานภายนอก", "ความเป็นไปได้ต่ำ", "ยังยื่น อ.1", "ยื่น อ.1 แล้ว"];
   function sdApproveStage(r, L) {
-    if (cell(r, COL_EXPANSION) === EXP_SITE_EX) return "รอนำเสนอใหม่";
+    if (isRepropose(cell(r, COL_EXPANSION))) return "รอนำเสนอใหม่";
     const ns = negoStatus(r, L);
     if (ns === NEGO_STUCK) return "รอเอกสารหน่วยงานภายนอก";
     if (ns === NEGO_POTENTIAL) return "ความเป็นไปได้ต่ำ";
@@ -4073,7 +4076,7 @@ setTimeout(applyBoard,300);
     // ---- partitions (same as computeCounts / build_details :1647-1671) ----
     const data = pipelineRows(rows, L);
     const approved = data.filter(r => !EXP_EXCLUDE.has(cell(r, COL_EXPANSION)));
-    const pulled = approved.filter(r => !EXP_PULLOUT.has(cell(r, COL_EXPANSION)));
+    const pulled = approved.filter(r => !isRepropose(cell(r, COL_EXPANSION)));
     const holdNego = pulled.filter(r => isHoldNego(r));
     const active = pulled.filter(r => !isHoldNego(r));
     const base = active.filter(r => { const ns = negoStatus(r, L); return ns !== NEGO_POTENTIAL && ns !== NEGO_STUCK; });
@@ -4182,7 +4185,7 @@ setTimeout(applyBoard,300);
         items.sort((a, b) => { const ia = (a.status in idx) ? idx[a.status] : 9, ib = (b.status in idx) ? idx[b.status] : 9; return ia !== ib ? ia - ib : sdCmp(sdKey(a.date), sdKey(b.date)); });
         return items;
       })(),
-      site_ex: siteList(approved.filter(r => cell(r, COL_EXPANSION) === EXP_SITE_EX)),
+      site_ex: siteList(approved.filter(r => isRepropose(cell(r, COL_EXPANSION)))),
       hold_nego: siteList(holdNego),
       stage_group: siteList(base.filter(r => noO1(r))),
       potential: siteList(active.filter(r => negoStatus(r, L) === NEGO_POTENTIAL)),
