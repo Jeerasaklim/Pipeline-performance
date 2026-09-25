@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=175210" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=144523" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -4946,24 +4946,63 @@ setTimeout(applyBoard,300);
    * a CORS preflight (Apps Script cannot answer OPTIONS). Fail-loud on any missing piece — never
    * a fake short/empty page (SPEC §2.3 / F4). */
   const GAS_MIN_TAB_ROWS = 50;   // parity with SheetExportRepo undercount guard
+  // Retry (25 ก.ย. 26): Google's delivery hop (exec → 302 → script.googleusercontent "echo") sometimes
+  // answers 404 "ไม่สามารถเปิดไฟล์ได้ในเวลานี้" / 5xx / a non-JSON page / a network error even though doGet
+  // itself finished — hit repeatedly on the morning of 25 Sep. Retry ONLY those delivery failures, at most
+  // GAS_MAX_ATTEMPTS, with growing waits + random jitter so many browsers don't re-hit GAS in sync.
+  // Never retry an answer from our own doGet (ok:false — 401 login / 403 no role / data guard): those are
+  // real problems a retry would only hide.
+  const GAS_MAX_ATTEMPTS = 3;
+  const GAS_RETRY_WAIT_MS = [5000, 15000];   // before attempt 2, attempt 3
+  const GAS_RETRY_JITTER_MS = 3000;
+  function _deliveryError(msg) { const e = new Error(msg); e.transient = true; return e; }
   function GasRepo(opts) {
     opts = opts || {};
     const url = opts.url || root.DPT_GAS_URL || "";                 // filled after จี deploys (empty = not ready)
     const getToken = opts.getToken || function () { return root.DPT_ID_TOKEN || ""; };
+    const doFetch = opts.fetch || function (u, o) { return root.fetch(u, o); };          // injectable for tests
+    const sleep = opts.sleep || function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
     let _bundle = null;
-    function fetchBundle() {
-      if (_bundle) return _bundle;
-      if (!url) return Promise.reject(new Error(
-        "ยังไม่ได้ตั้ง URL ของ GAS backend (window.DPT_GAS_URL) — ยังไม่ deploy web app หรือยังไม่วาง URL"));
-      const token = getToken();
+    function _attempt(full) {
+      return doFetch(full, { redirect: "follow" }).then(function (res) {
+        if (!res.ok) {
+          const e = new Error("GAS backend HTTP " + res.status);
+          e.transient = (res.status === 404 || res.status === 408 || res.status === 429 || res.status >= 500);
+          throw e;
+        }
+        return res.text().then(function (txt) {
+          try { return JSON.parse(txt); }
+          catch (pe) { throw _deliveryError("GAS backend ตอบกลับไม่ใช่ข้อมูล (" + String(txt).slice(0, 60) + "…)"); }
+        });
+      }, function (netErr) {
+        throw _deliveryError("เชื่อมต่อ GAS backend ไม่ได้: " + ((netErr && netErr.message) || netErr));
+      });
+    }
+    function _run(n) {
+      const token = getToken();                                     // re-read: GIS may have refreshed it
       if (!token) return Promise.reject(new Error(
         "ยังไม่มี Google ID token (window.DPT_ID_TOKEN ว่าง) — ต้อง login ก่อน"));
       const full = url + (url.indexOf("?") < 0 ? "?" : "&") +
         "action=getAll&token=" + encodeURIComponent(token);
-      _bundle = fetch(full, { redirect: "follow" }).then(function (res) {
-        if (!res.ok) throw new Error("GAS backend HTTP " + res.status);
-        return res.json();
-      }).then(function (j) {
+      return _attempt(full).catch(function (err) {
+        if (!(err && err.transient)) throw err;
+        if (n >= GAS_MAX_ATTEMPTS) {
+          err.message = "ลองแล้ว " + n + " ครั้ง ระบบ Google ยังไม่ตอบ — " + err.message;
+          throw err;
+        }
+        const wait = GAS_RETRY_WAIT_MS[n - 1] + Math.floor(Math.random() * GAS_RETRY_JITTER_MS);
+        console.warn("[gas] โหลดครั้งที่ " + n + " ไม่สำเร็จ (" + err.message + ") — ลองใหม่ใน " + Math.round(wait / 1000) + " วินาที");
+        try { if (typeof root.DPT_loadRetry === "function") root.DPT_loadRetry(n + 1, GAS_MAX_ATTEMPTS); } catch (e2) {}
+        return sleep(wait).then(function () { return _run(n + 1); });
+      });
+    }
+    function fetchBundle() {
+      if (_bundle) return _bundle;
+      if (!url) return Promise.reject(new Error(
+        "ยังไม่ได้ตั้ง URL ของ GAS backend (window.DPT_GAS_URL) — ยังไม่ deploy web app หรือยังไม่วาง URL"));
+      if (!getToken()) return Promise.reject(new Error(
+        "ยังไม่มี Google ID token (window.DPT_ID_TOKEN ว่าง) — ต้อง login ก่อน"));
+      _bundle = _run(1).then(function (j) {
         if (!j || j.ok !== true) {
           // 403 = ไม่มี Role ในชีต (นโยบายจี 23 ก.ย.) → ตั้ง flag ให้ overlay โชว์หน้า "ไม่มีสิทธิ์" (ไม่ใช่ error งง ๆ)
           if (j && j.status === 403) { try { root.DPT_ACCESS_DENIED = (j.error || "บัญชีนี้ยังไม่ได้รับสิทธิ์เข้าใช้งาน"); } catch (e) {} }
@@ -5615,6 +5654,10 @@ setTimeout(applyBoard,300);
       _pct += Math.max(0.5,(94-_pct)*0.055); if(_pct>94)_pct=94;   // simulated: fetch has no progress events, easing toward 94% then 100% on done
       var p=el("dpt-loading-pct"); if(p) p.textContent=Math.floor(_pct)+"%";
     },170);
+  };
+  // 25 ก.ย. 26: repository.js GasRepo calls this before each automatic retry (Google delivery hiccup).
+  window.DPT_loadRetry = function(n, max){
+    var m=el("dpt-loading-msg"); if(m) m.textContent="เชื่อมต่อช้า กำลังลองใหม่ ("+n+"/"+max+")…";
   };
   window.DPT_loadDone  = function(){
     stop();
