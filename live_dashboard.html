@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=174321" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=175539" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -4961,7 +4961,12 @@ setTimeout(applyBoard,300);
   // Afternoon of 25 Sep the echo hop simply never answered ("(pending)" forever, spinner stuck at 94%) —
   // an error-only retry never fires on that. Cap each attempt: a normal warm load is ~7s exec + ~6s echo,
   // so 35s is well past healthy and short enough that attempt 2 still has a chance.
+  // Evening of 25 Sep Google itself was slow (a 126-byte 401 reply took 2–14s), and a single 35s cap on
+  // the WHOLE attempt killed loads that were still downloading — all 3 attempts died at 35s. So the cap is
+  // now two-part: 35s to get the response headers (catches "pending forever"), then a separate, longer
+  // allowance for the ~3MB body once Google has started sending it.
   const GAS_ATTEMPT_TIMEOUT_MS = 35000;
+  const GAS_BODY_TIMEOUT_MS = 120000;
   function _deliveryError(msg) { const e = new Error(msg); e.transient = true; return e; }
   function GasRepo(opts) {
     opts = opts || {};
@@ -4970,13 +4975,17 @@ setTimeout(applyBoard,300);
     const doFetch = opts.fetch || function (u, o) { return root.fetch(u, o); };          // injectable for tests
     const sleep = opts.sleep || function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
     const timeoutMs = opts.timeoutMs || GAS_ATTEMPT_TIMEOUT_MS;
+    const bodyTimeoutMs = opts.bodyTimeoutMs || GAS_BODY_TIMEOUT_MS;
     let _bundle = null;
     function _attempt(full) {
       const ctl = (typeof AbortController === "function") ? new AbortController() : null;
-      let timedOut = false;
-      const timer = ctl ? setTimeout(function () { timedOut = true; ctl.abort(); }, timeoutMs) : null;
-      function done() { if (timer) clearTimeout(timer); }
+      let timedOut = "";                                             // "" = no, "head" / "body" = which cap fired
+      let timer = null;
+      function arm(ms, phase) { if (ctl) timer = setTimeout(function () { timedOut = phase; ctl.abort(); }, ms); }
+      function done() { if (timer) clearTimeout(timer); timer = null; }
+      arm(timeoutMs, "head");
       return doFetch(full, ctl ? { redirect: "follow", signal: ctl.signal } : { redirect: "follow" }).then(function (res) {
+        done(); arm(bodyTimeoutMs, "body");                          // headers arrived — Google is sending; give the body time
         if (!res.ok) {
           const e = new Error("GAS backend HTTP " + res.status);
           e.transient = (res.status === 404 || res.status === 408 || res.status === 429 || res.status >= 500);
@@ -4988,7 +4997,9 @@ setTimeout(applyBoard,300);
         });
       }).then(function (j) { done(); return j; }, function (err) {
         done();
-        if (timedOut) throw _deliveryError("Google ไม่ตอบภายใน " + Math.round(timeoutMs / 1000) + " วินาที");
+        if (timedOut) throw _deliveryError(timedOut === "head"
+          ? "Google ไม่ตอบภายใน " + Math.round(timeoutMs / 1000) + " วินาที"
+          : "Google ส่งข้อมูลไม่จบภายใน " + Math.round(bodyTimeoutMs / 1000) + " วินาที");
         if (err && err.transient !== undefined) throw err;              // already classified (HTTP / non-JSON)
         throw _deliveryError("เชื่อมต่อ GAS backend ไม่ได้: " + ((err && err.message) || err));
       });
