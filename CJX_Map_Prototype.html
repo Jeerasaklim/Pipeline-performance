@@ -68,9 +68,10 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
 .pdgrp{border-top:1px solid #e2e8f0;padding:2px 0 4px}.pdgrp:first-child{border-top:0}
 .pdrow{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#0f172a;padding:3px 10px 3px 22px}
 .pdrow:hover{background:#f1f5f9}.pdrow input{margin:0;cursor:pointer}
-.pdrow.pdyr{padding-left:6px;font-weight:700}.pdrow.pdmon{padding-left:20px;color:#475569}.pdrow.pdday{padding-left:52px}
+.pdrow.pdyr{padding-left:6px;font-weight:700}.pdrow.pdmon{padding-left:22px;color:#334155}.pdrow.pdday{padding-left:58px}
 .pdlab{display:flex;align-items:center;gap:7px;cursor:pointer;flex:1 1 auto;min-width:0}
-.pdcar2{flex:0 0 14px;width:14px;text-align:center;cursor:pointer;color:#64748b;font-size:9px;display:inline-block;transition:transform .12s ease}
+.pdcar2{flex:0 0 16px;width:16px;text-align:center;color:#2563eb;font-size:13px;line-height:1;display:inline-block;transition:transform .12s ease}
+.pdexp{user-select:none}.pdexp:hover .pdcar2{color:#1d4ed8}
 .pdcar2.open{transform:rotate(90deg)}.pdcar2:hover{color:#2563eb}
 .pdn{margin-left:auto;font-size:11px;color:#64748b}
 .pdempty{padding:14px 10px;font-size:12px;color:#64748b;text-align:center}
@@ -91,7 +92,7 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
   <select id="f-pak"><option value="">สถานะ — ทั้งหมด</option><option value="4">🟣 เปิดแล้ว</option><option value="pinned">✅ ปักวันแล้ว (รวม)</option><option value="0">⚪ ยังไม่ปักวัน</option><option value="1">🔴 ปัก1</option><option value="2">🔵 ปัก2</option><option value="3">🟢 ปัก3</option></select>
   <select id="f-prm"><option value="">ผรม. — ทั้งหมด</option><option value="__HAS__">✅ มี ผรม.แล้ว</option><option value="__NONE__">⚠️ ยังไม่มี ผรม.</option></select>
   <select id="f-region"><option value="">ภาค — ทั้งหมด</option></select>
-  <select id="f-prov"><option value="">จังหวัด — ทั้งหมด</option></select><div class="pdsel" onclick="event.stopPropagation()"><button type="button" class="pdbtn" id="pd-btn" onclick="pdToggle(event)">🗓 วันปัก: <span id="pd-btn-lb">ทั้งหมด</span> <span class="pdcnt" id="pd-btn-n"></span><span class="pdcar">&#9662;</span></button><div class="pdpanel" id="pd-panel"><div class="pdpanel-hd"><input class="pdsearch" id="pd-search" type="text" placeholder="ค้นหาวันที่ / เดือน" oninput="pdRender()"><button type="button" class="pdlink" onclick="pdAll(true)">เลือกทั้งหมด</button><button type="button" class="pdlink" onclick="pdAll(false)">ล้างทั้งหมด</button></div><div class="pdpanel-bd" id="pd-list"></div><div class="pdfoot">เฉพาะสาขา ปัก1–3 ที่มีวันเปิด · เลือกบางวัน = ซ่อนสาขาที่ยังไม่ปักวัน/เปิดแล้ว</div></div></div><span class="pdnote" id="pd-note"></span>
+  <select id="f-prov"><option value="">จังหวัด — ทั้งหมด</option></select><div class="pdsel" onclick="event.stopPropagation()"><button type="button" class="pdbtn" id="pd-btn" onclick="pdToggle(event)">🗓 วันปัก: <span id="pd-btn-lb">ทั้งหมด</span> <span class="pdcnt" id="pd-btn-n"></span><span class="pdcar">&#9662;</span></button><div class="pdpanel" id="pd-panel"><div class="pdpanel-hd"><input class="pdsearch" id="pd-search" type="text" placeholder="ค้นหาวันที่ / เดือน" oninput="pdRender()"><button type="button" class="pdlink" onclick="pdAll(true)">เลือกทั้งหมด</button><button type="button" class="pdlink" onclick="pdAll(false)">ล้างทั้งหมด</button></div><div class="pdpanel-bd" id="pd-list"></div><div class="pdfoot">กดชื่อปี/เดือน = กางดูรายวัน · ติ๊กช่อง = เลือก · เฉพาะสาขา ปัก1–3 ที่มีวันเปิด (เลือกบางวัน = ซ่อนสาขาที่ยังไม่ปักวัน/เปิดแล้ว)</div></div></div><span class="pdnote" id="pd-note"></span>
   <input type="text" id="f-q" placeholder="ค้นหา code / ชื่อสาขา...">
   <button class="btn" id="f-clear">ล้าง</button><button class="btn" id="f-csv">⬇ CSV</button>
 </div>
@@ -312,14 +313,14 @@ function pdRender(){var host=$("pd-list");if(!host)return;var sb=$("pd-search"),
     if(!by[y].months[m]){by[y].months[m]=[];by[y].order.push(m);}
     by[y].months[m].push(k);});
   function tally(ks){var n=0,on=true,some=false;ks.forEach(function(k){n+=(PD_COUNT[k]||0);if(PD_SEL[k])some=true;else on=false;});return {n:n,on:on,some:some};}
-  function cbox(t,h){return '<input type="checkbox"'+(t.on?' checked':'')+(!t.on&&t.some?' data-part="1"':'')+' onchange="'+h+'">';}
-  function caret(id,open){return '<span class="pdcar2'+(open?' open':'')+'" onclick="pdOpen(\''+id+'\')">&#9656;</span>';}
+  function cbox(t,h){return '<input type="checkbox"'+(t.on?' checked':'')+(!t.on&&t.some?' data-part="1"':'')+' onclick="event.stopPropagation()" onchange="'+h+'">';}
+  function caret(open){return '<span class="pdcar2'+(open?' open':'')+'">&#9656;</span>';}
   var html="";
   years.forEach(function(y){var all=[];by[y].order.forEach(function(m){all=all.concat(by[y].months[m]);});
     var ty=tally(all),yo=q?true:!!PD_OPEN["y:"+y];
-    html+='<div class="pdgrp"><div class="pdrow pdyr">'+caret("y:"+y,yo)+'<label class="pdlab">'+cbox(ty,"pdSetMany('y','"+y+"',this.checked)")+'<b>'+y+'</b></label><span class="pdn">('+ty.n+')</span></div>';
+    html+='<div class="pdgrp"><div class="pdrow pdyr pdexp" onclick="pdOpen(\'y:'+y+'\')" title="กดเพื่อกาง/หุบ">'+caret(yo)+cbox(ty,"pdSetMany('y','"+y+"',this.checked)")+'<b>'+y+'</b><span class="pdn">('+ty.n+')</span></div>';
     if(yo){by[y].order.forEach(function(m){var ks=by[y].months[m],tm=tally(ks),mo=q?true:!!PD_OPEN["m:"+m];
-      html+='<div class="pdrow pdmon">'+caret("m:"+m,mo)+'<label class="pdlab">'+cbox(tm,"pdSetMany('m','"+m+"',this.checked)")+m+'</label><span class="pdn">('+tm.n+')</span></div>';
+      html+='<div class="pdrow pdmon pdexp" onclick="pdOpen(\'m:'+m+'\')" title="กดเพื่อกาง/หุบ ดูรายวัน">'+caret(mo)+cbox(tm,"pdSetMany('m','"+m+"',this.checked)")+m+'<span class="pdn">('+tm.n+')</span></div>';
       if(mo){ks.forEach(function(k){html+='<label class="pdrow pdday"><input type="checkbox"'+(PD_SEL[k]?' checked':'')+' onchange="pdSet(\''+k+'\',this.checked)">'+pdDay(k)+'<span class="pdn">('+(PD_COUNT[k]||0)+')</span></label>';});}
     });}
     html+='</div>';});
