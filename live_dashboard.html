@@ -1215,7 +1215,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=202148" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=210640" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6275,7 +6275,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     ".sp-dg .dh2{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--s2);font-size:12.5px;font-weight:700;color:var(--text)}",
     ".sp-dg iframe{width:100%;height:600px;border:0;display:block;background:#fff}",
     ".sp-dg .ld{padding:48px 20px;text-align:center;color:var(--t3);font-size:13px}.sp-dg .ld.err{color:#b91c1c}",
-    ".sp-dg.full{position:fixed;inset:0;z-index:9700;border-radius:0;margin:0;display:flex;flex-direction:column}.sp-dg.full iframe{height:auto;flex:1}",
+    ".sp-dg.full{position:fixed;inset:0;z-index:9700;border-radius:0;margin:0;display:flex;flex-direction:column}.sp-dg.full iframe{height:auto!important;flex:1;min-height:0}",
     ".sp-strip{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--blue);border-radius:10px;padding:10px 14px;margin-bottom:6px}",
     ".sp-strip .no{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.4px}.sp-strip b{font-size:15px;color:var(--text)}",
     ".sp-strip .tm{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--t3)}.sp-strip #sp-chg{margin-left:auto}",
@@ -6680,12 +6680,40 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     return '<div class="sp-dg" data-dg="' + esc(dg.id) + '" data-dgname="' + esc(dg.name || "") + '"><div class="dh2">🧩 แผนภาพกระบวนการ <span class="muted" style="font-weight:500">· ' + esc(dg.name || "") + "</span>" +
       '<button type="button" class="sp-btn" data-dgfull style="margin-left:auto">⛶ เต็มจอ</button></div><div class="ld"><i class="sp-spin"></i>กำลังโหลดแผนภาพ…</div></div>';
   }
+  /* กรอบยืดเต็มความยาวแผนภาพ (จี 29 ก.ย.: "ไม่ควรมี scroll ควรยาวเต็มแผ่น")
+   * [ข้อมูลจริง] Archify คำนวณความกว้างแผนภาพจากความสูงหน้าจอ (desiredWidth = (innerHeight − ส่วนหัว) × ratio)
+   * → ใช้ "ความสูงเนื้อหา" ตรง ๆ ไม่ได้ (กรอบเตี้ย → แผนภาพหด → วัดได้เตี้ยลงอีก)
+   * วิธี: เริ่มที่ 62% ของความกว้าง แล้ว "ยืดเฉพาะตอนล้นจริง" (scrollHeight > innerHeight) ไม่หดกลับ
+   * → แผนภาพกว้างขึ้นจนเต็มกรอบแล้วหยุดเอง · กันวนลูป: เพดาน 6000px · ยืดได้ไม่เกิน 12 ครั้งต่อกรอบ
+   * iframe เป็น sandbox ไม่ใช่ same-origin → ข้างในต้องส่งขนาดออกมาเอง (postMessage) */
+  var DG_PROBE = '<script>(function(){function s(){try{var d=document.documentElement,b=document.body;' +
+    'parent.postMessage({__sopDg:1,sh:Math.max(d.scrollHeight,b?b.scrollHeight:0),ih:window.innerHeight},"*");}catch(e){}}' +
+    'addEventListener("load",function(){s();setTimeout(s,300);setTimeout(s,1200);setTimeout(s,2500);});' +
+    'if(window.ResizeObserver){try{new ResizeObserver(s).observe(document.body||document.documentElement);}catch(e){}}})();<\/script>';
+  addEventListener("message", function (ev) {
+    var m = ev && ev.data; if (!m || m.__sopDg !== 1 || typeof m.sh !== "number") return;
+    var fr = document.querySelectorAll(".sp-dg iframe");
+    for (var i = 0; i < fr.length; i++) {
+      var f = fr[i]; if (f.contentWindow !== ev.source) continue;
+      if (f.parentNode.classList.contains("full")) return;               // เต็มจอใช้ flex เต็มหน้าอยู่แล้ว
+      if (m.sh <= m.ih + 4 || (f.__dgN || 0) >= 12) return;              // ไม่ล้น = พอดีแล้ว
+      var nh = Math.min(6000, Math.round(m.sh) + 8);
+      if (nh <= (f.__dgH || 0)) return;
+      f.__dgH = nh; f.__dgN = (f.__dgN || 0) + 1; f.style.height = nh + "px";
+      return;
+    }
+  });
   function mountDg(el, html) {
     var ld = el.querySelector(".ld"); if (!ld) return;
     var f = document.createElement("iframe");
     f.setAttribute("sandbox", "allow-scripts allow-popups allow-downloads allow-modals");
     f.setAttribute("title", el.getAttribute("data-dgname") || "แผนภาพ");
-    f.srcdoc = html; ld.replaceWith(f);
+    f.setAttribute("scrolling", "no");
+    var k = html.toLowerCase().lastIndexOf("</body>");
+    f.srcdoc = k >= 0 ? html.slice(0, k) + DG_PROBE + html.slice(k) : html + DG_PROBE;
+    var w = el.clientWidth || 1000;
+    f.__dgH = Math.max(560, Math.round(w * 0.62)); f.style.height = f.__dgH + "px";
+    ld.replaceWith(f);
   }
   function loadDg(el) {
     var id = el.getAttribute("data-dg"), fb = el.querySelector("[data-dgfull]");
