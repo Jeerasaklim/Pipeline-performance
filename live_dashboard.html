@@ -1215,7 +1215,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=173030" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=202148" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6235,7 +6235,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     body = body || {}; body.action = action; body.token = tok();
     return fetch(gurl(), { method: "post", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
       .then(function (r) { return r.json(); })
-      .then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || "บันทึกไม่สำเร็จ"); DOCS[j.doc.key] = j.doc; return j.doc; });
+      .then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || "บันทึกไม่สำเร็จ"); if (j.doc) DOCS[j.doc.key] = j.doc; return j.doc || j; });
   }
 
   /* ปุ่มที่กด = วงหมุนเล็ก ๆ + ข้อความ (จี 29 ก.ย.) · ปุ่มอื่นในแถวเดียวกันกดไม่ได้ระหว่างรอ · เกิน 5 วิ บอกเวลา
@@ -6266,6 +6266,16 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     "@media (max-width:1100px){.sp-stats{grid-template-columns:repeat(4,minmax(0,1fr))}}",
     ".sp-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px;min-width:0}",
     ".sp-stat b{display:block;font-size:22px;font-weight:800;color:var(--text);line-height:1.1}.sp-stat span{font-size:12px;color:var(--t3)}",
+    ".pk{display:flex;gap:8px;align-items:center}.pk select{flex:1}",
+    ".sp-plus{font:inherit;font-size:12px;font-weight:600;border:1px dashed var(--border2);background:transparent;color:var(--blue);border-radius:8px;padding:4px 10px;cursor:pointer;margin:6px 6px 0 0;white-space:nowrap}.sp-plus:hover{border-color:var(--blue);background:#eff6ff}",
+    ".pk .sp-plus{margin:0}",
+    ".sp-qa{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0 2px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--s2)}.fm .sp-qa input[type=text]{flex:1 1 220px;width:auto}.fm .sp-qa select{width:auto;flex:0 1 220px}",
+    ".sp-dge{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px dashed var(--border2);border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:13px}",
+    ".sp-dg{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:0 0 14px;background:var(--surface)}",
+    ".sp-dg .dh2{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--s2);font-size:12.5px;font-weight:700;color:var(--text)}",
+    ".sp-dg iframe{width:100%;height:600px;border:0;display:block;background:#fff}",
+    ".sp-dg .ld{padding:48px 20px;text-align:center;color:var(--t3);font-size:13px}.sp-dg .ld.err{color:#b91c1c}",
+    ".sp-dg.full{position:fixed;inset:0;z-index:9700;border-radius:0;margin:0;display:flex;flex-direction:column}.sp-dg.full iframe{height:auto;flex:1}",
     ".sp-strip{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--blue);border-radius:10px;padding:10px 14px;margin-bottom:6px}",
     ".sp-strip .no{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.4px}.sp-strip b{font-size:15px;color:var(--text)}",
     ".sp-strip .tm{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--t3)}.sp-strip #sp-chg{margin-left:auto}",
@@ -6517,11 +6527,13 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     el.innerHTML = '<div class="sp-detail">' + head + approvalsBox(d) + '<div class="sp-body"><div class="sp-main">' +
       '<div class="sp-h">① ใครรับผิดชอบ</div><div class="resp">' + resp + "</div>" +
       '<div class="sp-h">② เป้าหมาย Flow</div><div class="sp-goal">' + (c.goal ? nl(c.goal) : sk("72%") + sk("48%")) + "</div>" +
-      '<div class="sp-h">③ Detail กระบวนการ</div><div class="lanes" style="grid-template-columns:repeat(' + lanes.length + ',minmax(150px,1fr))">' + lanesHtml + bodyHtml + "</div>" +
+      '<div class="sp-h">③ Detail กระบวนการ</div>' + (c.diagram && c.diagram.id ? dgView(c.diagram) : "") +
+      ((steps.length || !(c.diagram && c.diagram.id)) ? '<div class="lanes" style="grid-template-columns:repeat(' + lanes.length + ',minmax(150px,1fr))">' + lanesHtml + bodyHtml + "</div>" : "") +
       '<div class="sp-h" style="margin-top:18px">④ การตัดสินใจในขั้นนี้ <small>· Criteria + DOA</small></div>' + (decs || '<div class="dec-empty">ยังไม่ได้ผูกเรื่องที่ต้องตัดสินใจ · เลือกจาก ' + list("dec").length + " เรื่องในหมวด การตัดสินใจ</div>") +
       '<div class="sp-h" style="margin-top:18px">⑤ Tools ที่ใช้ทำงาน <small>· ใช้ทุกวันทำอะไร</small></div><div class="tl-slots">' + (tools || [1, 2, 3].map(function () { return '<div class="tl-slot">' + sk("70%") + sk("45%") + "</div>"; }).join("")) + "</div>" +
       '</div><div class="sp-rail"><div class="rail-card"><div class="sp-h">🔗 กล่องในแอป (' + (c.boxes || []).length + ")</div>" + (c.boxes || []).map(function (b) { return '<span class="bxchip" data-box="' + esc(b.key) + '">' + esc(b.name) + "</span>"; }).join("") + "</div>" +
       '<div class="rail-card"><div class="sp-h">⏱ SLA</div>' + (c.sla_note ? nl(c.sla_note) : sk("85%") + sk("60%")) + "</div></div></div></div>";
+    el.querySelectorAll(".sp-dg").forEach(loadDg);
     el.querySelectorAll("[data-go]").forEach(function (b) { b.onclick = function () { CUR = b.getAttribute("data-go"); EDIT = null; EXPAND = false; flowView(); }; });
     el.querySelectorAll("[data-box]").forEach(function (b) { b.onclick = function () { var k = b.getAttribute("data-box"); showTab(/^(d_|rg_)/.test(k) ? "registry" : "overall"); window.scrollTo(0, 0); if (typeof openDetail === "function") openDetail(k); }; });
     bindCommon(el);
@@ -6609,13 +6621,124 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   }
 
   /* ---------- SOP edit form ---------- */
+  /* ---------- ＋ เพิ่ม ในทุกช่องที่เลือกจากรายการ (จี 29 ก.ย.) ----------
+   * ปุ่มวางต่อจากช่องเลือก (previousElementSibling = ช่องที่มี data-pick) → เพิ่มแล้วบันทึกเป็นร่างทันที
+   * แล้วเติมตัวเลือกใหม่ลงทุกช่องชนิดเดียวกันในหน้า (ไม่ render ฟอร์มใหม่ → สิ่งที่กรอกไว้ไม่หาย) */
+  function nextKey(type) {
+    var pre = { role: "R-", tool: "SYS-", dec: "DEC-", com: "COM-", team: "ORG-" }[type], n = 1;
+    while (DOCS[type + ":" + pre + ("0" + n).slice(-2)] || DOCS[type + ":" + pre + n]) n++;
+    return type + ":" + pre + ("0" + n).slice(-2);
+  }
+  function blankOf(type) { var b = {}; SCHEMA[type].forEach(function (f) { b[f[0]] = (f[2] === "roles" || f[2] === "coms" || f[2] === "people") ? [] : ""; }); return b; }
+  function plusBtn(type, team) { return ME.canEdit ? '<button type="button" class="sp-plus" data-plus="' + type + '"' + (team ? ' data-team="' + esc(team) + '"' : "") + ">＋ เพิ่ม" + TYPE_NAME[type] + "</button>" : ""; }
+  function noteRow(type, id, checked, note) {
+    return '<div style="display:grid;grid-template-columns:260px 1fr;gap:8px;align-items:center;margin-bottom:6px"><label style="margin:0;font-weight:500"><input type="checkbox" name="' + type + '" value="' + esc(id) + '"' + (checked ? " checked" : "") + "> " + esc(nameOf(type, id)) +
+      '</label><input type="text" data-note="' + type + '" data-id="' + esc(id) + '" placeholder="' + (type === "tool" ? "ใช้ทำอะไรในขั้นนี้" : "หมายเหตุ (ถ้ามี)") + '" value="' + esc(note || "") + '"></div>';
+  }
+  function refreshPickers(type, id, name, target) {
+    document.querySelectorAll('[data-pick="' + type + '"]').forEach(function (el) {
+      if (el.tagName === "SELECT") {
+        var o = document.createElement("option"); o.value = id; o.textContent = type === "team" && el.getAttribute("data-f") === "lane" ? name.split(" (")[0] : name;
+        el.appendChild(o); if (el === target) el.value = id;
+      } else if (el.getAttribute("data-kind") === "note") el.insertAdjacentHTML("beforeend", noteRow(type, id, el === target, ""));
+      else el.insertAdjacentHTML("beforeend", '<label><input type="checkbox" name="' + esc(el.getAttribute("data-name")) + '" value="' + esc(id) + '"' + (el === target ? " checked" : "") + "> " + esc(name) + "</label>");
+    });
+  }
+  document.addEventListener("click", function (ev) {
+    var btn = ev.target.closest && ev.target.closest("[data-plus]"); if (!btn || !ME.canEdit) return;
+    var nx = btn.nextElementSibling; if (nx && nx.classList.contains("sp-qa")) { nx.querySelector("input").focus(); return; }
+    var type = btn.getAttribute("data-plus"), target = btn.previousElementSibling;
+    if (!target || !target.hasAttribute("data-pick")) target = null;
+    var box = document.createElement("div"); box.className = "sp-qa";
+    box.innerHTML = '<input type="text" placeholder="ชื่อ' + TYPE_NAME[type] + 'ใหม่">' + (type === "role" ? '<select title="ทีม">' + teamOpts(btn.getAttribute("data-team") || "") + "</select>" : "") +
+      '<button type="button" class="sp-btn pri" data-qok>เพิ่ม</button><button type="button" class="sp-btn" data-qx>ยกเลิก</button>';
+    (btn.parentNode.classList.contains("pk") ? btn.parentNode : btn).insertAdjacentElement("afterend", box);
+    var inp = box.querySelector("input"), ok = box.querySelector("[data-qok]");
+    inp.focus();
+    inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); ok.click(); } if (e.key === "Escape") box.remove(); };
+    box.querySelector("[data-qx]").onclick = function () { box.remove(); };
+    ok.onclick = function () {
+      var name = inp.value.trim(); if (!name) { toast("ใส่ชื่อก่อน", false); inp.focus(); return; }
+      var dup = list(type).filter(function (d) { return String(content(d).name || "").trim().toLowerCase() === name.toLowerCase(); })[0];
+      if (dup) { toast("มี" + TYPE_NAME[type] + ' "' + name + '" อยู่แล้ว — เลือกจากรายการได้เลย', false); return; }
+      var key = nextKey(type), data = blankOf(type); data.name = name;
+      if (type === "role") data.team = box.querySelector("select").value;
+      var done = busy(ok, "กำลังเพิ่ม…");
+      post("sopSave", { key: key, draft: data }).then(function (doc) {
+        done(); box.remove(); refreshPickers(type, did(doc), name, target);
+        toast("เพิ่ม" + TYPE_NAME[type] + ' "' + name + '" แล้ว (ร่าง — รายละเอียดกรอกทีหลังได้)', true);
+      }, function (e) { done(); fail(e); });
+    };
+  });
+
+  /* ---------- แผนภาพ Archify (.html) ในช่อง ③ (จี 29 ก.ย.) ----------
+   * ไฟล์อยู่ใน Drive ผ่าน Apps Script · แสดงใน iframe sandbox (allow-scripts ไม่มี allow-same-origin
+   * → สคริปต์ในแผนภาพแตะ token/ข้อมูลของแอปไม่ได้) · โหลดทีหลัง (lazy) + จำไว้ในหน่วยความจำ */
+  var DG_CACHE = {}, FORM_DG;
+  function kb(n) { return n ? Math.max(1, Math.round(n / 1024)) + " KB" : ""; }
+  function dgView(dg) {
+    return '<div class="sp-dg" data-dg="' + esc(dg.id) + '" data-dgname="' + esc(dg.name || "") + '"><div class="dh2">🧩 แผนภาพกระบวนการ <span class="muted" style="font-weight:500">· ' + esc(dg.name || "") + "</span>" +
+      '<button type="button" class="sp-btn" data-dgfull style="margin-left:auto">⛶ เต็มจอ</button></div><div class="ld"><i class="sp-spin"></i>กำลังโหลดแผนภาพ…</div></div>';
+  }
+  function mountDg(el, html) {
+    var ld = el.querySelector(".ld"); if (!ld) return;
+    var f = document.createElement("iframe");
+    f.setAttribute("sandbox", "allow-scripts allow-popups allow-downloads allow-modals");
+    f.setAttribute("title", el.getAttribute("data-dgname") || "แผนภาพ");
+    f.srcdoc = html; ld.replaceWith(f);
+  }
+  function loadDg(el) {
+    var id = el.getAttribute("data-dg"), fb = el.querySelector("[data-dgfull]");
+    if (fb) fb.onclick = function () { var on = el.classList.toggle("full"); fb.textContent = on ? "✕ ปิดเต็มจอ" : "⛶ เต็มจอ"; };
+    if (DG_CACHE[id]) { mountDg(el, DG_CACHE[id]); return; }
+    var u = gurl();
+    fetch(u + (u.indexOf("?") < 0 ? "?" : "&") + "action=getSopDiagram&id=" + encodeURIComponent(id) + "&token=" + encodeURIComponent(tok()), { redirect: "follow" })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || "โหลดไม่สำเร็จ"); DG_CACHE[id] = j.html; mountDg(el, j.html); })
+      .catch(function (e) {
+        var ld = el.querySelector(".ld"); if (!ld) return;
+        ld.className = "ld err"; ld.innerHTML = "⚠️ โหลดแผนภาพไม่สำเร็จ — " + esc(String((e && e.message) || e)) + ' <button type="button" class="sp-btn">ลองใหม่</button>';
+        ld.querySelector("button").onclick = function () { ld.className = "ld"; ld.innerHTML = '<i class="sp-spin"></i>กำลังโหลดแผนภาพ…'; loadDg(el); };
+      });
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    var f = document.querySelector(".sp-dg.full"); if (!f) return;
+    f.classList.remove("full"); var b = f.querySelector("[data-dgfull]"); if (b) b.textContent = "⛶ เต็มจอ";
+  });
+  function dgEditor(dg) {
+    return '<div class="sp-dge" id="f-dg">' + (dg ? '🧩 <b>' + esc(dg.name || "") + '</b> <span class="muted">' + esc([kb(dg.size), dg.at].filter(Boolean).join(" · ")) + "</span>" : '<span class="muted">🧩 แผนภาพ (Archify .html) — ยังไม่มี</span>') +
+      '<button type="button" class="sp-btn" id="f-dg-up">📎 ' + (dg ? "เปลี่ยนไฟล์" : "อัปโหลดแผนภาพ") + "</button>" + (dg ? '<button type="button" class="sp-btn" id="f-dg-rm">ลบแผนภาพ</button>' : "") +
+      '<input type="file" id="f-dg-file" accept=".html,.htm,text/html" style="display:none"></div>';
+  }
+  function wireDgEditor(d) {
+    var up = document.getElementById("f-dg-up"), file = document.getElementById("f-dg-file"), rm = document.getElementById("f-dg-rm");
+    function redraw() { var box = document.getElementById("f-dg"); if (!box) return; box.outerHTML = dgEditor(FORM_DG === undefined ? (d.draft || d.published || {}).diagram : FORM_DG); wireDgEditor(d); }
+    if (rm) rm.onclick = function () { FORM_DG = null; redraw(); toast('ลบแผนภาพออกจากร่างแล้ว — กด "บันทึกร่าง" เพื่อยืนยัน', true); };
+    if (!up || !file) return;
+    up.onclick = function () { file.click(); };
+    file.onchange = function () {
+      var f = file.files && file.files[0]; if (!f) return;
+      if (!/\.html?$/i.test(f.name)) { toast("เลือกไฟล์ .html ที่ export จาก Archify", false); return; }
+      if (f.size > 8 * 1024 * 1024) { toast("ไฟล์ใหญ่เกิน 8MB", false); return; }
+      var rd = new FileReader(), done = busy(up, "กำลังอัปโหลด…");
+      rd.onerror = function () { done(); toast("อ่านไฟล์ไม่ได้", false); };
+      rd.onload = function () {
+        post("sopUploadDiagram", { key: d.key, name: f.name, html: String(rd.result || "") }).then(function (j) {
+          done(); FORM_DG = j.file; DG_CACHE[j.file.id] = String(rd.result || ""); redraw();
+          toast('อัปโหลดแล้ว — กด "บันทึกร่าง" เพื่อใส่แผนภาพนี้ใน SOP', true);
+        }, function (e) { done(); fail(e); });
+      };
+      rd.readAsText(f, "utf-8");
+    };
+  }
   function roleOpts(sel, emptyTxt) { return '<option value="">' + (emptyTxt || "— เลือกตำแหน่ง —") + "</option>" + list("role").map(function (r) { var id = did(r); return '<option value="' + id + '"' + (id === sel ? " selected" : "") + ">" + esc(content(r).name) + "</option>"; }).join(""); }
   function teamOpts(sel) { return list("team").map(function (t) { var id = did(t); return '<option value="' + id + '"' + (id === sel ? " selected" : "") + ">" + esc(content(t).name) + "</option>"; }).join(""); }
-  function chkList(name, items, chosen) { return '<div class="chk">' + items.map(function (d) { var id = did(d); return '<label><input type="checkbox" name="' + name + '" value="' + id + '"' + ((chosen || []).indexOf(id) >= 0 ? " checked" : "") + "> " + esc(content(d).name) + "</label>"; }).join("") + "</div>"; }
+  function chkList(name, items, chosen, pick) { return '<div class="chk"' + (pick ? ' data-pick="' + pick + '" data-name="' + esc(name) + '"' : "") + ">" + items.map(function (d) { var id = did(d); return '<label><input type="checkbox" name="' + name + '" value="' + id + '"' + ((chosen || []).indexOf(id) >= 0 ? " checked" : "") + "> " + esc(content(d).name) + "</label>"; }).join("") + "</div>"; }
   function stepRow(s, lanes) {
-    return '<div class="stp"><select data-f="lane">' + list("team").map(function (t) { var id = did(t); return '<option value="' + id + '"' + (id === (s.lane || lanes[0]) ? " selected" : "") + ">" + esc(content(t).name.split(" (")[0]) + "</option>"; }).join("") + "</select>" +
+    return '<div class="stp"><select data-f="lane" data-pick="team">' + list("team").map(function (t) { var id = did(t); return '<option value="' + id + '"' + (id === (s.lane || lanes[0]) ? " selected" : "") + ">" + esc(content(t).name.split(" (")[0]) + "</option>"; }).join("") + "</select>" +
       '<div><input type="text" data-f="title" placeholder="ชื่อขั้นตอน" value="' + esc(s.title || "") + '"><textarea data-f="detail" placeholder="ทำอย่างไร" style="margin-top:6px">' + esc(s.detail || "") + "</textarea></div>" +
-      '<select data-f="role">' + roleOpts(s.role, "— ใครทำ —") + "</select>" +
+      '<select data-f="role" data-pick="role">' + roleOpts(s.role, "— ใครทำ —") + "</select>" +
       '<div style="display:flex;flex-direction:column;gap:4px"><button class="sp-btn" data-mv="-1" type="button">↑</button><button class="sp-btn" data-mv="1" type="button">↓</button><button class="sp-btn" data-rm type="button">✕</button></div></div>';
   }
   var BOXES = window.SOP_BOX_CATALOG || [];
@@ -6638,22 +6761,24 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var c = JSON.parse(JSON.stringify(d.draft || d.published || {})), lanes = lanesOf(c);
     var decMap = {}; (c.decisions || []).forEach(function (x) { decMap[x.id] = x.note || ""; });
     var toolMap = {}; (c.tools || []).forEach(function (x) { toolMap[x.id] = x.note || ""; });
+    var t0 = (c.teams || [])[0] || "";
     return '<div class="sp-head"><div><div class="kick">แก้ไข SOP ' + did(d) + '</div><h2>' + esc(c.name) + '</h2><div class="muted" style="font-size:12.5px">บันทึกแล้วเป็น "ร่าง" · คนทั่วไปยังเห็นฉบับใช้จริงเดิมจนกว่าจะอนุมัติครบ</div></div></div>' +
       '<div class="fm" style="padding:6px 22px 16px">' +
       '<div class="row2"><div><label>ชื่อ SOP</label><input type="text" id="f-name" value="' + esc(c.name || "") + '"></div><div><label>รหัส SOP</label><input type="text" id="f-code" value="' + esc(c.code || "") + '" placeholder="เช่น SNG-SNG-005.00-v01"></div></div>' +
-      '<label>① เจ้าของกระบวนการ</label><select id="f-owner">' + roleOpts(c.owner_role) + "</select>" +
-      "<label>ผู้ลงมือทำ</label>" + chkList("doer", list("role"), c.doer_roles) +
-      '<div class="row2"><div><label>ต้องปรึกษา</label>' + chkList("consult", list("role"), c.consult_roles) + "</div><div><label>ต้องแจ้ง</label>" + chkList("inform", list("role"), c.inform_roles) + "</div></div>" +
+      '<label>① เจ้าของกระบวนการ</label><div class="pk"><select id="f-owner" data-pick="role">' + roleOpts(c.owner_role) + "</select>" + plusBtn("role", t0) + "</div>" +
+      "<label>ผู้ลงมือทำ</label>" + chkList("doer", list("role"), c.doer_roles, "role") + plusBtn("role", t0) +
+      '<div class="row2"><div><label>ต้องปรึกษา</label>' + chkList("consult", list("role"), c.consult_roles, "role") + plusBtn("role", t0) + "</div><div><label>ต้องแจ้ง</label>" + chkList("inform", list("role"), c.inform_roles, "role") + plusBtn("role", t0) + "</div></div>" +
       '<label>② เป้าหมาย Flow</label><textarea id="f-goal">' + esc(c.goal || "") + "</textarea>" +
-      '<label>③ Detail กระบวนการ (ขั้นตอน · เลือกคอลัมน์ทีม)</label><div id="f-steps">' + (c.steps || []).map(function (s) { return stepRow(s, lanes); }).join("") + '</div><button class="sp-btn" type="button" id="f-add">＋ เพิ่มขั้นตอน</button>' +
-      "<label>④ การตัดสินใจในขั้นนี้</label>" + list("dec").map(function (x) { var id = did(x); return '<div style="display:grid;grid-template-columns:260px 1fr;gap:8px;align-items:center;margin-bottom:6px"><label style="margin:0;font-weight:500"><input type="checkbox" name="dec" value="' + id + '"' + (id in decMap ? " checked" : "") + "> " + esc(content(x).name) + '</label><input type="text" data-note="dec" data-id="' + id + '" placeholder="หมายเหตุ (ถ้ามี)" value="' + esc(decMap[id] || "") + '"></div>'; }).join("") +
-      "<label>⑤ Tools ที่ใช้ทำงาน</label>" + list("tool").map(function (x) { var id = did(x); return '<div style="display:grid;grid-template-columns:260px 1fr;gap:8px;align-items:center;margin-bottom:6px"><label style="margin:0;font-weight:500"><input type="checkbox" name="tool" value="' + id + '"' + (id in toolMap ? " checked" : "") + "> " + esc(content(x).name) + '</label><input type="text" data-note="tool" data-id="' + id + '" placeholder="ใช้ทำอะไรในขั้นนี้" value="' + esc(toolMap[id] || "") + '"></div>'; }).join("") +
+      '<label>③ Detail กระบวนการ (แผนภาพ + ขั้นตอน · เลือกคอลัมน์ทีม)</label>' + dgEditor(c.diagram) + '<div id="f-steps">' + (c.steps || []).map(function (s) { return stepRow(s, lanes); }).join("") + '</div><button class="sp-btn" type="button" id="f-add">＋ เพิ่มขั้นตอน</button> ' + plusBtn("team") + plusBtn("role", t0) +
+      "<label>④ การตัดสินใจในขั้นนี้</label>" + '<div data-pick="dec" data-kind="note">' + list("dec").map(function (x) { var id = did(x); return noteRow("dec", id, id in decMap, decMap[id]); }).join("") + "</div>" + plusBtn("dec") +
+      "<label>⑤ Tools ที่ใช้ทำงาน</label>" + '<div data-pick="tool" data-kind="note">' + list("tool").map(function (x) { var id = did(x); return noteRow("tool", id, id in toolMap, toolMap[id]); }).join("") + "</div>" + plusBtn("tool") +
       boxPicker(d, c) +
       '<label>⏱ SLA</label><textarea id="f-sla">' + esc(c.sla_note || "") + "</textarea>" +
       '<div class="acts"><button class="sp-btn" type="button" id="f-cancel">ยกเลิก</button><button class="sp-btn pri" type="button" id="f-save">บันทึกร่าง</button></div></div>';
   }
   function bindForm(d) {
     var lanes = lanesOf(d.draft || d.published || {});
+    FORM_DG = undefined; wireDgEditor(d);
     function wire() {
       document.querySelectorAll("#f-steps .stp").forEach(function (row) {
         row.querySelector("[data-rm]").onclick = function () { row.remove(); };
@@ -6680,6 +6805,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       base.decisions = q("dec").map(function (id) { return { id: id, note: dn[id] || "" }; });
       base.tools = q("tool").map(function (id) { return { id: id, note: tn2[id] || "" }; });
       base.sla_note = document.getElementById("f-sla").value.trim();
+      if (FORM_DG !== undefined) base.diagram = FORM_DG;   // undefined = ไม่แตะ · null = ลบ · object = ไฟล์ใหม่
       var bn = {}; BOXES.forEach(function (b) { bn[b.key] = b.name; }); (base.boxes || []).forEach(function (b) { if (!bn[b.key]) bn[b.key] = b.name; });
       base.boxes = q("box").map(function (k) { return { key: k, name: bn[k] || k }; });
       var done = busy(this, "กำลังบันทึก…");
@@ -6736,10 +6862,10 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   function fieldInput(f, v) {
     var id = "fx-" + f[0], t = f[2];
     if (t === "textarea") return "<label>" + esc(f[1]) + '</label><textarea id="' + id + '">' + esc(v || "") + "</textarea>";
-    if (t === "role") return "<label>" + esc(f[1]) + '</label><select id="' + id + '">' + roleOpts(v) + "</select>";
-    if (t === "team") return "<label>" + esc(f[1]) + '</label><select id="' + id + '">' + teamOpts(v) + "</select>";
-    if (t === "roles") return "<label>" + esc(f[1]) + "</label>" + chkList(id, list("role"), v);
-    if (t === "coms") return "<label>" + esc(f[1]) + "</label>" + chkList(id, list("com"), v);
+    if (t === "role") return "<label>" + esc(f[1]) + '</label><div class="pk"><select id="' + id + '" data-pick="role">' + roleOpts(v) + "</select>" + plusBtn("role") + "</div>";
+    if (t === "team") return "<label>" + esc(f[1]) + '</label><div class="pk"><select id="' + id + '" data-pick="team">' + teamOpts(v) + "</select>" + plusBtn("team") + "</div>";
+    if (t === "roles") return "<label>" + esc(f[1]) + "</label>" + chkList(id, list("role"), v, "role") + plusBtn("role");
+    if (t === "coms") return "<label>" + esc(f[1]) + "</label>" + chkList(id, list("com"), v, "com") + plusBtn("com");
     if (t === "people") return "<label>" + esc(f[1]) + ' <span class="muted" style="font-weight:500">(คนลาออก แก้แค่ตรงนี้)</span></label><div id="' + id + '">' + (v || []).map(personRow).join("") + '</div><button class="sp-btn" type="button" data-addp="' + id + '">＋ เพิ่มคน</button>';
     return "<label>" + esc(f[1]) + '</label><input type="text" id="' + id + '" value="' + esc(v || "") + '">';
   }
@@ -6757,10 +6883,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   }
   function newDoc(type, team) {
     if (!ME.canEdit || !SCHEMA[type]) return;
-    var pre = { role: "R-", tool: "SYS-", dec: "DEC-", com: "COM-", team: "ORG-" }[type], n = 1;
-    while (DOCS[type + ":" + pre + ("0" + n).slice(-2)] || DOCS[type + ":" + pre + n]) n++;
-    var key = type + ":" + pre + ("0" + n).slice(-2);
-    var blank = {}; SCHEMA[type].forEach(function (f) { blank[f[0]] = (f[2] === "roles" || f[2] === "coms" || f[2] === "people") ? [] : ""; });
+    var key = nextKey(type), blank = blankOf(type);
     if (team) blank.team = team;
     DOCS[key] = { key: key, type: type, status: "draft", version: 0, published: null, draft: blank, approvals: [], updated_at: null };
     openDoc(key, true);
