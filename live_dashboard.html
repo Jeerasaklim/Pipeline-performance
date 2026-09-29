@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=152220" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=153028" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6004,6 +6004,10 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   function load(force) {
     if (LOADING || (LOADED && !force)) return;
     LOADING = true; LOAD_ERR = ""; render();
+    // โหลดครั้งแรก = กล่องโหลดตัวเดียวกับตอนเปิดแอป (ลูกบาศก์ CJX + %) — จี 29 ก.ย. · โหลดซ้ำไม่บังจอ
+    var cube = !LOADED && typeof window.DPT_loadStart === "function" && typeof window.DPT_loadDone === "function";
+    var msgEl = document.getElementById("dpt-loading-msg"), msg0 = msgEl ? msgEl.textContent : "";
+    if (cube) { if (msgEl) msgEl.textContent = "กำลังโหลด SOP…"; window.DPT_loadStart(); }
     var u = gurl();
     fetch(u + (u.indexOf("?") < 0 ? "?" : "&") + "action=getSop&token=" + encodeURIComponent(tok()), { redirect: "follow" })
       .then(function (r) { return r.json(); })
@@ -6017,7 +6021,11 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
         if (/unknown action/i.test(LOAD_ERR)) LOAD_ERR = "backend ของ SOP ยังไม่ได้ deploy (" + LOAD_ERR + ")";
         if (LOADED) toast("⚠️ โหลด SOP ใหม่ไม่สำเร็จ — ที่เห็นอยู่คือข้อมูลรอบก่อน · " + LOAD_ERR, false);   // ห้ามใช้ของเก่าเงียบ ๆ
       })
-      .then(function () { LOADING = false; render(); });
+      .then(function () {
+        LOADING = false;
+        if (cube) { window.DPT_loadDone(); setTimeout(function () { if (msgEl) msgEl.textContent = msg0; }, 250); }
+        render();
+      });
   }
   function post(action, body) {
     body = body || {}; body.action = action; body.token = tok();
