@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=150020" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=152220" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6026,6 +6026,20 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       .then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || "บันทึกไม่สำเร็จ"); DOCS[j.doc.key] = j.doc; return j.doc; });
   }
 
+  /* ปุ่มที่กด = วงหมุนเล็ก ๆ + ข้อความ (จี 29 ก.ย.) · ปุ่มอื่นในแถวเดียวกันกดไม่ได้ระหว่างรอ · เกิน 5 วิ บอกเวลา
+   * คืน done() ไว้เรียกตอน error ให้ปุ่มกลับมากดได้ (สำเร็จ = หน้าจอ render ใหม่อยู่แล้ว) */
+  function busy(btn, label) {
+    if (!btn) return function () {};
+    var row = btn.closest(".nav2, .acts, #sp-db, .sp-head") || btn.parentNode;
+    var others = [].slice.call(row.querySelectorAll("button")).filter(function (b) { return b !== btn && !b.disabled; });
+    var html = btn.innerHTML, w = btn.style.minWidth, t0 = Date.now();
+    btn.style.minWidth = btn.offsetWidth + "px"; btn.disabled = true; btn.classList.add("sp-busy");
+    others.forEach(function (b) { b.disabled = true; });
+    function paint() { var sec = Math.round((Date.now() - t0) / 1000); btn.innerHTML = '<i class="sp-spin"></i>' + esc(label) + (sec >= 5 ? " " + sec + " วิ" : ""); }
+    paint(); var iv = setInterval(paint, 1000);
+    return function () { clearInterval(iv); btn.innerHTML = html; btn.style.minWidth = w; btn.disabled = false; btn.classList.remove("sp-busy"); others.forEach(function (b) { b.disabled = false; }); };
+  }
+
   /* ---------- styles (ดีไซน์ที่จีโอเค 29 ก.ย.) ---------- */
   var css = document.createElement("style");
   css.textContent = [
@@ -6062,6 +6076,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     ".sp-head .nav2{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}",
     ".sp-btn{font:inherit;font-size:12.5px;border:1px solid var(--border2);background:var(--surface);color:var(--t2);border-radius:9px;padding:6px 11px;cursor:pointer}",
     ".sp-btn:hover{border-color:var(--blue);color:var(--blue)}.sp-btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}.sp-btn.pri:hover{color:#fff;opacity:.9}",
+    "@keyframes sp-rot{to{transform:rotate(360deg)}}",
+    ".sp-spin{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp-rot .7s linear infinite;vertical-align:-2px;margin-right:6px;opacity:.9}",
+    ".sp-btn.sp-busy,.sp-btn:disabled{cursor:default}.sp-btn:disabled:not(.sp-busy){opacity:.45}",
     ".sp-btn.ok{background:#047857;border-color:#047857;color:#fff}.sp-btn.warn{color:#b45309;border-color:#fcd34d}",
     ".sp-body{display:grid;grid-template-columns:minmax(0,1fr) 300px}@media (max-width:1000px){.sp-body{grid-template-columns:minmax(0,1fr)}}",
     ".sp-main{padding:18px 22px}.sp-rail{padding:18px;border-left:1px solid var(--border);background:var(--s2)}",
@@ -6276,8 +6293,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     root.querySelectorAll("[data-new]").forEach(function (e) { e.onclick = function () { newDoc(e.getAttribute("data-new"), e.getAttribute("data-team")); }; });
     root.querySelectorAll("[data-edit]").forEach(function (e) { e.onclick = function () { var k = e.getAttribute("data-edit"); if (k.indexOf("sop:") === 0) { EDIT = k; detail(k.split(":")[1]); } else openDoc(k, true); }; });
     root.querySelectorAll("[data-submit]").forEach(function (e) { e.onclick = function () { submitDlg(e.getAttribute("data-submit")); }; });
-    root.querySelectorAll("[data-approve]").forEach(function (e) { e.onclick = function () { decide(e.getAttribute("data-approve"), "approve"); }; });
-    root.querySelectorAll("[data-return]").forEach(function (e) { e.onclick = function () { decide(e.getAttribute("data-return"), "return"); }; });
+    root.querySelectorAll("[data-approve]").forEach(function (e) { e.onclick = function () { decide(e.getAttribute("data-approve"), "approve", e); }; });
+    root.querySelectorAll("[data-return]").forEach(function (e) { e.onclick = function () { decide(e.getAttribute("data-return"), "return", e); }; });
   }
   function after(doc, msg) { toast(msg, true); render(); if (dr.classList.contains("open") && doc && doc.key.indexOf("sop:") !== 0) openDoc(doc.key); }
   function fail(e) { toast(String((e && e.message) || e), false); }
@@ -6293,15 +6310,16 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     document.getElementById("sp-go").onclick = function () {
       var ems = [].slice.call(document.querySelectorAll("#sp-db input[type=checkbox]:checked")).map(function (x) { return x.value; });
       if (!ems.length) { toast("เลือกผู้อนุมัติอย่างน้อย 1 คน", false); return; }
-      this.disabled = true;
-      post("sopSubmit", { key: key, approvers: ems }).then(function (doc) { dr.classList.remove("open"); after(doc, "ส่งอนุมัติแล้ว"); }, fail);
+      var done = busy(this, "กำลังส่งอนุมัติ…");
+      post("sopSubmit", { key: key, approvers: ems }).then(function (doc) { done(); dr.classList.remove("open"); after(doc, "ส่งอนุมัติแล้ว"); }, function (e) { done(); fail(e); });
     };
   }
-  function decide(key, decision) {
+  function decide(key, decision, btn) {
     var note = "";
     if (decision === "return") { note = prompt("เหตุผลที่ขอแก้"); if (note == null) return; if (!note.trim()) { toast("ใส่เหตุผลก่อน", false); return; } }
     else if (!confirm("อนุมัติเอกสารนี้?")) return;
-    post("sopDecide", { key: key, decision: decision, note: note }).then(function (doc) { after(doc, doc.status === "published" ? "อนุมัติครบ — ใช้จริงแล้ว" : (decision === "approve" ? "อนุมัติแล้ว" : "ส่งกลับให้แก้แล้ว")); }, fail);
+    var done = busy(btn, decision === "approve" ? "กำลังอนุมัติ…" : "กำลังส่งกลับ…");
+    post("sopDecide", { key: key, decision: decision, note: note }).then(function (doc) { done(); after(doc, doc.status === "published" ? "อนุมัติครบ — ใช้จริงแล้ว" : (decision === "approve" ? "อนุมัติแล้ว" : "ส่งกลับให้แก้แล้ว")); }, function (e) { done(); fail(e); });
   }
 
   /* ---------- SOP edit form ---------- */
@@ -6378,8 +6396,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       base.sla_note = document.getElementById("f-sla").value.trim();
       var bn = {}; BOXES.forEach(function (b) { bn[b.key] = b.name; }); (base.boxes || []).forEach(function (b) { if (!bn[b.key]) bn[b.key] = b.name; });
       base.boxes = q("box").map(function (k) { return { key: k, name: bn[k] || k }; });
-      this.disabled = true;
-      post("sopSave", { key: d.key, draft: base, base: d.updated_at }).then(function (doc) { EDIT = null; after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); }, function (e) { document.getElementById("f-save").disabled = false; fail(e); });
+      var done = busy(this, "กำลังบันทึก…");
+      post("sopSave", { key: d.key, draft: base, base: d.updated_at }).then(function (doc) { done(); EDIT = null; after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); }, function (e) { done(); fail(e); });
     };
   }
 
@@ -6424,8 +6442,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
         var out = JSON.parse(JSON.stringify(d.draft || d.published || {}));
         fields.forEach(function (f) { out[f[0]] = readField(db, f); });
         if (!String(out.name || "").trim()) { toast("ใส่ชื่อก่อน", false); return; }
-        this.disabled = true;
-        post("sopSave", { key: key, draft: out, base: d.updated_at }).then(function (doc) { after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); openDoc(doc.key); }, fail);
+        var done = busy(this, "กำลังบันทึก…");
+        post("sopSave", { key: key, draft: out, base: d.updated_at }).then(function (doc) { done(); after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); openDoc(doc.key); }, function (e) { done(); fail(e); });
       };
     }
   }
