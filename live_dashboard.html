@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=155122" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=163124" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6062,6 +6062,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     "@media (max-width:1100px){.sp-stats{grid-template-columns:repeat(4,minmax(0,1fr))}}",
     ".sp-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px;min-width:0}",
     ".sp-stat b{display:block;font-size:22px;font-weight:800;color:var(--text);line-height:1.1}.sp-stat span{font-size:12px;color:var(--t3)}",
+    ".sp-strip{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--blue);border-radius:10px;padding:10px 14px;margin-bottom:6px}",
+    ".sp-strip .no{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.4px}.sp-strip b{font-size:15px;color:var(--text)}",
+    ".sp-strip .tm{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--t3)}.sp-strip #sp-chg{margin-left:auto}",
     ".sp-phase{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;color:var(--t2);letter-spacing:.3px;margin:6px 0 8px}",
     ".sp-phase:after{content:'';flex:1;height:1px;background:var(--border)}",
     ".sp-flow{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 12px;margin-bottom:6px}",
@@ -6200,16 +6203,43 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       '<div class="ft"><span class="tm">' + (c.teams || []).map(function (t) { return dot(t, 8); }).join("") + '<span class="tmn">' + esc((c.teams || []).map(tn).join(" · ") || "ไม่ระบุทีม") + "</span></span>" +
       '<span class="bx">' + (c.boxes || []).length + " กล่อง</span></div>" + (last ? "" : '<span class="arrow">›</span>') + "</div>";
   }
+  /* แบบ ข. (จี 29 ก.ย.): เลือก SOP แล้วการ์ดพับเหลือแถบเดียว · "เปลี่ยน SOP" กางกลับ
+   * การ์ด (#sp-cards) กับรายละเอียด (#sp-det) render แยกกัน → พับ/กาง/ค้นหา ไม่ทำให้ฟอร์มที่กำลังแก้หาย */
+  var EXPAND = false;
   function flowView() {
+    document.getElementById("sp-view").innerHTML = '<div id="sp-cards"></div><div id="sp-det"></div>';
+    renderCards();
+    if (CUR) detail(CUR);
+  }
+  function renderCards() {
+    var box = document.getElementById("sp-cards"); if (!box) return;
+    var cur = CUR && get("sop", CUR);
+    if (cur && !EXPAND && !Q) {
+      var c = content(cur);
+      box.innerHTML = '<div class="sp-strip"><span class="no">' + esc(CUR) + '</span><b>' + esc(c.name) + "</b>" + statusPill(cur) +
+        '<span class="tm">' + (c.teams || []).map(function (t) { return dot(t, 8); }).join("") + " " + esc((c.teams || []).map(tn).join(" · ")) + "</span>" +
+        '<button class="sp-btn" id="sp-chg">เปลี่ยน SOP ▾</button></div>';
+      document.getElementById("sp-chg").onclick = function () { EXPAND = true; renderCards(); };
+      return;
+    }
     var ph = [["ก่อนยื่น อ.1", "Overall"], ["หลังยื่น อ.1", "หลังยื่น อ.1"]], h = "";
     ph.forEach(function (p) {
       var l = sops().filter(function (d) { return content(d).tab === p[1] && hit(d); }); if (!l.length) return;
       h += '<div class="sp-phase">' + p[0].toUpperCase() + " · " + l.length + ' SOP</div><div class="sp-flow">' + l.map(function (d, i) { return card(d, i === l.length - 1); }).join("") + "</div>";
     });
     if (!h) h = '<div class="sp-state">ไม่พบ SOP ที่ตรงกับคำค้น</div>';
-    document.getElementById("sp-view").innerHTML = h + '<div id="sp-det"></div>';
-    document.querySelectorAll("#sp-view .sp-card").forEach(function (c) { c.onclick = function () { var s = c.getAttribute("data-s"); if (s === CUR && EDIT) return; CUR = (s === CUR) ? null : s; EDIT = null; flowView(); /* กดการ์ดเดิมซ้ำ = ปิด (ยกเว้นกำลังแก้ — กันงานหาย) */ }; });
-    if (CUR) detail(CUR);
+    if (cur && EXPAND) h = '<div style="display:flex;justify-content:flex-end;margin:-4px 0 4px"><button class="sp-btn" id="sp-fold">ย่อ ▴</button></div>' + h;
+    box.innerHTML = h;
+    var fold = document.getElementById("sp-fold"); if (fold) fold.onclick = function () { EXPAND = false; renderCards(); };
+    box.querySelectorAll(".sp-card").forEach(function (c) {
+      c.onclick = function () {
+        var s2 = c.getAttribute("data-s");
+        if (s2 === CUR) { EXPAND = false; renderCards(); return; }            // ใบเดิม = พับกลับ (ฟอร์มที่แก้อยู่ไม่หาย)
+        if (EDIT && !confirm("กำลังแก้ SOP อยู่ — ทิ้งที่แก้ไว้แล้วเปิด SOP อื่นไหม?")) return;
+        CUR = s2; EDIT = null; EXPAND = false; Q = ""; var qi = document.getElementById("sp-q"); if (qi) qi.value = "";
+        flowView(); window.scrollTo({ top: (document.getElementById("tab-sop").offsetTop || 0), behavior: "smooth" });
+      };
+    });
   }
   function lanesOf(c) {
     var l = (c.teams || []).slice();
@@ -6244,7 +6274,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       '<div class="sp-h" style="margin-top:18px">⑤ Tools ที่ใช้ทำงาน <small>· ใช้ทุกวันทำอะไร</small></div><div class="tl-slots">' + (tools || [1, 2, 3].map(function () { return '<div class="tl-slot">' + sk("70%") + sk("45%") + "</div>"; }).join("")) + "</div>" +
       '</div><div class="sp-rail"><div class="rail-card"><div class="sp-h">🔗 กล่องในแอป (' + (c.boxes || []).length + ")</div>" + (c.boxes || []).map(function (b) { return '<span class="bxchip" data-box="' + esc(b.key) + '">' + esc(b.name) + "</span>"; }).join("") + "</div>" +
       '<div class="rail-card"><div class="sp-h">⏱ SLA</div>' + (c.sla_note ? nl(c.sla_note) : sk("85%") + sk("60%")) + "</div></div></div></div>";
-    el.querySelectorAll("[data-go]").forEach(function (b) { b.onclick = function () { CUR = b.getAttribute("data-go"); EDIT = null; flowView(); }; });
+    el.querySelectorAll("[data-go]").forEach(function (b) { b.onclick = function () { CUR = b.getAttribute("data-go"); EDIT = null; EXPAND = false; flowView(); }; });
     el.querySelectorAll("[data-box]").forEach(function (b) { b.onclick = function () { var k = b.getAttribute("data-box"); showTab(/^(d_|rg_)/.test(k) ? "registry" : "overall"); window.scrollTo(0, 0); if (typeof openDetail === "function") openDetail(k); }; });
     bindCommon(el);
   }
@@ -6280,7 +6310,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     document.getElementById("sp-view").innerHTML = '<div class="card">' + refTable("tool", [["name", "Tool"], ["type", "ประเภท"], ["purpose", "ใช้ทำอะไร"], ["users", "ใครใช้", function (c) { return roleNames(c.users); }], ["x", "ใช้ใน SOP", function (c, d) { return usedIn(d, "tools"); }], ["frequency", "ใช้บ่อยแค่ไหน"]], "🧰 Tools ที่ใช้ทำงาน", "ทุกวันใช้เครื่องมืออะไรทำงาน · ใครใช้ · ใช้ใน SOP ไหน") + "</div>";
     bindCommon(document.getElementById("sp-view"));
   }
-  function setV(v) { V = v; EDIT = null; document.querySelectorAll("#sp-seg button").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-v") === v); }); render(); }
+  function setV(v) { V = v; EDIT = null; EXPAND = false; document.querySelectorAll("#sp-seg button").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-v") === v); }); render(); }
   function render() {
     var view = document.getElementById("sp-view"); if (!view) return;
     if (!allowed()) { view.innerHTML = '<div class="sp-state">ยังไม่เปิดให้ใช้งาน</div>'; return; }
@@ -6292,7 +6322,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     if (V === "flow") flowView(); else if (V === "org") orgView(); else if (V === "tools") toolsView(); else apprView();
   }
   document.querySelectorAll("#sp-seg button").forEach(function (b) { b.onclick = function () { setV(b.getAttribute("data-v")); }; });
-  document.getElementById("sp-q").oninput = function () { Q = this.value.trim().toLowerCase(); render(); };
+  document.getElementById("sp-q").oninput = function () { Q = this.value.trim().toLowerCase(); if (V === "flow" && LOADED && document.getElementById("sp-cards")) renderCards(); else render(); };
 
   /* ---------- common bindings (links / workflow buttons) ---------- */
   function bindCommon(root) {
