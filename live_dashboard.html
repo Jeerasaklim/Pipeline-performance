@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=153028" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=155122" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5987,7 +5987,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
 
   /* ---------- state ---------- */
   var DOCS = {}, ME = {}, APPROVERS = [], LOADED = false, LOADING = false, LOAD_ERR = "";
-  var V = "flow", CUR = "S02", Q = "", EDIT = null, SHOW_DRAFT = true;
+  var V = "flow", CUR = null, Q = "", EDIT = null, SHOW_DRAFT = true;
   function allowed() { return SOP_VISIBLE_ROLES.indexOf(window.DPT_ROLE) >= 0; }
   function content(d) { if (!d) return {}; return (SHOW_DRAFT && ME.canApprove && d.draft) ? d.draft : (d.published || d.draft || {}); }
   function list(type) { return Object.keys(DOCS).filter(function (k) { return k.indexOf(type + ":") === 0; }).sort().map(function (k) { return DOCS[k]; }); }
@@ -6208,8 +6208,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     });
     if (!h) h = '<div class="sp-state">ไม่พบ SOP ที่ตรงกับคำค้น</div>';
     document.getElementById("sp-view").innerHTML = h + '<div id="sp-det"></div>';
-    document.querySelectorAll("#sp-view .sp-card").forEach(function (c) { c.onclick = function () { CUR = c.getAttribute("data-s"); EDIT = null; flowView(); }; });
-    detail(CUR);
+    document.querySelectorAll("#sp-view .sp-card").forEach(function (c) { c.onclick = function () { var s = c.getAttribute("data-s"); if (s === CUR && EDIT) return; CUR = (s === CUR) ? null : s; EDIT = null; flowView(); /* กดการ์ดเดิมซ้ำ = ปิด (ยกเว้นกำลังแก้ — กันงานหาย) */ }; });
+    if (CUR) detail(CUR);
   }
   function lanesOf(c) {
     var l = (c.teams || []).slice();
