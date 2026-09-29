@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=163124" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=170246" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6065,6 +6065,20 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     ".sp-strip{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--blue);border-radius:10px;padding:10px 14px;margin-bottom:6px}",
     ".sp-strip .no{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.4px}.sp-strip b{font-size:15px;color:var(--text)}",
     ".sp-strip .tm{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--t3)}.sp-strip #sp-chg{margin-left:auto}",
+    ".sp-sum{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,2fr);background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:0 0 16px;overflow:hidden}",
+    "@media (max-width:1000px){.sp-sum{grid-template-columns:minmax(0,1fr)}.sp-sum-l{border-right:0!important;border-bottom:1px solid var(--border)}}",
+    ".sp-sum-l{padding:16px 20px;border-right:1px solid var(--border)}.sp-sum .cap{font-size:12px;color:var(--t2)}",
+    ".sp-sum .big{font-size:30px;font-weight:800;color:var(--text);line-height:1.15;margin:4px 0 2px}.sp-sum .big span{font-size:14px;font-weight:600;color:var(--t2)}",
+    ".sp-sum .seg{display:grid;grid-template-columns:repeat(13,1fr);gap:4px;margin:12px 0 10px}",
+    ".sp-sum .seg i{height:9px;border-radius:3px;background:var(--s3);border:1px solid var(--border);cursor:pointer}.sp-sum .seg i:hover{outline:2px solid var(--blue);outline-offset:1px}",
+    ".sp-sum .seg i.p,.sp-sum .lg b.p{background:#0ca678;border-color:#0ca678}.sp-sum .seg i.d,.sp-sum .lg b.d{background:#fbbf24;border-color:#fbbf24}",
+    ".sp-sum .lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--t2)}.sp-sum .lg b{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;background:var(--s3);border:1px solid var(--border);vertical-align:-1px}",
+    ".sp-sum-r{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}",
+    ".sp-sum-r .t{display:flex;align-items:center;gap:12px;padding:14px 18px;border-left:1px solid var(--border);border-bottom:1px solid var(--border);color:var(--blue)}",
+    ".sp-sum-r .t:nth-child(3n+1){border-left:0}.sp-sum-r .t:nth-child(n+4){border-bottom:0}",
+    ".sp-sum-r .t.go{cursor:pointer}.sp-sum-r .t.go:hover{background:var(--s2)}",
+    ".sp-sum-r .n{font-size:22px;font-weight:800;color:var(--text);line-height:1.1}.sp-sum-r .n small{font-size:13px;font-weight:600;color:var(--t3)}",
+    ".sp-sum-r .ar{margin-left:auto;color:var(--t3);font-size:16px}",
     ".sp-phase{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;color:var(--t2);letter-spacing:.3px;margin:6px 0 8px}",
     ".sp-phase:after{content:'';flex:1;height:1px;background:var(--border)}",
     ".sp-flow{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 12px;margin-bottom:6px}",
@@ -6189,12 +6203,42 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   /* ---------- views ---------- */
   function sops() { return list("sop"); }
   function hit(d) { if (!Q) return true; var c = content(d); var t = (c.name + " " + (c.teams || []).map(tn).join(" ") + " " + (c.boxes || []).map(function (b) { return b.name; }).join(" ")).toLowerCase(); return t.indexOf(Q) >= 0; }
+  /* แถบสรุป (จี 29 ก.ย. — แบบที่จีเลือก): ซ้าย = ความคืบหน้าเนื้อหา 13 ช่อง · ขวา = ตัวเลขอ้างอิง 6 ช่อง กดไปมุมมองได้
+   * กล่องที่ลิงก์ = นับกล่องไม่ซ้ำ (1 กล่องอยู่ได้หลาย SOP) ÷ กล่องทั้งหมดในแอป */
+  var ICO = {
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    scale: '<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>',
+    org: '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/>',
+    link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+    tool: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'
+  };
+  function ico(k) { return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICO[k] + "</svg>"; }
+  function segOf(d) { if (d.status !== "published") return "d"; return hasContent(d.published) ? "p" : ""; }
   function stats() {
-    var S = sops(), done = S.filter(function (d) { return hasContent(d.published); }).length, nb = 0;
-    S.forEach(function (d) { nb += (content(d).boxes || []).length; });
-    document.getElementById("sp-stats").innerHTML = [[S.length, "SOP ในเส้นทางเปิดสาขา"], [done + " / " + S.length, "มีเนื้อหาแล้ว"], [list("team").length, "ทีมที่เกี่ยวข้อง"],
-      [list("dec").length, "เรื่องที่ต้องตัดสินใจ"], [list("com").length, "คณะกรรมการ"], [nb, "กล่องในแอปที่ลิงก์แล้ว"], [list("tool").length, "Tools ที่ใช้ทำงาน"]]
-      .map(function (x) { return '<div class="sp-stat"><b>' + x[0] + "</b><span>" + x[1] + "</span></div>"; }).join("");
+    var S = sops(), live = S.filter(function (d) { return hasContent(d.published); }).length;
+    var n = { p: 0, d: 0, "": 0 }; S.forEach(function (d) { n[segOf(d)]++; });
+    var linked = {}; S.forEach(function (d) { (content(d).boxes || []).forEach(function (b) { linked[b.key] = 1; }); });
+    var total = BOXES.length, nLinked = total ? BOXES.filter(function (b) { return linked[b.key]; }).length : Object.keys(linked).length;
+    var pend = Object.keys(DOCS).map(function (k) { return DOCS[k]; }).filter(function (d) { return d.status === "pending"; }).sort(function (a, b) { return a.key < b.key ? -1 : 1; });
+    var t = [["users", list("team").length, "ทีม", "org"], ["scale", list("dec").length, "เรื่องตัดสินใจ", "appr"], ["org", list("com").length, "คณะกรรมการ", "appr"],
+      ["link", nLinked + (total ? ' <small>/ ' + total + "</small>" : ""), "กล่องที่ลิงก์ SOP", ""], ["tool", list("tool").length, "Tools", "tools"], ["clock", pend.length, "รออนุมัติ", pend.length ? "pend" : ""]];
+    var el = document.getElementById("sp-stats"); el.className = "";
+    el.innerHTML = '<div class="sp-sum"><div class="sp-sum-l"><div class="cap">ความคืบหน้าเนื้อหา SOP</div>' +
+      '<div class="big">' + live + " / " + S.length + " <span>SOP มีเนื้อหาใช้จริง</span></div>" +
+      '<div class="seg">' + S.map(function (d) { return '<i class="' + segOf(d) + '" data-seg="' + did(d) + '" title="' + esc(did(d) + " " + (content(d).name || "")) + '"></i>'; }).join("") + "</div>" +
+      '<div class="lg"><span><b class="p"></b>ใช้จริง ' + n.p + '</span><span><b class="d"></b>ร่าง/รออนุมัติ ' + n.d + '</span><span><b></b>โครง ' + n[""] + "</span></div></div>" +
+      '<div class="sp-sum-r">' + t.map(function (x) { return '<div class="t' + (x[3] ? " go" : "") + '"' + (x[3] ? ' data-sum="' + x[3] + '"' : "") + ">" + ico(x[0]) + '<div><div class="n">' + x[1] + '</div><div class="cap">' + x[2] + "</div></div>" + (x[3] ? '<span class="ar">›</span>' : "") + "</div>"; }).join("") + "</div></div>";
+    el.querySelectorAll("[data-seg]").forEach(function (e) { e.onclick = function () { if (EDIT && !confirm("กำลังแก้ SOP อยู่ — ทิ้งที่แก้ไว้แล้วเปิด SOP อื่นไหม?")) return; CUR = e.getAttribute("data-seg"); setV("flow"); }; });
+    el.querySelectorAll("[data-sum]").forEach(function (e) {
+      e.onclick = function () {
+        var v = e.getAttribute("data-sum");
+        if (EDIT && !confirm("กำลังแก้ SOP อยู่ — ทิ้งที่แก้ไว้ไหม?")) return;
+        if (v !== "pend") { setV(v); return; }
+        var f = pend[0]; if (!f) return;
+        if (f.type === "sop") { CUR = did(f); setV("flow"); } else openDoc(f.key);
+      };
+    });
   }
   function card(d, last) {
     var c = content(d), id = did(d), st = d.status === "published" ? (hasContent(d.published) ? ["pub", "ใช้จริง"] : ["", "โครง"]) : ["pend", d.status === "pending" ? "รออนุมัติ" : "ร่าง"];
