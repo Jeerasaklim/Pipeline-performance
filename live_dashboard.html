@@ -484,7 +484,7 @@
           <polyline points="128.0,168.0 155.0,168.0 155.0,268.0 182.0,268.0" class="fedge" marker-end="url(#arrow)"/>
           <polyline points="128.0,168.0 155.0,168.0 155.0,380.0 182.0,380.0" class="fedge" marker-end="url(#arrow)"/>
           <polyline points="128.0,168.0 155.0,168.0 155.0,492.0 182.0,492.0" class="fedge" marker-end="url(#arrow)"/>
-          <polyline points="128.0,168.0 155.0,168.0 155.0,604.0 182.0,604.0" class="fedge" marker-end="url(#arrow)"/>
+          <polyline points="-26.0,168.0 0.0,168.0 0.0,268.0 28.0,268.0" class="fedge" marker-end="url(#arrow)"/>
           <polyline points="282.0,168.0 317.0,168.0 317.0,60.0 352.0,60.0" class="fedge" marker-end="url(#arrow)"/>
           <polyline points="282.0,168.0 352.0,168.0" class="fedge" marker-end="url(#arrow)"/>
           <polyline points="282.0,168.0 317.0,168.0 317.0,268.0 352.0,268.0" class="fedge" marker-end="url(#arrow)"/>
@@ -572,12 +572,12 @@
         <text x="271.0" y="466.0" class="fexpand">&#10530;</text>
       </g>
           <g class="gnode own-siteex" onclick="openDetail('site_ex')"><title>คลิกเพื่อดูรายชื่อ</title>
-        <rect x="182.0" y="566.0" width="100" height="76" rx="7" class="fnode clickable"/>
-        <text x="232.0" y="583.0" class="flabel">รอนำเสนอ</text>
-        <text x="232.0" y="595.0" class="flabel">ใหม่</text>
-        <text id="cnt-site_ex" x="232.0" y="613.0" class="fcount">&mdash;</text>
-        <text id="pic-site_ex" x="232.0" y="631.0" class="fpic"></text>
-        <text x="271.0" y="578.0" class="fexpand">&#10530;</text>
+        <rect x="28.0" y="230.0" width="100" height="76" rx="7" class="fnode clickable"/>
+        <text x="78.0" y="247.0" class="flabel">รอนำเสนอ</text>
+        <text x="78.0" y="259.0" class="flabel">ใหม่</text>
+        <text id="cnt-site_ex" x="78.0" y="277.0" class="fcount">&mdash;</text>
+        <text id="pic-site_ex" x="78.0" y="295.0" class="fpic"></text>
+        <text x="117.0" y="242.0" class="fexpand">&#10530;</text>
       </g>
           <g class="gnode own-nego" onclick="openDetail('wait_kt')" onmouseenter="xhover('wait_kt')" onmouseleave="xclear()"><title>คลิกเพื่อดูรายชื่อ</title>
         <rect x="352.0" y="-72.0" width="100" height="76" rx="7" class="fnode clickable"/>
@@ -1112,7 +1112,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=190925" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=092301" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -3158,9 +3158,11 @@ setTimeout(applyBoard,300);
     const cancelled = outcome.filter(r => !isOpened(r) && isCancelled(r, L));
     counts.opened = opened.length;
     counts.cancelled = cancelled.length;
-    counts.approve = approved.length;
-    counts.approve_all = counts.opened + counts.cancelled + counts.approve;
+    // 29 ก.ย. 26 (จี): "รอนำเสนอใหม่" = กลับไปสรรหา → เป็นผลลัพธ์แถวเดียวกับ เปิดแล้ว/ยกเลิก ไม่ใช่งานใต้
+    // "อนุมัติรถตู้ (ยังไม่เปิด)" อีกต่อไป · approve ไม่นับ 09/12 แล้ว · approve_all บวก site_ex กลับให้เท่าเดิม
     counts.site_ex = approved.filter(r => isRepropose(cell(r, COL_EXPANSION))).length;
+    counts.approve = pulled.length;
+    counts.approve_all = counts.opened + counts.cancelled + counts.site_ex + counts.approve;
     counts.hold_nego = holdNego.length;
     counts.nego_stuck = active.filter(r => negoStatus(r, L) === NEGO_STUCK).length;
     counts.potential = active.filter(r => negoStatus(r, L) === NEGO_POTENTIAL).length;
@@ -3773,7 +3775,9 @@ setTimeout(applyBoard,300);
     }
 
     // STEP_DETAILS-derived inputs (:1215-1242,1277-1281).
-    const renew = new Set(_detBox(details, "approve").filter(it => (it.status || "") === "รอนำเสนอใหม่").map(it => it.code || ""));
+    // 29 ก.ย. 26: กล่อง approve ไม่มีสาขารอนำเสนอใหม่แล้ว → อ่านจากกล่อง site_ex ตรง ๆ (ชุดสาขาเดียวกันเป๊ะ:
+    // เดิม = แถวใน approve ที่ sdApproveStage คืน "รอนำเสนอใหม่" = isRepropose = site_ex)
+    const renew = new Set(_detBox(details, "site_ex").map(it => it.code || "").filter(Boolean));
     const sdName = {};
     const detKeys = Object.keys(details || {});
     ["sign_contract"].concat(detKeys.filter(k => k !== "sign_contract")).forEach(bx => {
@@ -4124,7 +4128,10 @@ setTimeout(applyBoard,300);
     }
     function approveAllList() {  // approve_all_list (:788). No BQ -> sheet-name fallback.
       const items = [];
-      [["เปิดแล้ว", openedD], ["ยกเลิก", cancelledD], ["อนุมัติรถตู้ (ยังไม่เปิด)", approved]].forEach(([grp, subset]) => {
+      // 29 ก.ย. 26: รอนำเสนอใหม่ แยกกลุ่มของตัวเอง (ตามกล่องที่ย้ายไปแถวเปิดแล้ว/ยกเลิก) — รวมยังเท่าเดิม
+      [["เปิดแล้ว", openedD], ["ยกเลิก", cancelledD],
+       ["รอนำเสนอใหม่", approved.filter(r => isRepropose(cell(r, COL_EXPANSION)))],
+       ["อนุมัติรถตู้ (ยังไม่เปิด)", pulled]].forEach(([grp, subset]) => {
         subset.forEach(r => {
           const code = cell(r, COL_CODE), kt = normDate(pnegoKt[code] || "");
           const a = sdKey(cell(r, COL_APPROVED)), ktd = sdKey(kt);
@@ -4181,7 +4188,7 @@ setTimeout(applyBoard,300);
       cancelled: outcomeList(cancelledD, COL_CANCEL_DATE, "cancel_date"),
       approve: (function () {  // approve_list (:1232): grouped by stage order, then date asc
         const idx = {}; SD_APPROVE_ORDER.forEach((s, n) => { idx[s] = n; });
-        const items = approved.map(r => ({ code: cell(r, COL_CODE), name: cell(r, COL_NAME), date: cell(r, COL_APPROVED), status: sdApproveStage(r, L) }));
+        const items = pulled.map(r => ({ code: cell(r, COL_CODE), name: cell(r, COL_NAME), date: cell(r, COL_APPROVED), status: sdApproveStage(r, L) }));  // 29 ก.ย.: ไม่รวมรอนำเสนอใหม่ (ตรงกับตัวเลขกล่อง)
         items.sort((a, b) => { const ia = (a.status in idx) ? idx[a.status] : 9, ib = (b.status in idx) ? idx[b.status] : 9; return ia !== ib ? ia - ib : sdCmp(sdKey(a.date), sdKey(b.date)); });
         return items;
       })(),
