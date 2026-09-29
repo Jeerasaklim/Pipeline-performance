@@ -436,6 +436,7 @@
 
 <nav class="tabs">
       <button class="tab-btn active" data-tab="overall" onclick="showTab('overall')"><span class="tab-ico">🗺</span><span class="tab-txt"><span class="tab-primary">Overall</span><span class="tab-sub">ภาพรวม</span></span></button>
+      <button class="tab-btn" data-tab="nego" onclick="showTab('nego')"><span class="tab-ico">🤝</span><span class="tab-txt"><span class="tab-primary">Site Negotiation</span><span class="tab-sub">เจรจาพื้นที่</span></span></button>
       <button class="tab-btn" data-tab="registry" onclick="showTab('registry')"><span class="tab-ico">🏗</span><span class="tab-txt"><span class="tab-primary">After อ.1</span><span class="tab-sub">ก่อสร้าง+ทะเบียน</span></span></button>
       <button class="tab-btn" data-tab="grandopen" onclick="showTab('grandopen')"><span class="tab-ico">📅</span><span class="tab-txt"><span class="tab-primary">Grand Opening</span><span class="tab-sub">ปักวันเปิด</span></span></button>
       <button class="tab-btn" data-tab="sitemgmt" onclick="showTab('sitemgmt')"><span class="tab-ico">🗺️</span><span class="tab-txt"><span class="tab-primary">Site Management</span><span class="tab-sub">แผนที่ + ผรม.</span></span></button>
@@ -935,6 +936,108 @@
 
     </section>
 
+    <section id="tab-nego" class="tab-panel">
+
+      <div class="page-head">
+        <h1>🤝 Site Negotiation <span class="page-th">เจรจาพื้นที่</span></h1>
+      </div>
+
+      <!-- 1. ARE WE ON TRACK? -->
+      <div class="status-strip">
+        <span class="badge neutral">&mdash;</span>
+        <div class="status-text">
+          <div class="status-main">Status pending &mdash; data not yet wired</div>
+          <div class="status-sub">Key metric vs target will appear here</div>
+        </div>
+      </div>
+
+      <!-- KEY METRICS -->
+      <div class="section-label">KEY METRICS</div>
+      <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-label">🏪 METRIC 1</div>
+            <div class="kpi-value">&mdash;</div>
+            <div class="kpi-tags"><span class="tag muted">&mdash; TG</span><span class="tag muted">&mdash; LM</span></div>
+            <div class="kpi-sub">awaiting data</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">🎯 METRIC 2</div>
+            <div class="kpi-value">&mdash;</div>
+            <div class="kpi-tags"><span class="tag muted">&mdash; TG</span><span class="tag muted">&mdash; LM</span></div>
+            <div class="kpi-sub">awaiting data</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">📈 METRIC 3</div>
+            <div class="kpi-value">&mdash;</div>
+            <div class="kpi-tags"><span class="tag muted">&mdash; TG</span><span class="tag muted">&mdash; LM</span></div>
+            <div class="kpi-sub">awaiting data</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">⚠ METRIC 4</div>
+            <div class="kpi-value">&mdash;</div>
+            <div class="kpi-tags"><span class="tag muted">&mdash; TG</span><span class="tag muted">&mdash; LM</span></div>
+            <div class="kpi-sub">awaiting data</div>
+          </div>
+      </div>
+
+
+
+      <!-- Aging range matrix — same rows as SLA เซ็นสัญญา, excluding ยกเลิก and Hold -->
+      <div class="section-label">AGING RANGE &mdash; SLA เซ็นสัญญา</div>
+      <div class="card">
+        <div class="ssbar">
+          <span class="ssnote">เดือน &gt; Complete / In progress &middot; <b id="sr-total">0</b> ไซท์
+            (ไม่รวมสถานะ ยกเลิก และ Hold)</span>
+          <span class="ssgrow">
+            <button type="button" class="dflink" onclick="srAll(true)">ขยายทั้งหมด</button>
+            <button type="button" class="dflink" onclick="srAll(false)">ย่อทั้งหมด</button>
+          </span>
+        </div>
+        <div class="table-wrap sswrap"><table class="data-table sstable srtable" id="sr-table"></table></div>
+        <div class="srnote" id="sr-note"></div>
+      </div>
+      <!-- SLA เซ็นสัญญา — from the SLA sheet (+ site nego AL / K) -->
+      <div class="section-label">SLA เซ็นสัญญา</div>
+      <div class="card">
+        <div class="ssbar">
+          <span class="ssnote">วันอนุมัติรถตู้ ปี 2026 ขึ้นไป &middot; <b id="ss-total">0</b> ไซท์
+            &middot; เกิน SLA <b id="ss-over" class="ssred">0</b></span>
+          <span class="ssgrow">
+            <button type="button" class="dflink" onclick="ssAll(true)">ขยายทั้งหมด</button>
+            <button type="button" class="dflink" onclick="ssAll(false)">ย่อทั้งหมด</button>
+            <button type="button" class="ssdl" onclick="ssDownload()">&#8595; Download CSV</button>
+          </span>
+        </div>
+        <div class="sschart">
+          <div class="sslegend" id="ss-legend"></div>
+          <div class="sschart-svg" id="ss-chart"></div>
+          <div class="sstip" id="ss-tip"></div>
+        </div>
+        <div class="table-wrap sswrap"><table class="data-table sstable" id="ss-table"></table></div>
+      </div>
+      <!-- 2. WHERE IS THE PROBLEM? -->
+      <div class="section-label">WHERE IS THE PROBLEM</div>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>ITEM</th><th class="num">VALUE</th><th class="num">TARGET</th><th class="ctr">STATUS</th></tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="4" class="empty">No data available</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. WHAT NEEDS A DECISION? -->
+      <div class="section-label">WHAT NEEDS A DECISION</div>
+      <div class="card">
+        <div class="empty">No data available</div>
+      </div>
+
+    </section>
+
     <section id="tab-registry" class="tab-panel">
       <div class="page-head"><h1>🏗 หลังยื่น อ.1 <span class="page-th">ก่อสร้าง + งานทะเบียน</span></h1></div>
       <div class="section-label">SITE PIPELINE &mdash; หลัง ยื่น อ.1</div>
@@ -1112,7 +1215,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=170246" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=173030" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -2866,6 +2969,7 @@ setTimeout(applyBoard,300);
   // = เปราะ ถ้าชีตขยับอีกต้อง re-verify (nego col17 header="วันเซ็นสัญญาจริง", 0 text-value ตอนแก้).
   const SIGN2_HEADER_ROW = 0, SIGN2_COL_CODE = 0, SIGN2_COL_SIGNED = 17, SIGN2_COL_NEGO = 9;
   const SIGN2_COL_APPROVAL = 37;   // AL = รูปแบบการอนุมัติ (Approved / Approved with condition)
+  const SIGN2_COL_NOTE = 10;       // K = หมายเหตุ การติดตาม Site (refresh_data.py:84) — แท็บ Site Negotiation
   // pipeline nego (gid=1464560053, hdr 0): Z=25 KT  (refresh_data.py:85-87)
   const PNEGO_HEADER_ROW = 0, PNEGO_COL_CODE = 0, PNEGO_COL_KT = 25;
   // TJ (gid=1839838784, hdr 0): L=11 send, M=12 scan  (refresh_data.py:94-97)
@@ -3045,6 +3149,7 @@ setTimeout(applyBoard,300);
       approval2: lookupBy(nego, SIGN2_HEADER_ROW, SIGN2_COL_CODE, SIGN2_COL_APPROVAL),
       ratkitPic: lookupBy(tabs.ratkit || [], RATKIT_HEADER_ROW, RATKIT_COL_CODE, RATKIT_COL_PIC),
       ratkitNoteN4: lookupBy(tabs.ratkit || [], RATKIT_HEADER_ROW, RATKIT_COL_CODE, RATKIT_COL_NOTE_N4),
+      signnote2: lookupBy(nego, SIGN2_HEADER_ROW, SIGN2_COL_CODE, SIGN2_COL_NOTE),   // build_signnote2_lookup (:558)
     };
   }
   function buildConstrPermit(rows) { // refresh_data.py:668
@@ -4707,6 +4812,77 @@ setTimeout(applyBoard,300);
   }
 
   /* ==== public API ======================================================== */
+  /* ==== Site Negotiation tab — SLA เซ็นสัญญา (refresh_data.py:2042-2184 · SPEC §5.5) ==========
+   * port บรรทัดต่อบรรทัดของ build_sign_sla_rows / sign_sla_type / sign_sla_status (จี 29 ก.ย.: เอาแท็บกลับมา)
+   * อ่านชีต SLA ดิบ (มี เปิดแล้ว/ยกเลิก โดยตั้งใจ) · กรองเฉพาะ G1 (expExcluded) + ปีอนุมัติรถตู้ ≥ 2026 */
+  const SIGN_SLA_FROM_YEAR = 2026;
+  const SIGN_SLA_STATUS_ORDER = ["เซ็นสัญญาแล้ว", "รอเซ็นสัญญา", "Hold", "ยกเลิก"];
+  const SIGN_SLA_TYPE_ORDER = ["เซ็นสัญญาแล้ว รอเปิด", "เปิดแล้ว", "รอเซ็นสัญญาทั่วไป", "รอเอกสารหน่วยงานภายนอก",
+    "ความเป็นไปได้ต่ำ", "Hold เจรจา", "รอนำเสนอใหม่", "ยกเลิก"];
+  function signSlaType(r) {                                   // :2062 — first match wins
+    if (nospace(cell(r, COL_APPSHEET)) === "9.Opened" || nospace(cell(r, COL_EXPANSION)) === "01.เปิดแล้ว" ||
+        nospace(cell(r, COL_NEGO)) === "เปิดร้านแล้ว") return "เปิดแล้ว";
+    const nego = nospace(cell(r, COL_NEGO));
+    if (nego === "5.ยกเลิก" || nospace(cell(r, COL_EXPANSION)) === nospace(EXP_CANCEL)) return "ยกเลิก";
+    if (nospace(cell(r, COL_EXPANSION)) === nospace(EXP_SITE_EX)) return "รอนำเสนอใหม่";
+    if (isHoldNego(r)) return "Hold เจรจา";
+    if (nego === "0.Potentialwithcons") return "ความเป็นไปได้ต่ำ";
+    if (nego === "2.เจรจา-ติดขัด") return "รอเอกสารหน่วยงานภายนอก";
+    if (cell(r, COL_SIGN_DATE) !== "") return "เซ็นสัญญาแล้ว รอเปิด";
+    return "รอเซ็นสัญญาทั่วไป";
+  }
+  function signSlaStatus(t) {                                 // :2090
+    if (t === "เปิดแล้ว" || t === "เซ็นสัญญาแล้ว รอเปิด") return "เซ็นสัญญาแล้ว";
+    if (t === "รอเซ็นสัญญาทั่วไป" || t === "รอเอกสารหน่วยงานภายนอก" || t === "ความเป็นไปได้ต่ำ") return "รอเซ็นสัญญา";
+    if (t === "Hold เจรจา" || t === "รอนำเสนอใหม่") return "Hold";
+    if (t === "ยกเลิก") return "ยกเลิก";
+    return t;
+  }
+  /** @returns rows ของ SIGN_SLA_ROWS (shape เดียวกับที่ HTML รายวันฝัง) · todayArg = Date (ไม่ใส่ = วันนี้) */
+  function buildSignSlaRows(tabs, L, todayArg) {              // :2106
+    const rows = tabs.sla || [], today = todayArg ? dateOnly(todayArg) : todayDate();
+    const approval2 = L.approval2 || {}, signnote2 = L.signnote2 || {}, pnegoKt = L.pnegoKt || {};
+    const out = [];
+    for (let i = HEADER_ROW + 1; i < rows.length; i++) {
+      const r = rows[i], code = cell(r, COL_CODE);
+      if (!code) continue;
+      if (expExcluded(cell(r, COL_EXPANSION))) continue;
+      const appr = cell(r, COL_APPROVED), d = parseDate(appr);
+      if (!d || d.getFullYear() < SIGN_SLA_FROM_YEAR) continue;
+      const t = signSlaType(r), sign = cell(r, COL_SIGN_DATE);
+      const cancelled = t === "ยกเลิก", held = signSlaStatus(t) === "Hold";
+      const kt = normDate(pnegoKt[code] || ""), ktd = parseDate(kt);
+      let ktUsed = false, aging = null, sla = null;
+      if (!cancelled) {
+        const sd = parseDate(sign);
+        const end = (sign && sd) ? dateOnly(sd) : today;
+        let start = dateOnly(d);
+        if (ktd && start < dateOnly(ktd) && dateOnly(ktd) <= end) { start = dateOnly(ktd); ktUsed = true; }
+        aging = workingDays(start, end);
+        sla = held ? null : ((approval2[code] || "") === "Approved with condition" ? 10 : 5);
+      }
+      out.push({
+        code: code, name: cell(r, COL_NAME_NEW) || cell(r, COL_NAME),
+        status: signSlaStatus(t), type: t,
+        open_date: normDate(cell(r, COL_OPEN_DATE)),
+        sign_date: normDate(t === "ยกเลิก" ? cell(r, COL_CANCEL_DATE) : sign),
+        sign_red: t === "ยกเลิก" ? 1 : 0,
+        approve_date: normDate(appr), kt_date: kt, kt_new: kt ? 1 : 0, kt_drives: ktUsed ? 1 : 0,
+        aging: aging == null ? "" : String(aging), sla: sla == null ? "" : String(sla),
+        over: (aging == null || sla == null) ? "" : String(aging - sla),
+        no_cancel_date: (cancelled && cell(r, COL_CANCEL_DATE) === "") ? 1 : 0,
+        note: signnote2[code] || "",
+        month: MONTHS[d.getMonth()] + "-" + String(d.getFullYear() % 100).padStart(2, "0"),
+        _k: d.getFullYear() * 100 + d.getMonth() + 1,
+      });
+    }
+    const ix = (arr, v) => { const k = arr.indexOf(v); return k < 0 ? 99 : k; };
+    out.sort((a, b) => (b._k - a._k) || (ix(SIGN_SLA_STATUS_ORDER, a.status) - ix(SIGN_SLA_STATUS_ORDER, b.status)) ||
+      (ix(SIGN_SLA_TYPE_ORDER, a.type) - ix(SIGN_SLA_TYPE_ORDER, b.type)) || ((parseInt(b.over || "0", 10)) - (parseInt(a.over || "0", 10))));
+    out.forEach(x => { delete x._k; });
+    return out;
+  }
+
   return {
     // constants (read-only exposure for tests/UI labels)
     STEP_KEYS, HOLIDAYS, NO_O1_REQUIRED,
@@ -4734,6 +4910,8 @@ setTimeout(applyBoard,300);
     goWipUpdate, goSnapshotDiff, goChangelogAppend,
     // Site Management map model (chunk 2) — merges GO model + Construction + AR coords.
     buildSiteMgmtModel, smCleanPrm, SM_PROV_REGION,
+    // Site Negotiation tab — SLA เซ็นสัญญา (SIGN_SLA_ROWS)
+    buildSignSlaRows, signSlaType, signSlaStatus,
   };
 });
 
@@ -5299,6 +5477,32 @@ setTimeout(applyBoard,300);
       }
     } catch (e2) { /* badge is best-effort; the console.error below always fires */ }
     console.error("[after] load failed — After อ.1 stays on baked values:", err);
+  });
+})();
+</script>
+<script>/*NEGO-BOOTSTRAP*/
+(function () {
+  "use strict";
+  var sec = document.getElementById("tab-nego");
+  if (!sec || !window.CalcEngine || typeof renderSignSla !== "function") return;
+  var bar = document.createElement("div");
+  bar.id = "nego-live-state";
+  bar.style.cssText = "margin:0 0 12px;padding:9px 14px;border-radius:10px;font-size:12.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe";
+  bar.textContent = "กำลังโหลดข้อมูล Site Negotiation…";
+  sec.insertBefore(bar, sec.firstChild);
+  var core = window.__coreTabs || window.DPT_awaitAuth().then(function () {
+    return window.Repository.coreRepo({ CsvUtil: window.CsvUtil }).getTabs();
+  });
+  core.then(function (res) {
+    var tabs = res.tabs, CE = window.CalcEngine;
+    var rows = CE.buildSignSlaRows(tabs, CE.buildLookups(tabs));
+    SIGN_SLA_ROWS = rows;               // global var ของ HTML รายวัน (script ระดับบนสุด)
+    renderSignSla();
+    bar.remove();
+  }).catch(function (e) {
+    console.error("[nego] live load failed:", e);
+    bar.style.background = "#fef2f2"; bar.style.color = "#b91c1c"; bar.style.borderColor = "#fecaca";
+    bar.textContent = "⚠️ โหลดข้อมูล Site Negotiation ไม่สำเร็จ — ตัวเลขในแท็บนี้ยังว่าง ไม่ใช่ไม่มีงาน · กดรีเฟรชหน้าอีกครั้ง";
   });
 })();
 </script>
