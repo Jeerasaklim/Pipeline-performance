@@ -1229,7 +1229,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=144138" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=144342" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6773,7 +6773,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       '<div class="sp-h" style="margin-top:18px">④ การตัดสินใจในขั้นนี้ <small>· Criteria + DOA</small></div>' + (decs || '<div class="dec-empty">ยังไม่ได้ผูกเรื่องที่ต้องตัดสินใจ · เลือกจาก ' + list("dec").length + " เรื่องในหมวด การตัดสินใจ</div>") +
       '</div><div class="sp-rail"><div class="rail-card"><div class="sp-h">🔗 กล่องในแอป (' + (c.boxes || []).length + ")</div>" + (c.boxes || []).map(function (b) { return '<span class="bxchip" data-box="' + esc(b.key) + '">' + esc(b.name) + "</span>"; }).join("") + "</div>" +
       '<div class="rail-card"><div class="sp-h">🧰 Tools (' + toolList.length + ")</div>" + (toolList.length ? toolList.map(function (x) {
-        var tc = content(get("tool", x.id) || {}), u = safeUrl(tc.url), nm = esc(nameOf("tool", x.id)), tip = x.note ? ' title="' + esc(x.note) + '"' : "";
+        var tc = content(get("tool", x.id) || {}), u = safeUrl(tc.url), nm = esc(nameOf("tool", x.id)), tip = toolPurpose(x.id) ? ' title="' + esc(toolPurpose(x.id)) + '"' : "";
         return u ? '<a class="bxchip" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer"' + tip + ">" + nm + " ↗</a>" : '<span class="bxchip" data-doc="tool:' + esc(x.id) + '"' + tip + ">" + nm + "</span>";
       }).join("") : '<div class="muted" style="font-size:12.5px">ยังไม่ได้เลือก Tool</div>') + "</div>" +
       '<div class="rail-card"><div class="sp-h">⏱ SLA</div>' + (c.sla_note ? nl(c.sla_note) : sk("85%") + sk("60%")) + "</div>" + issuesCard(d, c) + "</div></div></div>";
@@ -6813,7 +6813,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     document.getElementById("sp-view").innerHTML = h; bindCommon(document.getElementById("sp-view"));
   }
   function toolsView() {
-    document.getElementById("sp-view").innerHTML = '<div class="card">' + refTable("tool", [["name", "Tool"], ["url", "ลิงก์", function (c) { return safeUrl(c.url) ? extLink(c.url, "เปิด") : ""; }], ["type", "ประเภท"], ["purpose", "ใช้ทำอะไร"], ["users", "ใครใช้", function (c) { return roleNames(c.users); }], ["x", "ใช้ใน SOP", function (c, d) { return usedIn(d, "tools"); }], ["frequency", "ใช้บ่อยแค่ไหน"]], "🧰 Tools ที่ใช้ทำงาน", "ทุกวันใช้เครื่องมืออะไรทำงาน · ใครใช้ · ใช้ใน SOP ไหน") + "</div>";
+    document.getElementById("sp-view").innerHTML = '<div class="card">' + refTable("tool", [["name", "Tool"], ["url", "ลิงก์", function (c) { return safeUrl(c.url) ? extLink(c.url, "เปิด") : ""; }], ["type", "ประเภท"], ["purpose", "ใช้ทำอะไร", function (c, d) { var t = toolPurpose(did(d)); return t ? nl(t) : ""; }], ["users", "ใครใช้", function (c) { return roleNames(c.users); }], ["x", "ใช้ใน SOP", function (c, d) { return usedIn(d, "tools"); }], ["frequency", "ใช้บ่อยแค่ไหน"]], "🧰 Tools ที่ใช้ทำงาน", "ทุกวันใช้เครื่องมืออะไรทำงาน · ใครใช้ · ใช้ใน SOP ไหน") + "</div>";
     bindCommon(document.getElementById("sp-view"));
   }
   function setV(v) { V = v; EDIT = null; EXPAND = false; document.querySelectorAll("#sp-seg button").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-v") === v); }); render(); }
@@ -6984,7 +6984,13 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   }
   function blankOf(type) { var b = {}; SCHEMA[type].forEach(function (f) { b[f[0]] = (f[2] === "roles" || f[2] === "coms" || f[2] === "people") ? [] : ""; }); return b; }
   function plusBtn(type, team) { return ME.canEdit ? '<button type="button" class="sp-plus" data-plus="' + type + '"' + (team ? ' data-team="' + esc(team) + '"' : "") + ">＋ เพิ่ม" + TYPE_NAME[type] + "</button>" : ""; }
+  /* ใช้ทำอะไร ของ Tool = ช่อง purpose ของ Tool (ที่เดียว) · ถ้ายังว่าง ใช้ข้อความที่เคยพิมพ์ไว้ใน SOP แทน */
+  function toolNoteFromSops(id) { var n = ""; sops().forEach(function (sd) { if (n) return; ((content(sd).tools) || []).forEach(function (x) { if (!n && x.id === id && String(x.note || "").trim()) n = String(x.note).trim(); }); }); return n; }
+  function toolPurpose(id) { var c = content(get("tool", id) || {}); return String(c.purpose || "").trim() || toolNoteFromSops(id); }
+  function toolPurpHtml(id) { var t = toolPurpose(id); return (t ? '<span style="color:var(--t2)">' + nl(t) + "</span>" : '<span class="muted">ยังไม่ได้ใส่ว่าใช้ทำอะไร</span>') + (ME.canEdit ? ' · <a class="sp-a" data-tool-ed="' + esc(id) + '">✏️ แก้ที่ Tool</a>' : ""); }
   function noteRow(type, id, checked, note) {
+    if (type === "tool") return '<div style="display:grid;grid-template-columns:260px 1fr;gap:8px;align-items:center;margin-bottom:6px"><label style="margin:0;font-weight:500"><input type="checkbox" name="tool" value="' + esc(id) + '"' + (checked ? " checked" : "") + "> " + esc(nameOf("tool", id)) + delTag(get("tool", id)) +
+      '</label><div style="font-size:12.5px" data-tool-purp="' + esc(id) + '">' + toolPurpHtml(id) + '</div><input type="hidden" data-note="tool" data-id="' + esc(id) + '" value="' + esc(note || "") + '"></div>';
     return '<div style="display:grid;grid-template-columns:260px 1fr;gap:8px;align-items:center;margin-bottom:6px"><label style="margin:0;font-weight:500"><input type="checkbox" name="' + type + '" value="' + esc(id) + '"' + (checked ? " checked" : "") + "> " + esc(nameOf(type, id)) + delTag(get(type, id)) +
       '</label><input type="text" data-note="' + type + '" data-id="' + esc(id) + '" placeholder="' + (type === "tool" ? "ใช้ทำอะไรในขั้นนี้" : "หมายเหตุ (ถ้ามี)") + '" value="' + esc(note || "") + '"></div>';
   }
@@ -6998,6 +7004,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     });
   }
   document.addEventListener("click", function (ev) {
+    var te = ev.target.closest && ev.target.closest("[data-tool-ed]");
+    if (te) { ev.preventDefault(); openDoc("tool:" + te.getAttribute("data-tool-ed"), true); return; }
     var btn = ev.target.closest && ev.target.closest("[data-plus]"); if (!btn || !ME.canEdit) return;
     var nx = btn.nextElementSibling; if (nx && nx.classList.contains("sp-qa")) { nx.querySelector("input").focus(); return; }
     var type = btn.getAttribute("data-plus"), target = btn.previousElementSibling;
@@ -7224,6 +7232,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     document.getElementById("sp-dt").innerHTML = esc(TYPE_NAME[type]) + " · " + esc(c.name || did(d));
     var h = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">' + statusPill(d) + "</div>" + (approvalsBox(d) ? approvalsBox(d).replace('style="margin:12px 22px 0"', 'style="margin:0 0 12px"') : "");
     if (editNow && ME.canEdit) {
+      if (type === "tool" && !String(c.purpose || "").trim() && toolNoteFromSops(did(d))) { c = JSON.parse(JSON.stringify(c)); c.purpose = toolNoteFromSops(did(d)); }
       h += '<div class="fm">' + fields.map(function (f) { return fieldInput(f, c[f[0]]); }).join("") + '<div class="acts"><button class="sp-btn" id="sp-cx">ยกเลิก</button><button class="sp-btn pri" id="sp-sv">บันทึกร่าง</button></div></div>';
     } else {
       h += fields.map(function (f) { var v = showVal(f, c[f[0]]); return '<div class="rail-card"><div class="sp-h">' + esc(f[1]) + "</div>" + (v || sk("70%") + sk("45%")) + "</div>"; }).join("");
@@ -7245,7 +7254,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
         if (!String(out.name || "").trim()) { toast("ใส่ชื่อก่อน", false); return; }
         if (out.url && !safeUrl(out.url)) { toast("ลิงก์ต้องขึ้นต้นด้วย https://", false); return; }
         var done = busy(this, "กำลังบันทึก…");
-        post("sopSave", { key: key, draft: out, base: (DOCS[d.key] || d).updated_at }).then(function (doc) { done(); after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); openDoc(doc.key); }, function (e) { done(); fail(e); });
+        post("sopSave", { key: key, draft: out, base: (DOCS[d.key] || d).updated_at }).then(function (doc) { done();
+          if (type === "tool") document.querySelectorAll('[data-tool-purp="' + did(doc) + '"]').forEach(function (el) { el.innerHTML = toolPurpHtml(did(doc)); }); after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); openDoc(doc.key); }, function (e) { done(); fail(e); });
       };
     }
   }
