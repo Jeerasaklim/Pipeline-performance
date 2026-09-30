@@ -1229,7 +1229,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=111607" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=123519" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6453,6 +6453,14 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     ".sp-dg iframe{width:100%;height:600px;border:0;display:block;background:#fff}",
     ".sp-dg .ld{padding:48px 20px;text-align:center;color:var(--t3);font-size:13px}.sp-dg .ld.err{color:#b91c1c}",
     ".sp-dg.full{position:fixed;inset:0;z-index:9700;border-radius:0;margin:0;display:flex;flex-direction:column}.sp-dg.full iframe{height:auto!important;flex:1;min-height:0}",
+    ".sp-iss{border-top:1px dashed var(--border);padding:9px 0}.sp-iss:first-of-type{border-top:0}",
+    ".sp-iss .it{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:11.5px;font-weight:700}",
+    ".sp-iss .tx{font-size:13px;color:var(--text);margin:4px 0 2px;line-height:1.5}.sp-iss .fx{font-size:12.5px;color:#047857;line-height:1.5}",
+    ".sp-iss .mt{font-size:11.5px;color:var(--t3);margin-top:3px}.sp-iss .ac{margin-left:auto;display:flex;gap:4px}",
+    ".sp-iss .ac button{font:inherit;font-size:11.5px;border:0;background:transparent;color:var(--t3);cursor:pointer;padding:0 3px}.sp-iss .ac button:hover{color:var(--blue)}",
+    ".sp-iss .st{font-size:10.5px;border-radius:6px;padding:0 6px;border:1px solid var(--border2);color:var(--t2);font-weight:600}",
+    ".sp-iss .st.open{color:#b91c1c;border-color:#fecaca;background:#fef2f2}.sp-iss .st.doing{color:#b45309;border-color:#fcd34d;background:#fffbeb}.sp-iss .st.done{color:#047857;border-color:#6ee7b7;background:#ecfdf5}",
+    ".sp-iss.done .tx{color:var(--t3);text-decoration:line-through}",
     ".sp-strip{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--blue);border-radius:10px;padding:10px 14px;margin-bottom:6px}",
     ".sp-strip .no{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.4px}.sp-strip b{font-size:15px;color:var(--text)}",
     ".sp-strip .tm{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--t3)}.sp-strip #sp-chg{margin-left:auto}",
@@ -6709,8 +6717,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       '<div class="sp-h" style="margin-top:18px">④ การตัดสินใจในขั้นนี้ <small>· Criteria + DOA</small></div>' + (decs || '<div class="dec-empty">ยังไม่ได้ผูกเรื่องที่ต้องตัดสินใจ · เลือกจาก ' + list("dec").length + " เรื่องในหมวด การตัดสินใจ</div>") +
       '<div class="sp-h" style="margin-top:18px">⑤ Tools ที่ใช้ทำงาน <small>· ใช้ทุกวันทำอะไร</small></div><div class="tl-slots">' + (tools || [1, 2, 3].map(function () { return '<div class="tl-slot">' + sk("70%") + sk("45%") + "</div>"; }).join("")) + "</div>" +
       '</div><div class="sp-rail"><div class="rail-card"><div class="sp-h">🔗 กล่องในแอป (' + (c.boxes || []).length + ")</div>" + (c.boxes || []).map(function (b) { return '<span class="bxchip" data-box="' + esc(b.key) + '">' + esc(b.name) + "</span>"; }).join("") + "</div>" +
-      '<div class="rail-card"><div class="sp-h">⏱ SLA</div>' + (c.sla_note ? nl(c.sla_note) : sk("85%") + sk("60%")) + "</div></div></div></div>";
+      '<div class="rail-card"><div class="sp-h">⏱ SLA</div>' + (c.sla_note ? nl(c.sla_note) : sk("85%") + sk("60%")) + "</div>" + issuesCard(d, c) + "</div></div></div>";
     el.querySelectorAll(".sp-dg").forEach(loadDg);
+    bindIssues(el, d);
     el.querySelectorAll("[data-go]").forEach(function (b) { b.onclick = function () { CUR = b.getAttribute("data-go"); EDIT = null; EXPAND = false; flowView(); }; });
     el.querySelectorAll("[data-box]").forEach(function (b) { b.onclick = function () { var k = b.getAttribute("data-box"); showTab(/^(d_|rg_)/.test(k) ? "registry" : "overall"); window.scrollTo(0, 0); if (typeof openDetail === "function") openDetail(k); }; });
     bindCommon(el);
@@ -6760,6 +6769,73 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   }
   document.querySelectorAll("#sp-seg button").forEach(function (b) { b.onclick = function () { setV(b.getAttribute("data-v")); }; });
   document.getElementById("sp-q").oninput = function () { Q = this.value.trim().toLowerCase(); if (V === "flow" && LOADED && document.getElementById("sp-cards")) renderCards(); else render(); };
+
+  /* ---------- ⚠️ ปัญหา & เรื่องที่ต้องดู (จี 30 ก.ย.) ----------
+   * อยู่ในเนื้อหา SOP (c.issues) → บันทึกแล้วเป็นร่าง + ต้องอนุมัติเหมือนเนื้อหาอื่น
+   * แก้ได้: admin + Head (ผู้อนุมัติ) · Head แก้ได้เฉพาะส่วนนี้ ลบไม่ได้ (server ตรวจใน sopApply_) · ลบ = admin */
+  var ISS_TYPE = { problem: ["🔴", "ปัญหา"], watch: ["👀", "เรื่องที่ต้องดู"], improve: ["🛠", "ควรแก้ไข"] };
+  var ISS_ST = { open: "เปิดอยู่", doing: "กำลังแก้", done: "แก้แล้ว" };
+  function canIssue() { return !!(ME.canEdit || ME.canApprove); }
+  function thDate(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ""); if (!m) return esc(iso || ""); return +m[3] + " " + ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."][+m[2] - 1] + " " + String(+m[1] + 543).slice(-2); }
+  function who(e) { return esc(String(e || "").split("@")[0]); }
+  function issueRow(x) {
+    var t = ISS_TYPE[x.type] || ["•", x.type];
+    return '<div class="sp-iss' + (x.status === "done" ? " done" : "") + '"><div class="it"><span>' + t[0] + " " + esc(t[1]) + '</span><span class="st ' + esc(x.status) + '">' + esc(ISS_ST[x.status] || x.status) + "</span>" +
+      (canIssue() ? '<span class="ac"><button type="button" data-iss-ed="' + esc(x.id) + '" title="แก้">✏️</button>' + (ME.canEdit ? '<button type="button" data-iss-rm="' + esc(x.id) + '" title="ลบ">🗑</button>' : "") + "</span>" : "") + "</div>" +
+      '<div class="tx">' + nl(x.text) + "</div>" + (x.fix ? '<div class="fx">💡 แนวทางแก้: ' + nl(x.fix) + "</div>" : "") +
+      '<div class="mt">' + [x.owner_role ? "👤 " + esc(nameOf("role", x.owner_role)) : "", x.due ? "📅 ภายใน " + thDate(x.due) : "", "แจ้งโดย " + who(x.by) + (x.at ? " · " + thDate(x.at) : "")].filter(Boolean).join(" · ") + "</div></div>";
+  }
+  function issuesCard(d, c) {
+    var L = c.issues || [], act = L.filter(function (x) { return x.status !== "done"; }), done = L.filter(function (x) { return x.status === "done"; });
+    return '<div class="rail-card"><div class="sp-h" style="display:flex;align-items:center">⚠️ ปัญหา & เรื่องที่ต้องดู (' + act.length + ")" +
+      (canIssue() ? '<button type="button" class="sp-plus" data-iss-new style="margin:0 0 0 auto">＋ เพิ่ม</button>' : "") + "</div>" +
+      (act.length ? act.map(issueRow).join("") : '<div class="muted" style="font-size:12.5px">ยังไม่มีรายการ</div>') +
+      (done.length ? '<details style="margin-top:6px"><summary style="font-size:12px;color:var(--t3);cursor:pointer">ดูที่แก้แล้ว (' + done.length + ")</summary>" + done.map(issueRow).join("") + "</details>" : "") + "</div>";
+  }
+  function issueForm(d, x) {
+    var isNew = !x; x = x || { type: "problem", status: "open" };
+    document.getElementById("sp-dt").textContent = (isNew ? "เพิ่ม" : "แก้") + " ปัญหา & เรื่องที่ต้องดู · " + (content(d).name || did(d));
+    document.getElementById("sp-db").innerHTML = '<div class="fm">' +
+      '<label>ประเภท</label><select id="is-type">' + Object.keys(ISS_TYPE).map(function (k) { return '<option value="' + k + '"' + (k === x.type ? " selected" : "") + ">" + ISS_TYPE[k][0] + " " + ISS_TYPE[k][1] + "</option>"; }).join("") + "</select>" +
+      '<label>รายละเอียด</label><textarea id="is-text" placeholder="เกิดอะไรขึ้น / ต้องดูอะไร">' + esc(x.text || "") + "</textarea>" +
+      '<label>แนวทางการแก้ไข <span id="is-req" class="muted" style="font-weight:500"></span></label><textarea id="is-fix" placeholder="ต้องทำยังไงถึงจะแก้ได้">' + esc(x.fix || "") + "</textarea>" +
+      '<div class="row2"><div><label>สถานะ</label><select id="is-st">' + Object.keys(ISS_ST).map(function (k) { return '<option value="' + k + '"' + (k === (x.status || "open") ? " selected" : "") + ">" + ISS_ST[k] + "</option>"; }).join("") + "</select></div>" +
+      '<div><label>กำหนดเสร็จ (ไม่บังคับ)</label><input type="date" id="is-due" value="' + esc(x.due || "") + '" style="width:100%;font:inherit;font-size:13px;border:1px solid var(--border2);border-radius:8px;padding:6px 9px"></div></div>' +
+      '<label>ผู้รับผิดชอบ (ไม่บังคับ)</label><div class="pk"><select id="is-own" data-pick="role">' + roleOpts(x.owner_role, "— ไม่ระบุ —") + "</select>" + plusBtn("role") + "</div>" +
+      '<div class="muted" style="font-size:12px;margin-top:10px">บันทึกแล้วเป็นร่างของ SOP นี้ · ใช้จริงเมื่อส่งอนุมัติและอนุมัติครบ</div>' +
+      '<div class="acts"><button type="button" class="sp-btn" id="is-cx">ยกเลิก</button><button type="button" class="sp-btn pri" id="is-sv">บันทึกร่าง</button></div></div>';
+    dr.classList.add("open");
+    var ty = document.getElementById("is-type"), req = document.getElementById("is-req");
+    function hint() { req.textContent = ty.value === "problem" ? "(ต้องกรอกสำหรับปัญหา)" : "(ไม่บังคับ)"; }
+    ty.onchange = hint; hint();
+    document.getElementById("is-cx").onclick = function () { dr.classList.remove("open"); };
+    document.getElementById("is-sv").onclick = function () {
+      var it = { id: isNew ? "iss-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) : x.id, type: ty.value,
+        text: document.getElementById("is-text").value.trim(), fix: document.getElementById("is-fix").value.trim(),
+        status: document.getElementById("is-st").value, due: document.getElementById("is-due").value, owner_role: document.getElementById("is-own").value,
+        by: x.by, at: x.at, upd_by: x.upd_by, upd_at: x.upd_at };
+      if (!it.text) { toast("ใส่รายละเอียดก่อน", false); return; }
+      if (it.type === "problem" && !it.fix) { toast("ปัญหาต้องใส่แนวทางการแก้ไข", false); return; }
+      saveIssues(d, function (L) { if (isNew) L.push(it); else L = L.map(function (y) { return y.id === it.id ? it : y; }); return L; }, this, "บันทึกแล้ว (ร่าง) — ส่งอนุมัติเมื่อพร้อม", true);
+    };
+  }
+  function saveIssues(d, fn, btn, msg, closeDrawer) {
+    var base = JSON.parse(JSON.stringify(d.draft || d.published || {}));
+    base.issues = fn((base.issues || []).slice());
+    var done = busy(btn, "กำลังบันทึก…");
+    post("sopSave", { key: d.key, draft: base, base: d.updated_at }).then(function (doc) {
+      done(); if (closeDrawer) dr.classList.remove("open"); toast(msg, true); render();
+    }, function (e) { done(); fail(e); });
+  }
+  function bindIssues(el, d) {
+    var nb = el.querySelector("[data-iss-new]"); if (nb) nb.onclick = function () { issueForm(d, null); };
+    el.querySelectorAll("[data-iss-ed]").forEach(function (b) { b.onclick = function () { var id = b.getAttribute("data-iss-ed"); issueForm(d, (content(d).issues || []).filter(function (x) { return x.id === id; })[0]); }; });
+    el.querySelectorAll("[data-iss-rm]").forEach(function (b) { b.onclick = function () {
+      if (!confirm("ลบรายการนี้? (จะเป็นร่าง ต้องอนุมัติเหมือนเดิม)")) return;
+      var id = b.getAttribute("data-iss-rm");
+      saveIssues(d, function (L) { return L.filter(function (x) { return x.id !== id; }); }, b, "ลบแล้ว (ร่าง)", false);
+    }; });
+  }
 
   /* ---------- common bindings (links / workflow buttons) ---------- */
   function bindCommon(root) {
