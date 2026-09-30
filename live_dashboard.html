@@ -1229,7 +1229,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=140938" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=141307" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6573,6 +6573,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     ".tl-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.tl-slot{border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:13px}",
     ".rail-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px}",
     ".rail-row{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--t2);padding:4px 0;border-bottom:1px dashed var(--border)}.rail-row:last-child{border-bottom:0}.rail-row em{font-style:normal;color:var(--t3)}",
+    "a.bxchip{text-decoration:none}",
     ".bxchip{display:inline-flex;font-size:12px;border:1px solid var(--border2);border-radius:8px;padding:3px 9px;margin:0 5px 6px 0;cursor:pointer;background:var(--surface);color:var(--text)}.bxchip:hover{border-color:var(--blue);color:var(--blue)}",
     ".tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}",
     ".tcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}.tcard .th{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}.tcard .th b{font-size:15px}.tcard .tb{padding:12px 16px}",
@@ -6760,15 +6761,19 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       return '<div class="lane-b">' + mine.map(function (x) { return '<div class="ph real"><span class="p">P' + x.n + '</span><div class="pt">' + esc(x.s.title || "") + "</div>" + (x.s.detail ? '<div class="pd">' + nl(x.s.detail) + "</div>" : "") + (x.s.role ? '<div class="pr">👤 ' + roleLink(x.s.role) + "</div>" : "") + "</div>"; }).join('<div class="muted">↓</div>') + "</div>";
     }).join("");
     var decs = (c.decisions || []).filter(function (x) { return !gone(get("dec", x.id)); }).map(function (x) { var dd = content(get("dec", x.id)); return '<div class="dec-row"><b>⚖️ ' + esc(dd.name || x.id) + "</b>" + (dd.criteria ? '<div class="muted">Criteria: ' + nl(dd.criteria) + "</div>" : "") + (dd.doa_role ? '<div class="muted">DOA: ' + roleLink(dd.doa_role) + "</div>" : "") + (x.note ? "<div>" + nl(x.note) + "</div>" : "") + "</div>"; }).join("");
-    var tools = (c.tools || []).filter(function (x) { return !gone(get("tool", x.id)); }).map(function (x) { return '<div class="tl-slot"><b>' + extLink(content(get("tool", x.id) || {}).url, "🧰 " + esc(nameOf("tool", x.id))) + "</b>" + (x.note ? '<div class="muted">' + nl(x.note) + "</div>" : "") + "</div>"; }).join("");
+    var toolList = (c.tools || []).filter(function (x) { return !gone(get("tool", x.id)); });
+    var tools = toolList.map(function (x) { return '<div class="tl-slot"><b>' + extLink(content(get("tool", x.id) || {}).url, "🧰 " + esc(nameOf("tool", x.id))) + "</b>" + (x.note ? '<div class="muted">' + nl(x.note) + "</div>" : "") + "</div>"; }).join("");
     el.innerHTML = '<div class="sp-detail">' + head + approvalsBox(d) + '<div class="sp-body"><div class="sp-main">' +
       '<div class="sp-h">① ใครรับผิดชอบ</div><div class="resp">' + resp + "</div>" +
       '<div class="sp-h">② เป้าหมาย Flow</div><div class="sp-goal">' + (c.goal ? nl(c.goal) : sk("72%") + sk("48%")) + "</div>" +
       '<div class="sp-h">③ Detail กระบวนการ</div>' + (c.diagram && c.diagram.id ? dgView(c.diagram) : "") +
       ((steps.length || !(c.diagram && c.diagram.id)) ? '<div class="lanes" style="grid-template-columns:repeat(' + lanes.length + ',minmax(150px,1fr))">' + lanesHtml + bodyHtml + "</div>" : "") +
       '<div class="sp-h" style="margin-top:18px">④ การตัดสินใจในขั้นนี้ <small>· Criteria + DOA</small></div>' + (decs || '<div class="dec-empty">ยังไม่ได้ผูกเรื่องที่ต้องตัดสินใจ · เลือกจาก ' + list("dec").length + " เรื่องในหมวด การตัดสินใจ</div>") +
-      '<div class="sp-h" style="margin-top:18px">⑤ Tools ที่ใช้ทำงาน <small>· ใช้ทุกวันทำอะไร</small></div><div class="tl-slots">' + (tools || [1, 2, 3].map(function () { return '<div class="tl-slot">' + sk("70%") + sk("45%") + "</div>"; }).join("")) + "</div>" +
       '</div><div class="sp-rail"><div class="rail-card"><div class="sp-h">🔗 กล่องในแอป (' + (c.boxes || []).length + ")</div>" + (c.boxes || []).map(function (b) { return '<span class="bxchip" data-box="' + esc(b.key) + '">' + esc(b.name) + "</span>"; }).join("") + "</div>" +
+      '<div class="rail-card"><div class="sp-h">🧰 Tools (' + toolList.length + ")</div>" + (toolList.length ? toolList.map(function (x) {
+        var tc = content(get("tool", x.id) || {}), u = safeUrl(tc.url), nm = esc(nameOf("tool", x.id)), tip = x.note ? ' title="' + esc(x.note) + '"' : "";
+        return u ? '<a class="bxchip" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer"' + tip + ">" + nm + " ↗</a>" : '<span class="bxchip" data-doc="tool:' + esc(x.id) + '"' + tip + ">" + nm + "</span>";
+      }).join("") : '<div class="muted" style="font-size:12.5px">ยังไม่ได้เลือก Tool</div>') + "</div>" +
       '<div class="rail-card"><div class="sp-h">⏱ SLA</div>' + (c.sla_note ? nl(c.sla_note) : sk("85%") + sk("60%")) + "</div>" + issuesCard(d, c) + "</div></div></div>";
     el.querySelectorAll(".sp-dg").forEach(loadDg);
     bindIssues(el, d);
