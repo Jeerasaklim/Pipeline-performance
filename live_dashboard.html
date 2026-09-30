@@ -1229,7 +1229,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=135703" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=140938" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6997,6 +6997,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     if (!target || !target.hasAttribute("data-pick")) target = null;
     var box = document.createElement("div"); box.className = "sp-qa";
     box.innerHTML = '<input type="text" placeholder="ชื่อ' + TYPE_NAME[type] + 'ใหม่">' + (type === "role" ? '<select title="ทีม">' + teamOpts(btn.getAttribute("data-team") || "") + "</select>" : "") +
+      (type === "tool" ? '<input type="text" data-qurl placeholder="🔗 ลิงก์ https:// (ไม่บังคับ)" inputmode="url">' : "") +
       '<button type="button" class="sp-btn pri" data-qok>เพิ่ม</button><button type="button" class="sp-btn" data-qx>ยกเลิก</button>';
     (btn.parentNode.classList.contains("pk") ? btn.parentNode : btn).insertAdjacentElement("afterend", box);
     var inp = box.querySelector("input"), ok = box.querySelector("[data-qok]");
@@ -7009,6 +7010,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       if (dup) { toast("มี" + TYPE_NAME[type] + ' "' + name + '" อยู่แล้ว — เลือกจากรายการได้เลย', false); return; }
       var key = nextKey(type), data = blankOf(type); data.name = name;
       if (type === "role") data.team = box.querySelector("select").value;
+      var qu = box.querySelector("[data-qurl]");
+      if (qu && qu.value.trim()) { if (!safeUrl(qu.value)) { toast("ลิงก์ต้องขึ้นต้นด้วย https://", false); qu.focus(); return; } data.url = safeUrl(qu.value); }
       var done = busy(ok, "กำลังเพิ่ม…");
       post("sopSave", { key: key, draft: data }).then(function (doc) {
         done(); box.remove(); refreshPickers(type, did(doc), name, target);
