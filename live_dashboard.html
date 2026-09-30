@@ -211,6 +211,7 @@
   .ssaxis { stroke:var(--border); stroke-width:1; }
   .ssgrid { stroke:var(--border); stroke-width:1; stroke-dasharray:3 3; }
   .sstick { font-size:10px; fill:var(--t3); text-anchor:end; dominant-baseline:middle; }
+  .sstick.swx { text-anchor:end; dominant-baseline:auto; fill:var(--t2); }
   .ssmon { font-size:11px; font-weight:700; fill:var(--text); text-anchor:middle; }
   .sstot { font-size:12.5px; font-weight:800; fill:var(--text); text-anchor:middle;
             dominant-baseline:middle; }
@@ -430,7 +431,7 @@
   <div class="brand">Pipeline Performance Tracking <span>&middot; CJX</span></div>
   <div class="stamps">
     <span class="build" id="data-stamp">DATA &mdash;</span>
-    <span class="build">BUILD 2026-09-08 09:51</span>
+    <span class="build">BUILD 2026-09-29 17:58</span>
   </div>
 </header>
 
@@ -1015,6 +1016,19 @@
         </div>
         <div class="table-wrap sswrap"><table class="data-table sstable" id="ss-table"></table></div>
       </div>
+      <!-- Weekly signed vs sign-backlog (Site Negotiation tab) -->
+      <div class="section-label">เซ็นสัญญารายสัปดาห์ เทียบ Backlog รอเซ็น (ตั้งแต่ 1 ม.ค. 26)</div>
+      <div class="card">
+        <div class="ssbar">
+          <span class="ssnote">รายสัปดาห์ (7 วัน) &middot; แท่ง = เซ็นสัญญาในสัปดาห์นั้น &middot;
+            เส้น = Backlog รอเซ็น ณ สิ้นสัปดาห์ &middot; รอเซ็นล่าสุด <b id="sw-latest">0</b> ไซท์</span>
+        </div>
+        <div class="sschart">
+          <div class="sslegend" id="sw-legend"></div>
+          <div class="sschart-svg" id="sw-chart"></div>
+          <div class="sstip" id="sw-tip"></div>
+        </div>
+      </div>
       <!-- 2. WHERE IS THE PROBLEM? -->
       <div class="section-label">WHERE IS THE PROBLEM</div>
       <div class="card">
@@ -1215,7 +1229,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=103656" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=111607" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -1318,7 +1332,7 @@ tr.go-nd-hide{display:none!important}
   renderSlaActual();
 
   // --- data refresh stamp (rewritten by the refresh script) ---
-  var DATA_STAMP = "23 Sep 2026 09:19";
+  var DATA_STAMP = "30 Sep 2026 10:40";
   (function(){
     var el = document.getElementById('data-stamp');
     if (el) el.innerHTML = DATA_STAMP ? ('DATA ' + DATA_STAMP) : 'DATA &mdash; not refreshed';
@@ -2195,7 +2209,71 @@ tr.go-nd-hide{display:none!important}
     var o = document.getElementById('ss-over');  if(o) o.textContent = ssOverCount(SIGN_SLA_ROWS);
     renderSignSlaChart();
     renderAgingRange();
+    renderSignWeekly();
   }
+
+  // ---- weekly signed vs sign-backlog (bars = signed that week, line = backlog at week end) ----
+  /*SIGNWEEK*/var SIGN_WEEKLY = [{"ws": "2026-01-01", "label": "1 Jan", "signed": 0, "backlog": 60}, {"ws": "2026-01-08", "label": "8 Jan", "signed": 1, "backlog": 68}, {"ws": "2026-01-15", "label": "15 Jan", "signed": 1, "backlog": 67}, {"ws": "2026-01-22", "label": "22 Jan", "signed": 5, "backlog": 67}, {"ws": "2026-01-29", "label": "29 Jan", "signed": 0, "backlog": 86}, {"ws": "2026-02-05", "label": "5 Feb", "signed": 2, "backlog": 95}, {"ws": "2026-02-12", "label": "12 Feb", "signed": 1, "backlog": 101}, {"ws": "2026-02-19", "label": "19 Feb", "signed": 1, "backlog": 107}, {"ws": "2026-02-26", "label": "26 Feb", "signed": 0, "backlog": 112}, {"ws": "2026-03-05", "label": "5 Mar", "signed": 3, "backlog": 117}, {"ws": "2026-03-12", "label": "12 Mar", "signed": 1, "backlog": 123}, {"ws": "2026-03-19", "label": "19 Mar", "signed": 0, "backlog": 137}, {"ws": "2026-03-26", "label": "26 Mar", "signed": 15, "backlog": 128}, {"ws": "2026-04-02", "label": "2 Apr", "signed": 7, "backlog": 130}, {"ws": "2026-04-09", "label": "9 Apr", "signed": 5, "backlog": 126}, {"ws": "2026-04-16", "label": "16 Apr", "signed": 8, "backlog": 118}, {"ws": "2026-04-23", "label": "23 Apr", "signed": 10, "backlog": 123}, {"ws": "2026-04-30", "label": "30 Apr", "signed": 11, "backlog": 114}, {"ws": "2026-05-07", "label": "7 May", "signed": 7, "backlog": 113}, {"ws": "2026-05-14", "label": "14 May", "signed": 2, "backlog": 136}, {"ws": "2026-05-21", "label": "21 May", "signed": 5, "backlog": 136}, {"ws": "2026-05-28", "label": "28 May", "signed": 6, "backlog": 130}, {"ws": "2026-06-04", "label": "4 Jun", "signed": 3, "backlog": 135}, {"ws": "2026-06-11", "label": "11 Jun", "signed": 4, "backlog": 141}, {"ws": "2026-06-18", "label": "18 Jun", "signed": 5, "backlog": 141}, {"ws": "2026-06-25", "label": "25 Jun", "signed": 8, "backlog": 145}, {"ws": "2026-07-02", "label": "2 Jul", "signed": 7, "backlog": 141}, {"ws": "2026-07-09", "label": "9 Jul", "signed": 8, "backlog": 133}, {"ws": "2026-07-16", "label": "16 Jul", "signed": 6, "backlog": 145}, {"ws": "2026-07-23", "label": "23 Jul", "signed": 3, "backlog": 156}, {"ws": "2026-07-30", "label": "30 Jul", "signed": 7, "backlog": 160}, {"ws": "2026-08-06", "label": "6 Aug", "signed": 4, "backlog": 167}, {"ws": "2026-08-13", "label": "13 Aug", "signed": 7, "backlog": 163}, {"ws": "2026-08-20", "label": "20 Aug", "signed": 4, "backlog": 174}, {"ws": "2026-08-27", "label": "27 Aug", "signed": 10, "backlog": 171}, {"ws": "2026-09-03", "label": "3 Sep", "signed": 8, "backlog": 169}, {"ws": "2026-09-10", "label": "10 Sep", "signed": 5, "backlog": 167}, {"ws": "2026-09-17", "label": "17 Sep", "signed": 3, "backlog": 172}, {"ws": "2026-09-24", "label": "24 Sep", "signed": 2, "backlog": 183}];
+  function renderSignWeekly(){
+    var host = document.getElementById('sw-chart'); if(!host) return;
+    var D = SIGN_WEEKLY || [];
+    var leg = document.getElementById('sw-legend');
+    if(leg) leg.innerHTML =
+        '<span class="item"><span class="sw" style="background:var(--gmid);border:1.5px solid var(--green)"></span>เซ็นสัญญาในสัปดาห์</span>'
+      + '<span class="item"><span class="sw" style="width:16px;height:0;border-top:2.5px solid var(--blue);border-radius:0"></span>Backlog รอเซ็น (ณ สิ้นสัปดาห์)</span>';
+    var lat = document.getElementById('sw-latest');
+    if(lat) lat.textContent = D.length ? D[D.length - 1].backlog : 0;
+    if(!D.length){ host.innerHTML = ''; return; }
+    var maxV = 0; D.forEach(function(w){ maxV = Math.max(maxV, w.signed, w.backlog); });
+    var yMax = ssNiceMax(maxV), n = D.length;
+    var W = Math.max(900, 52 + n * 24), H = 340, PL = 40, PR = 12, PT = 14, PB = 58;
+    var plotH = H - PT - PB, band = (W - PL - PR) / n, bw = Math.min(15, band * 0.6);
+    var y = function(v){ return PT + plotH - (v / yMax) * plotH; };
+    var cxAt = function(i){ return PL + band * i + band / 2; };
+    var p = ['<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMinYMid meet" xmlns="http://www.w3.org/2000/svg">'];
+    for(var i = 0; i <= 5; i++){
+      var v = yMax / 5 * i, yy = y(v);
+      p.push('<line class="ssgrid" x1="' + PL + '" y1="' + yy.toFixed(1) + '" x2="' + (W - PR) + '" y2="' + yy.toFixed(1) + '"/>');
+      p.push('<text class="sstick" x="' + (PL - 6) + '" y="' + yy.toFixed(1) + '">' + Math.round(v) + '</text>');
+    }
+    p.push('<line class="ssaxis" x1="' + PL + '" y1="' + y(0) + '" x2="' + (W - PR) + '" y2="' + y(0) + '"/>');
+    D.forEach(function(w, i){
+      if(w.signed <= 0) return;
+      var cx = cxAt(i), y1 = y(w.signed), h = y(0) - y1;
+      p.push('<rect class="ssbar" x="' + (cx - bw / 2).toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1)
+           + '" height="' + h.toFixed(1) + '" fill="var(--gmid)" stroke="var(--green)" stroke-width="1"'
+           + ' onmousemove="swTip(event,' + i + ')" onmouseleave="swTipHide()"></rect>');
+    });
+    var pts = D.map(function(w, i){ return cxAt(i).toFixed(1) + ',' + y(w.backlog).toFixed(1); }).join(' ');
+    p.push('<polyline points="' + pts + '" fill="none" stroke="var(--blue)" stroke-width="2"/>');
+    D.forEach(function(w, i){
+      p.push('<circle cx="' + cxAt(i).toFixed(1) + '" cy="' + y(w.backlog).toFixed(1) + '" r="2.6" fill="var(--blue)"'
+           + ' onmousemove="swTip(event,' + i + ')" onmouseleave="swTipHide()"></circle>');
+    });
+    var stepL = Math.ceil(n / 26);
+    D.forEach(function(w, i){
+      if(i % stepL !== 0 && i !== n - 1) return;
+      var lx = cxAt(i).toFixed(1), ly = (H - PB + 15);
+      p.push('<text class="sstick swx" x="' + lx + '" y="' + ly + '" transform="rotate(45 ' + lx + ' ' + ly + ')">' + escHtml(w.label) + '</text>');
+    });
+    p.push('</svg>');
+    host.innerHTML = p.join('');
+  }
+  function swTip(evt, i){
+    var tip = document.getElementById('sw-tip'); if(!tip) return;
+    var w = SIGN_WEEKLY[i]; if(!w){ swTipHide(); return; }
+    tip.innerHTML = '<div class="sstip-h">' + escHtml(w.label) + '<span>7 วัน</span></div>'
+      + '<div class="sstip-r"><span class="sstip-t">เซ็นในสัปดาห์นี้</span><span class="sstip-n">' + w.signed + '</span></div>'
+      + '<div class="sstip-r"><span class="sstip-t">Backlog รอเซ็น</span><span class="sstip-n">' + w.backlog + '</span></div>';
+    tip.style.display = 'block';
+    var host = tip.parentNode, hb = host.getBoundingClientRect();
+    var x = evt.clientX - hb.left + 14, y = evt.clientY - hb.top + 14;
+    var wd = tip.offsetWidth, hh = tip.offsetHeight;
+    if(x + wd > hb.width)  x = evt.clientX - hb.left - wd - 14;
+    if(y + hh > hb.height) y = Math.max(0, evt.clientY - hb.top - hh - 14);
+    tip.style.left = Math.max(0, x) + 'px'; tip.style.top = Math.max(0, y) + 'px';
+  }
+  function swTipHide(){ var t = document.getElementById('sw-tip'); if(t) t.style.display = 'none'; }
 
   // ---- stacked column chart: sites per เดือน วันอนุมัติรถตู้, split by status ----
   // Design-guide colours; --red is reserved for the SLA-breach figures, so ยกเลิก is grey.
@@ -2542,7 +2620,7 @@ DETAIL_COLS_BY_KEY["d_head"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner",
 STEP_DETAILS["d_wait_o1"]=[];
 DETAIL_LABELS["d_wait_o1"]="รอใบอนุญาต อ.1 (ยังไม่ได้/ยังไม่อนุโลม)";
 DETAIL_COLS_BY_KEY["d_wait_o1"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["prov", "จังหวัด"], ["aging", "aging (วัน)"], ["sla_over", "เกิน SLA"], ["cstatus", "สถานะ อ.1"], ["ratkit_note", "Note (งานประจำวันรัฐกิจ)"]];
-SLA_SUMMARY["d_wait_o1"]={"sla_text": "ต่างจังหวัด 45 / กทม. 60 วันปฏิทิน", "avg_aging": 34, "n_exceed": 10, "n_within": 38, "avg_over": 20};
+SLA_SUMMARY["d_wait_o1"]={"sla_text": "ต่างจังหวัด 45 / กทม. 60 วันปฏิทิน", "avg_aging": 37, "n_exceed": 14, "n_within": 33, "avg_over": 16};
 STEP_DETAILS["d_got_o1"]=[];
 DETAIL_LABELS["d_got_o1"]="ได้ อ.1 แล้ว (ได้รับใบอนุญาตจริง)";
 DETAIL_COLS_BY_KEY["d_got_o1"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["cstatus", "สถานะ อ.1"], ["note", "Note"]];
@@ -2558,22 +2636,21 @@ DETAIL_COLS_BY_KEY["d_survey"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner
 STEP_DETAILS["d_precon_start"]=[];
 DETAIL_LABELS["d_precon_start"]="งาน Pre Con — ค้าง = ยังไม่เสร็จ (SLA 14 วันจากส่งมอบพื้นที่)";
 DETAIL_COLS_BY_KEY["d_precon_start"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["handover", "ส่งมอบพื้นที่"], ["survey", "สำรวจพื้นที่"], ["precon_start", "งาน Pre Con"], ["s2", "สถานะ อ.1"], ["aging", "aging จากส่งมอบพื้นที่ (วัน)"], ["sla_over", "เกิน SLA 14"], ["note", "Note"]];
-SLA_SUMMARY["d_precon_start"]={"sla_text": "14 วันปฏิทิน", "avg_aging": 76, "n_exceed": 11, "n_within": 0, "avg_over": 62};
 STEP_DETAILS["d_precon_done"]=[];
 DETAIL_LABELS["d_precon_done"]="ตรวจรับ Pre Con — Pre Con เสร็จแล้ว (จำนวนที่เสร็จ)";
 DETAIL_COLS_BY_KEY["d_precon_done"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["handover", "ส่งมอบพื้นที่"], ["survey", "สำรวจพื้นที่"], ["precon_start", "งาน Pre Con"], ["precon_done", "ตรวจรับ Pre Con"], ["s2", "สถานะ อ.1"], ["note", "Note"]];
 STEP_DETAILS["d_layout"]=[];
 DETAIL_LABELS["d_layout"]="นัดวางผัง (ตรวจผังกับ ผรม.)";
 DETAIL_COLS_BY_KEY["d_layout"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["handover", "ส่งมอบพื้นที่"], ["survey", "สำรวจพื้นที่"], ["precon_start", "งาน Pre Con"], ["precon_done", "ตรวจรับ Pre Con"], ["layout", "นัดวางผัง"], ["s2", "สถานะ อ.1"], ["open_date", "วันเปิดร้าน"], ["deadline", "เดดไลน์วางผัง (D-40)"], ["sla_over", "เกิน SLA"], ["note", "Note"]];
-SLA_SUMMARY["d_layout"]={"sla_text": "ทำ D-42 · SLA 2 วัน (หลุดถ้าเลย D-40)", "n_exceed": 0, "n_within": 8, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["d_layout"]={"sla_text": "ทำ D-42 · SLA 2 วัน (หลุดถ้าเลย D-40)", "n_exceed": 0, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["d_build_start"]=[];
 DETAIL_LABELS["d_build_start"]="เริ่มงานก่อสร้างแล้ว";
 DETAIL_COLS_BY_KEY["d_build_start"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["handover", "ส่งมอบพื้นที่"], ["survey", "สำรวจพื้นที่"], ["precon_start", "งาน Pre Con"], ["precon_done", "ตรวจรับ Pre Con"], ["layout", "นัดวางผัง"], ["build", "เริ่มก่อสร้าง"], ["s2", "สถานะ อ.1"], ["open_date", "วันเปิดร้าน"], ["deadline", "เดดไลน์เริ่มก่อสร้าง (D-40)"], ["sla_over", "เกิน SLA"], ["note", "Note"]];
-SLA_SUMMARY["d_build_start"]={"sla_text": "ต้องถึง D-40 (หลุดถ้าเลยแล้วยังไม่ทำ)", "n_exceed": 0, "n_within": 1, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["d_build_start"]={"sla_text": "ต้องถึง D-40 (หลุดถ้าเลยแล้วยังไม่ทำ)", "n_exceed": 0, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["d_store"]=[];
 DETAIL_LABELS["d_store"]="ส่งมอบร้าน (D-5)";
 DETAIL_COLS_BY_KEY["d_store"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["handover", "ส่งมอบพื้นที่"], ["survey", "สำรวจพื้นที่"], ["precon_start", "งาน Pre Con"], ["precon_done", "ตรวจรับ Pre Con"], ["layout", "นัดวางผัง"], ["build", "เริ่มก่อสร้าง"], ["store", "ส่งมอบร้าน"], ["s2", "สถานะ อ.1"], ["open_date", "วันเปิดร้าน"], ["deadline", "เดดไลน์ส่งมอบร้าน (D-5)"], ["sla_over", "เกิน SLA"], ["act", "สถานะ"], ["note", "Note"]];
-SLA_SUMMARY["d_store"]={"sla_text": "ต้องถึง D-5 (หลุดถ้าเลยแล้วยังไม่ทำ)", "n_exceed": 5, "n_within": 13, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["d_store"]={"sla_text": "ต้องถึง D-5 (หลุดถ้าเลยแล้วยังไม่ทำ)", "n_exceed": 0, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["d_ready"]=[];
 DETAIL_LABELS["d_ready"]="ส่งมอบร้านแล้ว · รอเปิดร้าน (7 มี อ.1 พร้อมเปิด / 1 อนุโลมรอ อ.1)";
 DETAIL_COLS_BY_KEY["d_ready"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["submit_o1", "ยื่น อ.1"], ["handover", "ส่งมอบพื้นที่"], ["survey", "สำรวจพื้นที่"], ["precon_start", "งาน Pre Con"], ["precon_done", "ตรวจรับ Pre Con"], ["layout", "นัดวางผัง"], ["build", "เริ่มก่อสร้าง"], ["store", "ส่งมอบร้าน"], ["cstatus", "สถานะ อ.1 (พร้อมเปิด/รอ อ.1)"], ["note", "Note"]];
@@ -2589,57 +2666,57 @@ DETAIL_COLS_BY_KEY["d_reg_ready"]=[["code", "SITE CODE"], ["name", "NAME"], ["ow
 STEP_DETAILS["rg_house_s"]=[];
 DETAIL_LABELS["rg_house_s"]="ยื่นขอ ทะเบียนบ้าน";
 DETAIL_COLS_BY_KEY["rg_house_s"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_house_s"]={"sla_text": "เดดไลน์ D-18 (วันเปิด−18) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 10, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_house_s"]={"sla_text": "เดดไลน์ D-18 (วันเปิด−18) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 8, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_house_g"]=[];
 DETAIL_LABELS["rg_house_g"]="ได้รับ ทะเบียนบ้าน";
 DETAIL_COLS_BY_KEY["rg_house_g"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_house_g"]={"sla_text": "เดดไลน์ D-9 (วันเปิด−9) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 9, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_house_g"]={"sla_text": "เดดไลน์ D-9 (วันเปิด−9) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 3, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_branch_s"]=[];
 DETAIL_LABELS["rg_branch_s"]="ยื่นจดเพิ่มสาขา ภ.พ.09";
 DETAIL_COLS_BY_KEY["rg_branch_s"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_branch_s"]={"sla_text": "เดดไลน์ D-15 (วันเปิด−15) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 9, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_branch_s"]={"sla_text": "เดดไลน์ D-15 (วันเปิด−15) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 4, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_branch_g"]=[];
 DETAIL_LABELS["rg_branch_g"]="ได้รับ ภ.พ.09";
 DETAIL_COLS_BY_KEY["rg_branch_g"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["rstatus", "สถานะ"]];
 STEP_DETAILS["rg_liquor_s"]=[];
 DETAIL_LABELS["rg_liquor_s"]="ยื่นขอ สุรา+อาหารสัตว์";
 DETAIL_COLS_BY_KEY["rg_liquor_s"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_liquor_s"]={"sla_text": "เดดไลน์ D-10 (วันเปิด−10) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 9, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_liquor_s"]={"sla_text": "เดดไลน์ D-10 (วันเปิด−10) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 3, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_liquor_g"]=[];
 DETAIL_LABELS["rg_liquor_g"]="ได้รับ สุรา+อาหารสัตว์";
 DETAIL_COLS_BY_KEY["rg_liquor_g"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["rstatus", "สถานะ"]];
 STEP_DETAILS["rg_carcass_s"]=[];
 DETAIL_LABELS["rg_carcass_s"]="ยื่นขอ ค้าซากสัตว์";
 DETAIL_COLS_BY_KEY["rg_carcass_s"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_carcass_s"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 6, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_carcass_s"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 3, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_carcass_g"]=[];
 DETAIL_LABELS["rg_carcass_g"]="ได้รับ ค้าซากสัตว์";
 DETAIL_COLS_BY_KEY["rg_carcass_g"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["rstatus", "สถานะ"]];
 STEP_DETAILS["rg_food_s"]=[];
 DETAIL_LABELS["rg_food_s"]="ยื่นขอ สะสม+จำหน่าย";
 DETAIL_COLS_BY_KEY["rg_food_s"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_food_s"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 6, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_food_s"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 3, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_food_g"]=[];
 DETAIL_LABELS["rg_food_g"]="ได้รับ สะสม+จำหน่าย";
 DETAIL_COLS_BY_KEY["rg_food_g"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["rstatus", "สถานะ"]];
 STEP_DETAILS["rg_pest_s"]=[];
 DETAIL_LABELS["rg_pest_s"]="ยื่นขอ ยาฆ่าแมลง";
 DETAIL_COLS_BY_KEY["rg_pest_s"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_pest_s"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 6, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_pest_s"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 3, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_pest_g"]=[];
 DETAIL_LABELS["rg_pest_g"]="ได้รับ ยาฆ่าแมลง";
 DETAIL_COLS_BY_KEY["rg_pest_g"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["rstatus", "สถานะ"]];
 STEP_DETAILS["rg_gas_s"]=[];
 DETAIL_LABELS["rg_gas_s"]="ยื่นขอ แก็ซ";
 DETAIL_COLS_BY_KEY["rg_gas_s"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_gas_s"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 6, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_gas_s"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 3, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_gas_g"]=[];
 DETAIL_LABELS["rg_gas_g"]="ได้รับ แก็ซ";
 DETAIL_COLS_BY_KEY["rg_gas_g"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["rstatus", "สถานะ"]];
 STEP_DETAILS["rg_trash_p"]=[];
 DETAIL_LABELS["rg_trash_p"]="ขอใช้ถังเทศบาล (ต่างจังหวัด)";
 DETAIL_COLS_BY_KEY["rg_trash_p"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_trash_p"]={"sla_text": "เดดไลน์ D-10 (วันเปิด−10) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 9, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_trash_p"]={"sla_text": "เดดไลน์ D-10 (วันเปิด−10) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 3, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_trash_b"]=[];
 DETAIL_LABELS["rg_trash_b"]="สั่งซื้อถัง (กทม./SCM)";
 DETAIL_COLS_BY_KEY["rg_trash_b"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
@@ -2647,15 +2724,15 @@ SLA_SUMMARY["rg_trash_b"]={"sla_text": "เดดไลน์ D-10 (วันเ
 STEP_DETAILS["rg_sound"]=[];
 DETAIL_LABELS["rg_sound"]="ยื่นขอ ใช้เสียง";
 DETAIL_COLS_BY_KEY["rg_sound"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_sound"]={"sla_text": "เดดไลน์ D-10 (วันเปิด−10) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 9, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_sound"]={"sla_text": "เดดไลน์ D-10 (วันเปิด−10) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 3, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_tax"]=[];
 DETAIL_LABELS["rg_tax"]="ยื่น ภาษีป้าย";
 DETAIL_COLS_BY_KEY["rg_tax"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_tax"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 6, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_tax"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 3, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 STEP_DETAILS["rg_pp06"]=[];
 DETAIL_LABELS["rg_pp06"]="จดทะเบียน ภพ.06";
 DETAIL_COLS_BY_KEY["rg_pp06"]=[["code", "SITE CODE"], ["name", "NAME"], ["owner", "ผู้รับผิดชอบ"], ["deadline", "เดดไลน์ (SLA)"], ["rstatus", "สถานะ"]];
-SLA_SUMMARY["rg_pp06"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 6, "n_within": 0, "avg_aging": 0, "avg_over": 0};
+SLA_SUMMARY["rg_pp06"]={"sla_text": "เดดไลน์ D-7 (วันเปิด−7) · หลุด = เลยเดดไลน์แล้วยังไม่ทำ", "n_exceed": 3, "n_within": 0, "avg_aging": 0, "avg_over": 0};
 if(typeof XGROUP_KEYS!=='undefined'){["d_head", "d_wait_o1", "d_got_o1", "d_waiver", "d_handover", "d_survey", "d_precon_start", "d_precon_done", "d_layout", "d_build_start", "d_store", "d_ready", "d_open", "d_ready_con", "d_reg_ready", "rg_house_s", "rg_house_g", "rg_branch_s", "rg_branch_g", "rg_liquor_s", "rg_liquor_g", "rg_carcass_s", "rg_carcass_g", "rg_food_s", "rg_food_g", "rg_pest_s", "rg_pest_g", "rg_gas_s", "rg_gas_g", "rg_trash_p", "rg_trash_b", "rg_sound", "rg_tax", "rg_pp06"].forEach(function(k){if(XGROUP_KEYS.indexOf(k)<0)XGROUP_KEYS.push(k);});}
 if(typeof XHOVER_TARGETS!=='undefined'){["d_head", "d_wait_o1", "d_got_o1", "d_waiver", "d_handover", "d_survey", "d_precon_start", "d_precon_done", "d_layout", "d_build_start", "d_store", "d_ready", "d_open", "d_ready_con", "d_reg_ready", "rg_house_s", "rg_house_g", "rg_branch_s", "rg_branch_g", "rg_liquor_s", "rg_liquor_g", "rg_carcass_s", "rg_carcass_g", "rg_food_s", "rg_food_g", "rg_pest_s", "rg_pest_g", "rg_gas_s", "rg_gas_g", "rg_trash_p", "rg_trash_b", "rg_sound", "rg_tax", "rg_pp06"].forEach(function(k){if(XHOVER_TARGETS.indexOf(k)<0)XHOVER_TARGETS.push(k);});try{SITE_SETS=null;}catch(e){}}
 try{var _WH=(typeof NOTES_WEBHOOK!=="undefined"&&NOTES_WEBHOOK)?NOTES_WEBHOOK:"";fetch(_WH,{method:"GET"}).then(function(r){return r.json();}).then(function(j){if(j&&typeof j==="object"&&typeof TEAM_NOTES!=="undefined"){for(var k in j){if(Object.prototype.hasOwnProperty.call(j,k))TEAM_NOTES[k]=j[k];}try{if(typeof currentDetail!=="undefined"&&currentDetail&&typeof filterDetail==="function")filterDetail();}catch(e){}}}).catch(function(){});}catch(e){}
@@ -2854,7 +2931,7 @@ else{res.className="show";res.innerHTML='<span class="xs-code">'+code+'</span>'+
 .svm-hit{filter:drop-shadow(0 0 5px rgba(13,148,136,.65))}
 #detail-modal .svm-row-tag{color:#0d9488;font-weight:700;margin-right:3px}
 </style>
-<button id="svm-filter" type="button" onclick="svmToggle()" title="ไฮไลต์/กรองเฉพาะสาขาสวมอาคาร">🏢 สวมอาคาร (0)</button>
+<button id="svm-filter" type="button" onclick="svmToggle()" title="ไฮไลต์/กรองเฉพาะสาขาสวมอาคาร">🏢 สวมอาคาร (6)</button>
 <script>(function(){
 var SVM=[];var SS={};for(var i=0;i<SVM.length;i++)SS[SVM[i]]=1;var on=false;window.__setSvm=function(codes){SVM=codes||[];SS={};for(var _si=0;_si<SVM.length;_si++)SS[SVM[_si]]=1;var _sb=document.getElementById('svm-filter');if(_sb)_sb.textContent='\uD83C\uDFE2 \u0e2a\u0e27\u0e21\u0e2d\u0e32\u0e04\u0e32\u0e23 ('+SVM.length+')';try{applyBoard();applyModal();}catch(e){}};
 function keyOf(el){var m=(el.getAttribute("onclick")||"").match(/openDetail\('([^']+)'\)/);return m?m[1]:null;}
@@ -5174,6 +5251,17 @@ setTimeout(applyBoard,300);
     }).catch(function () { return null; });
   }
   root.DPT_cacheClear = function () { try { root.indexedDB.deleteDatabase(CACHE_DB); } catch (e) {} };
+  /* 30 ก.ย.: ขอ bundle แบบบีบอัด (gz=1) → server ตอบ "GZ1:<base64 gzip>" (~0.8MB แทน ~5.5MB) เพราะชั้น echo
+   * ของ Google ตอบ 404 กับก้อนใหญ่ · รองรับทั้งคำตอบบีบอัดและ JSON เดิม (Apps Script รุ่นเก่าไม่รู้จัก gz=1 ก็ยังใช้ได้)
+   * เบราว์เซอร์ที่ไม่มี DecompressionStream → ไม่ขอ gz */
+  const CAN_GZ = typeof root.DecompressionStream === "function" && typeof root.Response === "function";
+  function parseBundleText(t) {
+    if (t.slice(0, 4) !== "GZ1:") return Promise.resolve(JSON.parse(t));
+    const bin = root.atob(t.slice(4)), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const ds = new Blob([u8]).stream().pipeThrough(new root.DecompressionStream("gzip"));
+    return new root.Response(ds).text().then(function (x) { return JSON.parse(x); });
+  }
   function notice(state, info) { try { if (typeof root.DPT_cacheNotice === "function") root.DPT_cacheNotice(state, info || {}); } catch (e) {} }
 
   function GasRepo(opts) {
@@ -5189,13 +5277,13 @@ setTimeout(applyBoard,300);
       if (!token) return Promise.reject(new Error(
         "ยังไม่มี Google ID token (window.DPT_ID_TOKEN ว่าง) — ต้อง login ก่อน"));
       const full = url + (url.indexOf("?") < 0 ? "?" : "&") +
-        "action=getAll&token=" + encodeURIComponent(token);
+        "action=getAll" + (CAN_GZ ? "&gz=1" : "") + "&token=" + encodeURIComponent(token);
       const email = String(root.DPT_USER || "").toLowerCase();
       // live() → j (ok:true) · throw {denied:true} ถ้า server ปฏิเสธ (ห้ามใช้สำเนาแทน) · throw อื่น = ส่งไม่ถึง
       function live() {
         return fetch(full, { redirect: "follow" }).then(function (res) {
           if (!res.ok) throw new Error("GAS backend HTTP " + res.status);
-          return res.json();
+          return res.text().then(parseBundleText);
         }).then(function (j) {
           if (!j || j.ok !== true) {
             // 403 = ไม่มี Role ในชีต (นโยบายจี 23 ก.ย.) → ตั้ง flag ให้ overlay โชว์หน้า "ไม่มีสิทธิ์" (ไม่ใช่ error งง ๆ)
