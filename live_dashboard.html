@@ -1229,7 +1229,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=145941" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=152602" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6861,14 +6861,38 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   function issueRow(x) {
     var t = ISS_TYPE[x.type] || ["•", x.type];
     return '<div class="sp-iss' + (x.status === "done" ? " done" : "") + '"><div class="it"><span>' + t[0] + " " + esc(t[1]) + '</span><span class="st ' + esc(x.status) + '">' + esc(ISS_ST[x.status] || x.status) + "</span>" +
-      (canIssue() ? '<span class="ac"><button type="button" data-iss-ed="' + esc(x.id) + '" title="แก้">✏️</button>' + (ME.canEdit ? '<button type="button" data-iss-rm="' + esc(x.id) + '" title="ลบ">🗑</button>' : "") + "</span>" : "") + "</div>" +
+      "</div>" +
       '<div class="tx">' + nl(x.text) + "</div>" + (x.fix ? '<div class="fx">💡 แนวทางแก้: ' + nl(x.fix) + "</div>" : "") +
       '<div class="mt">' + [x.owner_role ? "👤 " + esc(nameOf("role", x.owner_role)) : "", x.due ? "📅 ภายใน " + thDate(x.due) : "", "แจ้งโดย " + who(x.by) + (x.at ? " · " + thDate(x.at) : "")].filter(Boolean).join(" · ") + "</div></div>";
+  }
+  /* แถวแก้ปัญหาในฟอร์ม SOP (ที่เดียวที่แก้ได้) · id/ผู้แจ้ง/เวลา เก็บไว้ใน data-* (server ประทับเอง) */
+  function issueEditRow(x) {
+    x = x || { type: "problem", status: "open" };
+    var id = x.id || ("iss-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+    return '<div class="stp" data-iss-row data-id="' + esc(id) + '" data-by="' + esc(x.by || "") + '" data-at="' + esc(x.at || "") + '" data-uby="' + esc(x.upd_by || "") + '" data-uat="' + esc(x.upd_at || "") + '" style="grid-template-columns:170px 1fr 190px auto">' +
+      '<div style="display:flex;flex-direction:column;gap:6px"><select data-i="type">' + Object.keys(ISS_TYPE).map(function (k) { return '<option value="' + k + '"' + (k === x.type ? " selected" : "") + ">" + ISS_TYPE[k][0] + " " + ISS_TYPE[k][1] + "</option>"; }).join("") + "</select>" +
+      '<select data-i="status">' + Object.keys(ISS_ST).map(function (k) { return '<option value="' + k + '"' + (k === (x.status || "open") ? " selected" : "") + ">" + ISS_ST[k] + "</option>"; }).join("") + "</select></div>" +
+      '<div><textarea data-i="text" placeholder="รายละเอียด — เกิดอะไรขึ้น / ต้องดูอะไร">' + esc(x.text || "") + '</textarea><textarea data-i="fix" placeholder="💡 แนวทางการแก้ไข (ต้องกรอกถ้าเป็นปัญหา)" style="margin-top:6px">' + esc(x.fix || "") + "</textarea></div>" +
+      '<div style="display:flex;flex-direction:column;gap:6px"><select data-i="owner" data-pick="role">' + roleOpts(x.owner_role, "— ผู้รับผิดชอบ —") + '</select><input type="date" data-i="due" value="' + esc(x.due || "") + '" title="กำหนดเสร็จ" style="font:inherit;font-size:13px;border:1px solid var(--border2);border-radius:8px;padding:6px 9px"></div>' +
+      '<div><button class="sp-btn" type="button" data-iss-del title="ลบรายการนี้">✕</button></div></div>';
+  }
+  function readIssueRows() {
+    var out = [], bad = "";
+    document.querySelectorAll("#f-iss [data-iss-row]").forEach(function (r) {
+      var g = function (k) { var e = r.querySelector('[data-i="' + k + '"]'); return e ? String(e.value || "").trim() : ""; };
+      var it = { id: r.getAttribute("data-id"), type: g("type"), status: g("status") || "open", text: g("text"), fix: g("fix"), owner_role: g("owner"), due: g("due"),
+        by: r.getAttribute("data-by") || undefined, at: r.getAttribute("data-at") || undefined, upd_by: r.getAttribute("data-uby") || undefined, upd_at: r.getAttribute("data-uat") || undefined };
+      if (!it.text && !it.fix) return;                                   // แถวว่าง = ข้าม
+      if (!it.text) bad = bad || "ใส่รายละเอียดของปัญหาก่อน";
+      if (it.type === "problem" && !it.fix) bad = bad || "ปัญหาต้องใส่แนวทางการแก้ไข";
+      out.push(it);
+    });
+    return { list: out, err: bad };
   }
   function issuesCard(d, c) {
     var L = c.issues || [], act = L.filter(function (x) { return x.status !== "done"; }), done = L.filter(function (x) { return x.status === "done"; });
     return '<div class="rail-card"><div class="sp-h" style="display:flex;align-items:center">⚠️ ปัญหา & เรื่องที่ต้องดู (' + act.length + ")" +
-      (canIssue() ? '<button type="button" class="sp-plus" data-iss-new style="margin:0 0 0 auto">＋ เพิ่ม</button>' : "") + "</div>" +
+      "</div>" +
       (act.length ? act.map(issueRow).join("") : '<div class="muted" style="font-size:12.5px">ยังไม่มีรายการ</div>') +
       (done.length ? '<details style="margin-top:6px"><summary style="font-size:12px;color:var(--t3);cursor:pointer">ดูที่แก้แล้ว (' + done.length + ")</summary>" + done.map(issueRow).join("") + "</details>" : "") + "</div>";
   }
@@ -7186,6 +7210,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       "<label>⑤ Tools ที่ใช้ทำงาน</label>" + '<div data-pick="tool" data-kind="note">' + list("tool").map(function (x) { var id = did(x); return noteRow("tool", id, id in toolMap, toolMap[id]); }).join("") + "</div>" + plusBtn("tool") +
       boxPicker(d, c) +
       '<label>⏱ SLA</label><textarea id="f-sla">' + esc(c.sla_note || "") + "</textarea>" +
+      '<label>⚠️ ปัญหา & เรื่องที่ต้องดู</label><div id="f-iss">' + (c.issues || []).map(issueEditRow).join("") + "</div>" +
+      '<button class="sp-btn" type="button" id="f-iss-add">＋ เพิ่มรายการ</button>' +
       '<div class="acts"><button class="sp-btn" type="button" id="f-cancel">ยกเลิก</button><button class="sp-btn pri" type="button" id="f-save">บันทึกร่าง</button></div></div>';
   }
   function bindForm(d) {
@@ -7201,6 +7227,10 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var bq = document.getElementById("f-bxq");
     if (bq) bq.oninput = function () { var q = this.value.trim().toLowerCase(); document.querySelectorAll("#f-boxes [data-bxname]").forEach(function (l) { l.style.display = !q || l.getAttribute("data-bxname").indexOf(q) >= 0 ? "" : "none"; }); };
     document.querySelectorAll('#f-boxes input[name="box"]').forEach(function (x) { x.onchange = function () { document.getElementById("f-bxn").textContent = document.querySelectorAll('#f-boxes input[name="box"]:checked').length; }; });
+    var fi = document.getElementById("f-iss");
+    function wireIss() { fi.querySelectorAll("[data-iss-del]").forEach(function (b) { b.onclick = function () { if (confirm("ลบรายการนี้? (ใช้จริงหลังอนุมัติ)")) b.closest("[data-iss-row]").remove(); }; }); }
+    wireIss();
+    document.getElementById("f-iss-add").onclick = function () { fi.insertAdjacentHTML("beforeend", issueEditRow(null)); wireIss(); var t = fi.lastElementChild.querySelector('[data-i="text"]'); if (t) t.focus(); };
     document.getElementById("f-add").onclick = function () { var box = document.getElementById("f-steps"); box.insertAdjacentHTML("beforeend", stepRow({}, lanes)); wire(); };
     document.getElementById("f-cancel").onclick = function () { EDIT = null; detail(did(d)); };
     document.getElementById("f-save").onclick = function () {
@@ -7217,6 +7247,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       base.decisions = q("dec").map(function (id) { return { id: id, note: dn[id] || "" }; });
       base.tools = q("tool").map(function (id) { return { id: id, note: tn2[id] || "" }; });
       base.sla_note = document.getElementById("f-sla").value.trim();
+      var ri = readIssueRows(); if (ri.err) { toast(ri.err, false); return; }
+      base.issues = ri.list;
       if (FORM_DG !== undefined) base.diagram = FORM_DG;   // undefined = ไม่แตะ · null = ลบ · object = ไฟล์ใหม่
       var bn = {}; BOXES.forEach(function (b) { bn[b.key] = b.name; }); (base.boxes || []).forEach(function (b) { if (!bn[b.key]) bn[b.key] = b.name; });
       base.boxes = q("box").map(function (k) { return { key: k, name: bn[k] || k }; });
