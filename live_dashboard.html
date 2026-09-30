@@ -1229,7 +1229,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=123519" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=132325" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6510,7 +6510,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     ".sp-h small{text-transform:none;font-weight:600;color:var(--t3);font-size:12px}",
     ".sp-goal{border-left:4px solid #0ca678;background:var(--s2);border-radius:8px;padding:12px 14px;margin-bottom:18px;font-size:13.5px;color:var(--text);line-height:1.6}",
     ".sk{height:9px;border-radius:6px;background:var(--s3);margin:6px 0}",
-    ".resp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px}",
+    ".resp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px}@media (max-width:900px){.resp{grid-template-columns:repeat(2,minmax(0,1fr))}}",
+    ".rcell .sp-a{line-height:1.7}",
     ".rcell{border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px}.rcell span{display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:3px}",
     ".lanes{display:grid;border:1px solid var(--border);border-radius:10px;overflow:hidden}",
     ".lane-h{padding:8px 10px;font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--border);background:var(--s2)}",
@@ -6698,8 +6699,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       (d.published_at ? '<span class="pill gray">อนุมัติโดย ' + esc(d.published_by) + " · " + esc(d.published_at) + "</span>" : "") + "</div></div>" +
       '<div class="nav2">' + wfButtons(d) + (c.prev || []).map(function (p) { return '<button class="sp-btn" data-go="' + p + '">← ' + esc(nameOf("sop", p)) + "</button>"; }).join("") +
       (c.next || []).map(function (n) { return '<button class="sp-btn" data-go="' + n + '">' + esc(nameOf("sop", n)) + " →</button>"; }).join("") + "</div></div>";
-    var resp = [["เจ้าของกระบวนการ", c.owner_role ? roleLink(c.owner_role) : ""], ["ผู้ลงมือทำ", (c.doer_roles || []).map(roleLink).join(", ")],
-      ["ต้องปรึกษา / ต้องแจ้ง", ((c.consult_roles || []).map(roleLink).join(", ") + ((c.inform_roles || []).length ? " / " + c.inform_roles.map(roleLink).join(", ") : ""))]]
+    var resp = [["เจ้าของกระบวนการ", c.owner_role ? roleLink(c.owner_role) : ""], ["ผู้ลงมือทำ", (c.doer_roles || []).map(roleLink).join("<br>")],
+      ["ต้องปรึกษา", (c.consult_roles || []).map(roleLink).join("<br>")], ["ต้องแจ้ง", (c.inform_roles || []).map(roleLink).join("<br>")]]   // จี 30 ก.ย.: แยก 4 กล่อง (RACI)
       .map(function (x) { return '<div class="rcell"><span>' + x[0] + "</span>" + (x[1] || sk("60%")) + "</div>"; }).join("");
     var steps = c.steps || [], lanesHtml = lanes.map(function (t) { return '<div class="lane-h" style="color:' + col(t) + '">' + dot(t) + esc(tn(t)) + "</div>"; }).join("");
     var bodyHtml = lanes.map(function (t, i) {
@@ -6708,7 +6709,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       return '<div class="lane-b">' + mine.map(function (x) { return '<div class="ph real"><span class="p">P' + x.n + '</span><div class="pt">' + esc(x.s.title || "") + "</div>" + (x.s.detail ? '<div class="pd">' + nl(x.s.detail) + "</div>" : "") + (x.s.role ? '<div class="pr">👤 ' + roleLink(x.s.role) + "</div>" : "") + "</div>"; }).join('<div class="muted">↓</div>') + "</div>";
     }).join("");
     var decs = (c.decisions || []).map(function (x) { var dd = content(get("dec", x.id)); return '<div class="dec-row"><b>⚖️ ' + esc(dd.name || x.id) + "</b>" + (dd.criteria ? '<div class="muted">Criteria: ' + nl(dd.criteria) + "</div>" : "") + (dd.doa_role ? '<div class="muted">DOA: ' + roleLink(dd.doa_role) + "</div>" : "") + (x.note ? "<div>" + nl(x.note) + "</div>" : "") + "</div>"; }).join("");
-    var tools = (c.tools || []).map(function (x) { return '<div class="tl-slot"><b>🧰 ' + esc(nameOf("tool", x.id)) + "</b>" + (x.note ? '<div class="muted">' + nl(x.note) + "</div>" : "") + "</div>"; }).join("");
+    var tools = (c.tools || []).map(function (x) { return '<div class="tl-slot"><b>' + extLink(content(get("tool", x.id) || {}).url, "🧰 " + esc(nameOf("tool", x.id))) + "</b>" + (x.note ? '<div class="muted">' + nl(x.note) + "</div>" : "") + "</div>"; }).join("");
     el.innerHTML = '<div class="sp-detail">' + head + approvalsBox(d) + '<div class="sp-body"><div class="sp-main">' +
       '<div class="sp-h">① ใครรับผิดชอบ</div><div class="resp">' + resp + "</div>" +
       '<div class="sp-h">② เป้าหมาย Flow</div><div class="sp-goal">' + (c.goal ? nl(c.goal) : sk("72%") + sk("48%")) + "</div>" +
@@ -6753,7 +6754,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     document.getElementById("sp-view").innerHTML = h; bindCommon(document.getElementById("sp-view"));
   }
   function toolsView() {
-    document.getElementById("sp-view").innerHTML = '<div class="card">' + refTable("tool", [["name", "Tool"], ["type", "ประเภท"], ["purpose", "ใช้ทำอะไร"], ["users", "ใครใช้", function (c) { return roleNames(c.users); }], ["x", "ใช้ใน SOP", function (c, d) { return usedIn(d, "tools"); }], ["frequency", "ใช้บ่อยแค่ไหน"]], "🧰 Tools ที่ใช้ทำงาน", "ทุกวันใช้เครื่องมืออะไรทำงาน · ใครใช้ · ใช้ใน SOP ไหน") + "</div>";
+    document.getElementById("sp-view").innerHTML = '<div class="card">' + refTable("tool", [["name", "Tool"], ["url", "ลิงก์", function (c) { return safeUrl(c.url) ? extLink(c.url, "เปิด") : ""; }], ["type", "ประเภท"], ["purpose", "ใช้ทำอะไร"], ["users", "ใครใช้", function (c) { return roleNames(c.users); }], ["x", "ใช้ใน SOP", function (c, d) { return usedIn(d, "tools"); }], ["frequency", "ใช้บ่อยแค่ไหน"]], "🧰 Tools ที่ใช้ทำงาน", "ทุกวันใช้เครื่องมืออะไรทำงาน · ใครใช้ · ใช้ใน SOP ไหน") + "</div>";
     bindCommon(document.getElementById("sp-view"));
   }
   function setV(v) { V = v; EDIT = null; EXPAND = false; document.querySelectorAll("#sp-seg button").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-v") === v); }); render(); }
@@ -7100,10 +7101,14 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     role: [["name", "ชื่อตำแหน่ง", "text"], ["team", "ทีม", "team"], ["duties", "หน้าที่หลัก", "textarea"], ["skills", "ความรู้ / ทักษะที่ต้องมี", "textarea"], ["reports_to", "ขึ้นกับ", "role"], ["people", "คนในตำแหน่ง", "people"]],
     dec: [["name", "เรื่องที่ต้องตัดสินใจ", "text"], ["criteria", "Criteria (เกณฑ์)", "textarea"], ["doa_role", "DOA — ผู้อนุมัติ", "role"], ["committees", "คณะกรรมการ", "coms"], ["note", "หมายเหตุ", "textarea"]],
     com: [["name", "ชื่อคณะกรรมการ", "text"], ["scope", "พิจารณาเรื่องอะไร", "textarea"], ["members", "ประธาน / สมาชิก (ตำแหน่ง)", "roles"], ["cadence", "รอบประชุม", "text"]],
-    tool: [["name", "ชื่อ Tool", "text"], ["type", "ประเภท", "text"], ["purpose", "ใช้ทำอะไร", "textarea"], ["users", "ใครใช้", "roles"], ["frequency", "ใช้บ่อยแค่ไหน", "text"]]
+    tool: [["name", "ชื่อ Tool", "text"], ["url", "🔗 ลิงก์ (https://…)", "url"], ["type", "ประเภท", "text"], ["purpose", "ใช้ทำอะไร", "textarea"], ["users", "ใครใช้", "roles"], ["frequency", "ใช้บ่อยแค่ไหน", "text"]]
   };
   var TYPE_NAME = { team: "ทีม", role: "ตำแหน่ง", dec: "การตัดสินใจ", com: "คณะกรรมการ", tool: "Tool" };
+  /* ลิงก์ของ Tool (จี 30 ก.ย.): รับเฉพาะ https:// (กัน javascript: / ลิงก์แปลก) · เปิดแท็บใหม่ */
+  function safeUrl(u) { u = String(u || "").trim(); return /^https:\/\/[^\s"'<>]+$/i.test(u) ? u : ""; }
+  function extLink(u, label) { u = safeUrl(u); return u ? '<a class="sp-a" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + label + " ↗</a>" : label; }
   function showVal(f, v) {
+    if (f[2] === "url") return safeUrl(v) ? extLink(v, esc(safeUrl(v).replace(/^https:\/\//i, "").slice(0, 60))) : "";
     if (f[2] === "role") return v ? roleLink(v) : "";
     if (f[2] === "team") return v ? esc(nameOf("team", v)) : "";
     if (f[2] === "roles") return roleNames(v);
@@ -7135,6 +7140,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
         var out = JSON.parse(JSON.stringify(d.draft || d.published || {}));
         fields.forEach(function (f) { out[f[0]] = readField(db, f); });
         if (!String(out.name || "").trim()) { toast("ใส่ชื่อก่อน", false); return; }
+        if (out.url && !safeUrl(out.url)) { toast("ลิงก์ต้องขึ้นต้นด้วย https://", false); return; }
         var done = busy(this, "กำลังบันทึก…");
         post("sopSave", { key: key, draft: out, base: d.updated_at }).then(function (doc) { done(); after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); openDoc(doc.key); }, function (e) { done(); fail(e); });
       };
@@ -7148,6 +7154,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     if (t === "roles") return "<label>" + esc(f[1]) + "</label>" + chkList(id, list("role"), v, "role") + plusBtn("role");
     if (t === "coms") return "<label>" + esc(f[1]) + "</label>" + chkList(id, list("com"), v, "com") + plusBtn("com");
     if (t === "people") return "<label>" + esc(f[1]) + ' <span class="muted" style="font-weight:500">(คนลาออก แก้แค่ตรงนี้)</span></label><div id="' + id + '">' + (v || []).map(personRow).join("") + '</div><button class="sp-btn" type="button" data-addp="' + id + '">＋ เพิ่มคน</button>';
+    if (t === "url") return "<label>" + esc(f[1]) + '</label><input type="text" id="' + id + '" inputmode="url" placeholder="https://" value="' + esc(v || "") + '">';
     return "<label>" + esc(f[1]) + '</label><input type="text" id="' + id + '" value="' + esc(v || "") + '">';
   }
   function personRow(p) { p = p || {}; return '<div class="row2" data-person style="margin-bottom:6px;grid-template-columns:1.3fr 1fr 1.3fr auto"><input type="text" data-p="name" placeholder="ชื่อ-นามสกุล" value="' + esc(p.name || "") + '"><input type="text" data-p="since" placeholder="ตั้งแต่ (เช่น 2026-09)" value="' + esc(p.since || "") + '"><input type="text" data-p="backup" placeholder="ตัวแทนตอนลา" value="' + esc(p.backup || "") + '"><button class="sp-btn" type="button" data-rmp>✕</button></div>'; }
