@@ -1229,7 +1229,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=132325" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=132811" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6371,7 +6371,12 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   var V = "flow", CUR = null, Q = "", EDIT = null, SHOW_DRAFT = true;
   function allowed() { return SOP_VISIBLE_ROLES.indexOf(window.DPT_ROLE) >= 0; }
   function content(d) { if (!d) return {}; return (SHOW_DRAFT && ME.canApprove && d.draft) ? d.draft : (d.published || d.draft || {}); }
-  function list(type) { return Object.keys(DOCS).filter(function (k) { return k.indexOf(type + ":") === 0; }).sort().map(function (k) { return DOCS[k]; }); }
+  /* ลบ = ตั้ง _deleted:true ในร่าง → อนุมัติครบ = ฉบับใช้จริงถูกลบ → gone() ซ่อนทุกที่ · pendDel() = รออนุมัติการลบ */
+  function gone(d) { return !!(d && d.published && d.published._deleted && (!d.draft || d.draft._deleted)); }
+  function pendDel(d) { return !!(d && !gone(d) && (content(d) || {})._deleted); }
+  function live(type, ids) { return (ids || []).filter(function (id) { return !gone(get(type, id)); }); }
+  function delTag(d) { return pendDel(d) ? " (รอลบ)" : ""; }
+  function list(type) { return Object.keys(DOCS).filter(function (k) { return k.indexOf(type + ":") === 0 && !gone(DOCS[k]); }).sort().map(function (k) { return DOCS[k]; }); }
   function did(d) { return d.key.split(":")[1]; }
   function get(type, id) { return DOCS[type + ":" + id]; }
   function nameOf(type, id) { var d = get(type, id); return d ? (content(d).name || id) : (id || ""); }
@@ -6579,7 +6584,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   function statusPill(d) {
     if (!d) return "";
     var n = (d.approvals || []).length, ok = (d.approvals || []).filter(function (a) { return a.state === "approved"; }).length;
-    if (d.status === "pending") return '<span class="pill pend">รออนุมัติ ' + ok + "/" + n + "</span>";
+    var dz = pendDel(d) ? '<span class="pill" style="color:#b91c1c;border-color:#fecaca;background:#fef2f2">🗑 รอลบ</span> ' : "";
+    if (d.status === "pending") return dz + '<span class="pill pend">รออนุมัติ ' + ok + "/" + n + "</span>";
+    if (dz) return dz + '<span class="pill pend">ร่าง (ยังไม่ส่งอนุมัติ)</span>';
     if (d.status === "draft") return '<span class="pill pend">ร่าง (ยังไม่ส่งอนุมัติ)</span>';
     return '<span class="pill pub">ใช้จริง · v' + (d.version || 1) + "</span>";
   }
@@ -6699,8 +6706,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       (d.published_at ? '<span class="pill gray">อนุมัติโดย ' + esc(d.published_by) + " · " + esc(d.published_at) + "</span>" : "") + "</div></div>" +
       '<div class="nav2">' + wfButtons(d) + (c.prev || []).map(function (p) { return '<button class="sp-btn" data-go="' + p + '">← ' + esc(nameOf("sop", p)) + "</button>"; }).join("") +
       (c.next || []).map(function (n) { return '<button class="sp-btn" data-go="' + n + '">' + esc(nameOf("sop", n)) + " →</button>"; }).join("") + "</div></div>";
-    var resp = [["เจ้าของกระบวนการ", c.owner_role ? roleLink(c.owner_role) : ""], ["ผู้ลงมือทำ", (c.doer_roles || []).map(roleLink).join("<br>")],
-      ["ต้องปรึกษา", (c.consult_roles || []).map(roleLink).join("<br>")], ["ต้องแจ้ง", (c.inform_roles || []).map(roleLink).join("<br>")]]   // จี 30 ก.ย.: แยก 4 กล่อง (RACI)
+    var resp = [["เจ้าของกระบวนการ", live("role", [c.owner_role].filter(Boolean)).map(roleLink).join("")], ["ผู้ลงมือทำ", live("role", c.doer_roles).map(roleLink).join("<br>")],
+      ["ต้องปรึกษา", live("role", c.consult_roles).map(roleLink).join("<br>")], ["ต้องแจ้ง", live("role", c.inform_roles).map(roleLink).join("<br>")]]   // จี 30 ก.ย.: แยก 4 กล่อง (RACI)
       .map(function (x) { return '<div class="rcell"><span>' + x[0] + "</span>" + (x[1] || sk("60%")) + "</div>"; }).join("");
     var steps = c.steps || [], lanesHtml = lanes.map(function (t) { return '<div class="lane-h" style="color:' + col(t) + '">' + dot(t) + esc(tn(t)) + "</div>"; }).join("");
     var bodyHtml = lanes.map(function (t, i) {
@@ -6708,8 +6715,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       if (!steps.length) return '<div class="lane-b">' + (i === 0 ? '<div class="ph"><span class="p">P1</span>' + sk("80%") + sk("55%") + '</div><div class="muted">↓</div><div class="ph"><span class="p">P2</span>' + sk("70%") + sk("40%") + "</div>" : '<div class="ph" style="margin-top:74px"><span class="p">P3</span>' + sk("75%") + sk("50%") + "</div>") + "</div>";
       return '<div class="lane-b">' + mine.map(function (x) { return '<div class="ph real"><span class="p">P' + x.n + '</span><div class="pt">' + esc(x.s.title || "") + "</div>" + (x.s.detail ? '<div class="pd">' + nl(x.s.detail) + "</div>" : "") + (x.s.role ? '<div class="pr">👤 ' + roleLink(x.s.role) + "</div>" : "") + "</div>"; }).join('<div class="muted">↓</div>') + "</div>";
     }).join("");
-    var decs = (c.decisions || []).map(function (x) { var dd = content(get("dec", x.id)); return '<div class="dec-row"><b>⚖️ ' + esc(dd.name || x.id) + "</b>" + (dd.criteria ? '<div class="muted">Criteria: ' + nl(dd.criteria) + "</div>" : "") + (dd.doa_role ? '<div class="muted">DOA: ' + roleLink(dd.doa_role) + "</div>" : "") + (x.note ? "<div>" + nl(x.note) + "</div>" : "") + "</div>"; }).join("");
-    var tools = (c.tools || []).map(function (x) { return '<div class="tl-slot"><b>' + extLink(content(get("tool", x.id) || {}).url, "🧰 " + esc(nameOf("tool", x.id))) + "</b>" + (x.note ? '<div class="muted">' + nl(x.note) + "</div>" : "") + "</div>"; }).join("");
+    var decs = (c.decisions || []).filter(function (x) { return !gone(get("dec", x.id)); }).map(function (x) { var dd = content(get("dec", x.id)); return '<div class="dec-row"><b>⚖️ ' + esc(dd.name || x.id) + "</b>" + (dd.criteria ? '<div class="muted">Criteria: ' + nl(dd.criteria) + "</div>" : "") + (dd.doa_role ? '<div class="muted">DOA: ' + roleLink(dd.doa_role) + "</div>" : "") + (x.note ? "<div>" + nl(x.note) + "</div>" : "") + "</div>"; }).join("");
+    var tools = (c.tools || []).filter(function (x) { return !gone(get("tool", x.id)); }).map(function (x) { return '<div class="tl-slot"><b>' + extLink(content(get("tool", x.id) || {}).url, "🧰 " + esc(nameOf("tool", x.id))) + "</b>" + (x.note ? '<div class="muted">' + nl(x.note) + "</div>" : "") + "</div>"; }).join("");
     el.innerHTML = '<div class="sp-detail">' + head + approvalsBox(d) + '<div class="sp-body"><div class="sp-main">' +
       '<div class="sp-h">① ใครรับผิดชอบ</div><div class="resp">' + resp + "</div>" +
       '<div class="sp-h">② เป้าหมาย Flow</div><div class="sp-goal">' + (c.goal ? nl(c.goal) : sk("72%") + sk("48%")) + "</div>" +
@@ -6742,8 +6749,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var l = list(type).filter(function (d) { return !Q || String(content(d).name || "").toLowerCase().indexOf(Q) >= 0; });
     return '<div class="sp-h">' + title + " (" + l.length + ")</div>" + (sub ? '<div style="font-size:12.5px;color:var(--t3);margin:-2px 0 10px">' + sub + "</div>" : "") +
       '<table class="data-table" style="width:100%"><thead><tr>' + cols.map(function (c) { return "<th>" + c[1] + "</th>"; }).join("") + "<th></th></tr></thead><tbody>" +
-      l.map(function (d) { var c = content(d); return "<tr>" + cols.map(function (x, i) { var v = x[2] ? x[2](c, d) : c[x[0]]; return '<td' + (i ? "" : ' style="font-weight:600"') + ">" + (v ? (x[2] ? v : esc(v)) : sk("60%")) + "</td>"; }).join("") +
-        '<td style="white-space:nowrap">' + (d.status !== "published" ? '<span class="pill pend">' + (d.status === "pending" ? "รออนุมัติ" : "ร่าง") + "</span> " : "") + '<a class="sp-a" data-doc="' + esc(d.key) + '">' + (ME.canEdit ? "✏️ แก้" : "ดู") + "</a></td></tr>"; }).join("") +
+      l.map(function (d) { var c = content(d); return "<tr" + (pendDel(d) ? ' style="opacity:.55;text-decoration:line-through"' : "") + ">" + cols.map(function (x, i) { var v = x[2] ? x[2](c, d) : c[x[0]]; return '<td' + (i ? "" : ' style="font-weight:600"') + ">" + (v ? (x[2] ? v : esc(v)) : sk("60%")) + "</td>"; }).join("") +
+        '<td style="white-space:nowrap">' + (d.status !== "published" ? '<span class="pill pend">' + (d.status === "pending" ? "รออนุมัติ" : "ร่าง") + "</span> " : "") + (pendDel(d) ? '<span class="pill" style="color:#b91c1c;border-color:#fecaca">🗑 รอลบ</span> ' : "") + '<a class="sp-a" data-doc="' + esc(d.key) + '">' + (ME.canEdit ? "✏️ แก้" : "ดู") + "</a>" +
+        (ME.canEdit ? (pendDel(d) ? ' · <a class="sp-a" data-undel="' + esc(d.key) + '">↩️ ยกเลิกลบ</a>' : ' · <a class="sp-a" data-del="' + esc(d.key) + '" style="color:#b91c1c">🗑 ลบ</a>') : "") + "</td></tr>"; }).join("") +
       "</tbody></table>" + (ME.canEdit ? '<button class="sp-btn" data-new="' + type + '" style="margin-top:10px">＋ เพิ่ม</button>' : "");
   }
   function usedIn(d, fld) { var id = did(d); return sops().filter(function (s) { return (content(s)[fld] || []).some(function (x) { return x.id === id; }); }).map(function (s) { return esc(did(s)); }).join(", "); }
@@ -6845,8 +6853,47 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     root.querySelectorAll("[data-new]").forEach(function (e) { e.onclick = function () { newDoc(e.getAttribute("data-new"), e.getAttribute("data-team")); }; });
     root.querySelectorAll("[data-edit]").forEach(function (e) { e.onclick = function () { var k = e.getAttribute("data-edit"); if (k.indexOf("sop:") === 0) { EDIT = k; detail(k.split(":")[1]); } else openDoc(k, true); }; });
     root.querySelectorAll("[data-submit]").forEach(function (e) { e.onclick = function () { submitDlg(e.getAttribute("data-submit")); }; });
+    root.querySelectorAll("[data-del]").forEach(function (e) { e.onclick = function (ev) { ev.stopPropagation(); markDelete(e.getAttribute("data-del"), true, e); }; });
+    root.querySelectorAll("[data-undel]").forEach(function (e) { e.onclick = function (ev) { ev.stopPropagation(); markDelete(e.getAttribute("data-undel"), false, e); }; });
     root.querySelectorAll("[data-approve]").forEach(function (e) { e.onclick = function () { decide(e.getAttribute("data-approve"), "approve", e); }; });
     root.querySelectorAll("[data-return]").forEach(function (e) { e.onclick = function () { decide(e.getAttribute("data-return"), "return", e); }; });
+  }
+  /* ที่ที่รายการนี้ถูกใช้อยู่ (เตือนก่อนลบ) */
+  function usageOf(type, id) {
+    var out = [], has = function (a) { return (a || []).indexOf(id) >= 0; };
+    sops().forEach(function (s) {
+      var c = content(s), hit = false;
+      if (type === "role") hit = c.owner_role === id || has(c.doer_roles) || has(c.consult_roles) || has(c.inform_roles) || (c.steps || []).some(function (x) { return x.role === id; }) || (c.issues || []).some(function (x) { return x.owner_role === id; });
+      if (type === "team") hit = has(c.teams) || (c.steps || []).some(function (x) { return x.lane === id; });
+      if (type === "dec") hit = (c.decisions || []).some(function (x) { return x.id === id; });
+      if (type === "tool") hit = (c.tools || []).some(function (x) { return x.id === id; });
+      if (hit) out.push("SOP " + did(s));
+    });
+    ["team", "role", "dec", "com", "tool"].forEach(function (t) {
+      list(t).forEach(function (d) {
+        var c = content(d), hit = false;
+        if (type === "role") hit = c.head_role === id || c.reports_to === id || c.doa_role === id || has(c.members) || has(c.users);
+        if (type === "team") hit = t === "role" && c.team === id;
+        if (type === "com") hit = has(c.committees);
+        if (hit && d.key !== type + ":" + id) out.push(TYPE_NAME[t] + " " + (c.name || did(d)));
+      });
+    });
+    return out;
+  }
+  function markDelete(key, on, btn) {
+    var d = DOCS[key]; if (!d || !ME.canEdit) return;
+    var type = key.split(":")[0], name = content(d).name || did(d);
+    if (on) {
+      var u = usageOf(type, did(d));
+      if (!confirm("ลบ" + (TYPE_NAME[type] || "") + ' "' + name + '"?\n\n' + (u.length ? "⚠️ ใช้อยู่ใน: " + u.join(", ") + "\nลบแล้วจะหายจากที่เหล่านั้นด้วย\n\n" : "") + "การลบต้องส่งอนุมัติเหมือนเนื้อหาอื่น · ยกเลิกได้ก่อนอนุมัติ")) return;
+    }
+    var base = JSON.parse(JSON.stringify(d.draft || d.published || {}));
+    if (on) base._deleted = true; else delete base._deleted;
+    var done = busy(btn, on ? "กำลังลบ…" : "กำลังยกเลิก…");
+    post("sopSave", { key: key, draft: base, base: d.updated_at }).then(function (doc) {
+      done(); toast(on ? 'ทำเครื่องหมายลบแล้ว (ร่าง) — กด "ส่งอนุมัติ" เพื่อลบจริง' : "ยกเลิกการลบแล้ว (ร่าง)", true);
+      render(); if (dr.classList.contains("open")) openDoc(doc.key);
+    }, function (e) { done(); fail(e); });
   }
   function after(doc, msg) { toast(msg, true); render(); if (dr.classList.contains("open") && doc && doc.key.indexOf("sop:") !== 0) openDoc(doc.key); }
   function fail(e) { toast(String((e && e.message) || e), false); }
@@ -6886,7 +6933,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   function blankOf(type) { var b = {}; SCHEMA[type].forEach(function (f) { b[f[0]] = (f[2] === "roles" || f[2] === "coms" || f[2] === "people") ? [] : ""; }); return b; }
   function plusBtn(type, team) { return ME.canEdit ? '<button type="button" class="sp-plus" data-plus="' + type + '"' + (team ? ' data-team="' + esc(team) + '"' : "") + ">＋ เพิ่ม" + TYPE_NAME[type] + "</button>" : ""; }
   function noteRow(type, id, checked, note) {
-    return '<div style="display:grid;grid-template-columns:260px 1fr;gap:8px;align-items:center;margin-bottom:6px"><label style="margin:0;font-weight:500"><input type="checkbox" name="' + type + '" value="' + esc(id) + '"' + (checked ? " checked" : "") + "> " + esc(nameOf(type, id)) +
+    return '<div style="display:grid;grid-template-columns:260px 1fr;gap:8px;align-items:center;margin-bottom:6px"><label style="margin:0;font-weight:500"><input type="checkbox" name="' + type + '" value="' + esc(id) + '"' + (checked ? " checked" : "") + "> " + esc(nameOf(type, id)) + delTag(get(type, id)) +
       '</label><input type="text" data-note="' + type + '" data-id="' + esc(id) + '" placeholder="' + (type === "tool" ? "ใช้ทำอะไรในขั้นนี้" : "หมายเหตุ (ถ้ามี)") + '" value="' + esc(note || "") + '"></div>';
   }
   function refreshPickers(type, id, name, target) {
@@ -7014,9 +7061,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       rd.readAsText(f, "utf-8");
     };
   }
-  function roleOpts(sel, emptyTxt) { return '<option value="">' + (emptyTxt || "— เลือกตำแหน่ง —") + "</option>" + list("role").map(function (r) { var id = did(r); return '<option value="' + id + '"' + (id === sel ? " selected" : "") + ">" + esc(content(r).name) + "</option>"; }).join(""); }
+  function roleOpts(sel, emptyTxt) { return '<option value="">' + (emptyTxt || "— เลือกตำแหน่ง —") + "</option>" + list("role").map(function (r) { var id = did(r); return '<option value="' + id + '"' + (id === sel ? " selected" : "") + ">" + esc(content(r).name) + delTag(r) + "</option>"; }).join(""); }
   function teamOpts(sel) { return list("team").map(function (t) { var id = did(t); return '<option value="' + id + '"' + (id === sel ? " selected" : "") + ">" + esc(content(t).name) + "</option>"; }).join(""); }
-  function chkList(name, items, chosen, pick) { return '<div class="chk"' + (pick ? ' data-pick="' + pick + '" data-name="' + esc(name) + '"' : "") + ">" + items.map(function (d) { var id = did(d); return '<label><input type="checkbox" name="' + name + '" value="' + id + '"' + ((chosen || []).indexOf(id) >= 0 ? " checked" : "") + "> " + esc(content(d).name) + "</label>"; }).join("") + "</div>"; }
+  function chkList(name, items, chosen, pick) { return '<div class="chk"' + (pick ? ' data-pick="' + pick + '" data-name="' + esc(name) + '"' : "") + ">" + items.map(function (d) { var id = did(d); return '<label><input type="checkbox" name="' + name + '" value="' + id + '"' + ((chosen || []).indexOf(id) >= 0 ? " checked" : "") + "> " + esc(content(d).name) + delTag(d) + "</label>"; }).join("") + "</div>"; }
   function stepRow(s, lanes) {
     return '<div class="stp"><select data-f="lane" data-pick="team">' + list("team").map(function (t) { var id = did(t); return '<option value="' + id + '"' + (id === (s.lane || lanes[0]) ? " selected" : "") + ">" + esc(content(t).name.split(" (")[0]) + "</option>"; }).join("") + "</select>" +
       '<div><input type="text" data-f="title" placeholder="ชื่อขั้นตอน" value="' + esc(s.title || "") + '"><textarea data-f="detail" placeholder="ทำอย่างไร" style="margin-top:6px">' + esc(s.detail || "") + "</textarea></div>" +
@@ -7126,7 +7173,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     } else {
       h += fields.map(function (f) { var v = showVal(f, c[f[0]]); return '<div class="rail-card"><div class="sp-h">' + esc(f[1]) + "</div>" + (v || sk("70%") + sk("45%")) + "</div>"; }).join("");
       if (type === "role") { var rs = sops().filter(function (s) { var sc = content(s); return sc.owner_role === did(d) || (sc.doer_roles || []).indexOf(did(d)) >= 0 || (sc.steps || []).some(function (x) { return x.role === did(d); }); }); h += '<div class="rail-card"><div class="sp-h">SOP / งานที่รับผิดชอบ</div>' + (rs.map(function (s) { return '<span class="bxchip" data-s="' + did(s) + '">' + esc(content(s).name) + "</span>"; }).join("") || sk("60%")) + "</div>"; }
-      h += '<div style="display:flex;gap:8px;flex-wrap:wrap">' + wfButtons(d) + "</div>";
+      h += '<div style="display:flex;gap:8px;flex-wrap:wrap">' + wfButtons(d) +
+        (ME.canEdit && type !== "sop" && d.updated_at ? (pendDel(d) ? '<button class="sp-btn" data-undel="' + esc(d.key) + '">↩️ ยกเลิกการลบ</button>' : '<button class="sp-btn" data-del="' + esc(d.key) + '" style="color:#b91c1c;border-color:#fecaca">🗑 ลบ</button>') : "") + "</div>";
     }
     document.getElementById("sp-db").innerHTML = h; dr.classList.add("open");
     var db = document.getElementById("sp-db");
