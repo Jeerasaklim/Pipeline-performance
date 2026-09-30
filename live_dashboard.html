@@ -1229,7 +1229,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=145222" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=145941" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6833,7 +6833,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     document.getElementById("sp-view").innerHTML = h; bindCommon(document.getElementById("sp-view"));
   }
   function toolsView() {
-    document.getElementById("sp-view").innerHTML = '<div class="card">' + refTable("tool", [["name", "Tool"], ["url", "ลิงก์", function (c) { return safeUrl(c.url) ? extLink(c.url, "เปิด") : ""; }], ["type", "ประเภท"], ["purpose", "ใช้ทำอะไร", function (c, d) { var t = toolPurpose(did(d)); return t ? nl(t) : ""; }], ["users", "ใครใช้", function (c) { return roleNames(c.users); }], ["x", "ใช้ใน SOP", function (c, d) { return usedIn(d, "tools"); }], ["frequency", "ใช้บ่อยแค่ไหน"]], "🧰 Tools ที่ใช้ทำงาน", "ทุกวันใช้เครื่องมืออะไรทำงาน · ใครใช้ · ใช้ใน SOP ไหน") + "</div>";
+    document.getElementById("sp-view").innerHTML = '<div class="card">' + refTable("tool", [["name", "Tool"], ["url", "ลิงก์", function (c) { return safeUrl(c.url) ? extLink(c.url, "เปิด") : ""; }], ["purpose", "ใช้ทำอะไร", function (c, d) { var t = toolPurpose(did(d)); return t ? nl(t) : ""; }], ["users", "ใครใช้", function (c) { return roleNames(c.users); }], ["x", "ใช้ใน SOP", function (c, d) { return usedIn(d, "tools"); }]], "🧰 Tools ที่ใช้ทำงาน", "ทุกวันใช้เครื่องมืออะไรทำงาน · ใครใช้ · ใช้ใน SOP ไหน") + "</div>";
     bindCommon(document.getElementById("sp-view"));
   }
   function setV(v) { V = v; EDIT = null; EXPAND = false; document.querySelectorAll("#sp-seg button").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-v") === v); }); render(); }
@@ -7231,7 +7231,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     role: [["name", "ชื่อตำแหน่ง", "text"], ["team", "ทีม", "team"], ["duties", "หน้าที่หลัก", "textarea"], ["skills", "ความรู้ / ทักษะที่ต้องมี", "textarea"], ["reports_to", "ขึ้นกับ", "role"], ["people", "คนในตำแหน่ง", "people"]],
     dec: [["name", "เรื่องที่ต้องตัดสินใจ", "text"], ["criteria", "Criteria (เกณฑ์)", "textarea"], ["doa_role", "DOA — ผู้อนุมัติ", "role"], ["committees", "คณะกรรมการ", "coms"], ["note", "หมายเหตุ", "textarea"]],
     com: [["name", "ชื่อคณะกรรมการ", "text"], ["scope", "พิจารณาเรื่องอะไร", "textarea"], ["members", "ประธาน / สมาชิก (ตำแหน่ง)", "roles"], ["cadence", "รอบประชุม", "text"]],
-    tool: [["name", "ชื่อ Tool", "text"], ["url", "🔗 ลิงก์ (https://…)", "url"], ["type", "ประเภท", "text"], ["purpose", "ใช้ทำอะไร", "textarea"], ["users", "ใครใช้", "roles"], ["frequency", "ใช้บ่อยแค่ไหน", "text"]]
+    tool: [["name", "ชื่อ Tool", "text"], ["url", "🔗 ลิงก์ (https://…)", "url"], ["purpose", "ใช้ทำอะไร", "textarea"], ["users", "ใครใช้", "roles"]]
   };
   var TYPE_NAME = { team: "ทีม", role: "ตำแหน่ง", dec: "การตัดสินใจ", com: "คณะกรรมการ", tool: "Tool" };
   /* ลิงก์ของ Tool (จี 30 ก.ย.): รับเฉพาะ https:// (กัน javascript: / ลิงก์แปลก) · เปิดแท็บใหม่ */
@@ -7255,7 +7255,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       if (type === "tool" && !String(c.purpose || "").trim() && toolNoteFromSops(did(d))) { c = JSON.parse(JSON.stringify(c)); c.purpose = toolNoteFromSops(did(d)); }
       h += '<div class="fm">' + fields.map(function (f) { return fieldInput(f, c[f[0]]); }).join("") + '<div class="acts"><button class="sp-btn" id="sp-cx">ยกเลิก</button><button class="sp-btn pri" id="sp-sv">บันทึกร่าง</button></div></div>';
     } else {
-      h += fields.map(function (f) { var v = showVal(f, c[f[0]]); return '<div class="rail-card"><div class="sp-h">' + esc(f[1]) + "</div>" + (v || sk("70%") + sk("45%")) + "</div>"; }).join("");
+      h += fields.map(function (f) { var v = (type === "tool" && f[0] === "purpose") ? (toolPurpose(did(d)) ? nl(toolPurpose(did(d))) : "") : showVal(f, c[f[0]]); return '<div class="rail-card"><div class="sp-h">' + esc(f[1]) + "</div>" + (v || sk("70%") + sk("45%")) + "</div>"; }).join("");
       if (type === "role") { var rs = sops().filter(function (s) { var sc = content(s); return sc.owner_role === did(d) || (sc.doer_roles || []).indexOf(did(d)) >= 0 || (sc.steps || []).some(function (x) { return x.role === did(d); }); }); h += '<div class="rail-card"><div class="sp-h">SOP / งานที่รับผิดชอบ</div>' + (rs.map(function (s) { return '<span class="bxchip" data-s="' + did(s) + '">' + esc(content(s).name) + "</span>"; }).join("") || sk("60%")) + "</div>"; }
       h += '<div style="display:flex;gap:8px;flex-wrap:wrap">' + wfButtons(d) +
         (ME.canEdit && type !== "sop" && d.updated_at ? (pendDel(d) ? '<button class="sp-btn" data-undel="' + esc(d.key) + '">↩️ ยกเลิกการลบ</button>' : '<button class="sp-btn" data-del="' + esc(d.key) + '" style="color:#b91c1c;border-color:#fecaca">🗑 ลบ</button>') : "") + "</div>";
