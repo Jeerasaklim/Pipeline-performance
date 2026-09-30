@@ -1215,7 +1215,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=210640" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=103656" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5134,6 +5134,48 @@ setTimeout(applyBoard,300);
    * a CORS preflight (Apps Script cannot answer OPTIONS). Fail-loud on any missing piece — never
    * a fake short/empty page (SPEC §2.3 / F4). */
   const GAS_MIN_TAB_ROWS = 50;   // parity with SheetExportRepo undercount guard
+
+  /* ---- สำเนา bundle ในเบราว์เซอร์ (R13 · จี 30 ก.ย.) ------------------------------------------
+   * ชั้นส่งข้อมูลของ Google (googleusercontent echo) ตอบ 404 เป็นพัก ๆ ทั้งที่สคริปต์ทำงานจบแล้ว
+   * (หลักฐาน: Executions 10:20:16 Completed แต่ echo 404) → แอปเข้าไม่ได้ทั้งแอป
+   * ทางแก้: โหลดสดสำเร็จเมื่อไหร่ เก็บสำเนาไว้ใน IndexedDB (แยกตามอีเมล · เก็บแค่ของคนล่าสุดคนเดียว)
+   * โหลดสดไม่ได้ (network / HTTP ไม่ ok / JSON พัง) → ใช้สำเนา ≤ 7 วัน + ประกาศดัง ๆ (DPT_cacheNotice)
+   * ⛔ ไม่ใช้สำเนาแทนเมื่อ server ตอบปฏิเสธ (ok:false เช่น 401/403 ไม่มีสิทธิ์) — ต้องให้คนเห็นว่าไม่มีสิทธิ์
+   * ออกจากระบบ = ลบสำเนา (DPT_cacheClear) */
+  const CACHE_DB = "dpt-cache", CACHE_STORE = "bundle", CACHE_MAX_AGE = 7 * 24 * 3600 * 1000;
+  function cacheOpen() {
+    return new Promise(function (ok, bad) {
+      try {
+        const rq = root.indexedDB.open(CACHE_DB, 1);
+        rq.onupgradeneeded = function () { rq.result.createObjectStore(CACHE_STORE); };
+        rq.onsuccess = function () { ok(rq.result); };
+        rq.onerror = function () { bad(rq.error); };
+      } catch (e) { bad(e); }
+    });
+  }
+  function cacheSave(email, j) {
+    return cacheOpen().then(function (db) {
+      return new Promise(function (ok) {
+        const tx = db.transaction(CACHE_STORE, "readwrite"), st = tx.objectStore(CACHE_STORE);
+        st.clear();                                           // เก็บแค่ของคนที่ login ล่าสุด
+        st.put({ email: email, at: Date.now(), j: j }, "last");
+        tx.oncomplete = function () { db.close(); ok(true); };
+        tx.onerror = tx.onabort = function () { db.close(); ok(false); };
+      });
+    }).catch(function () { return false; });
+  }
+  function cacheLoad(email) {
+    return cacheOpen().then(function (db) {
+      return new Promise(function (ok) {
+        const rq = db.transaction(CACHE_STORE, "readonly").objectStore(CACHE_STORE).get("last");
+        rq.onsuccess = function () { db.close(); const v = rq.result; ok(v && v.email === email && (Date.now() - v.at) <= CACHE_MAX_AGE ? v : null); };
+        rq.onerror = function () { db.close(); ok(null); };
+      });
+    }).catch(function () { return null; });
+  }
+  root.DPT_cacheClear = function () { try { root.indexedDB.deleteDatabase(CACHE_DB); } catch (e) {} };
+  function notice(state, info) { try { if (typeof root.DPT_cacheNotice === "function") root.DPT_cacheNotice(state, info || {}); } catch (e) {} }
+
   function GasRepo(opts) {
     opts = opts || {};
     const url = opts.url || root.DPT_GAS_URL || "";                 // filled after จี deploys (empty = not ready)
@@ -5148,15 +5190,43 @@ setTimeout(applyBoard,300);
         "ยังไม่มี Google ID token (window.DPT_ID_TOKEN ว่าง) — ต้อง login ก่อน"));
       const full = url + (url.indexOf("?") < 0 ? "?" : "&") +
         "action=getAll&token=" + encodeURIComponent(token);
-      _bundle = fetch(full, { redirect: "follow" }).then(function (res) {
-        if (!res.ok) throw new Error("GAS backend HTTP " + res.status);
-        return res.json();
+      const email = String(root.DPT_USER || "").toLowerCase();
+      // live() → j (ok:true) · throw {denied:true} ถ้า server ปฏิเสธ (ห้ามใช้สำเนาแทน) · throw อื่น = ส่งไม่ถึง
+      function live() {
+        return fetch(full, { redirect: "follow" }).then(function (res) {
+          if (!res.ok) throw new Error("GAS backend HTTP " + res.status);
+          return res.json();
+        }).then(function (j) {
+          if (!j || j.ok !== true) {
+            // 403 = ไม่มี Role ในชีต (นโยบายจี 23 ก.ย.) → ตั้ง flag ให้ overlay โชว์หน้า "ไม่มีสิทธิ์" (ไม่ใช่ error งง ๆ)
+            if (j && j.status === 403) { try { root.DPT_ACCESS_DENIED = (j.error || "บัญชีนี้ยังไม่ได้รับสิทธิ์เข้าใช้งาน"); } catch (e) {} }
+            const er = new Error("GAS backend error: " + ((j && (j.error || ("status " + j.status))) || "unknown"));
+            er.denied = true; throw er;
+          }
+          if (email) cacheSave(email, j);
+          return j;
+        });
+      }
+      // ลองใหม่เบื้องหลัง (ไม่บล็อกหน้าจอ) · สำเร็จ = สำเนาในเครื่องสดแล้ว → ป้ายให้กดโหลดใหม่
+      function retryInBackground(n) {
+        const waits = [20000, 40000, 60000, 120000, 240000, 300000];
+        if (n >= waits.length) { notice("gave-up"); return; }
+        setTimeout(function () {
+          live().then(function () { notice("fresh-ready"); }, function (e) { if (e && e.denied) notice("denied"); else retryInBackground(n + 1); });
+        }, waits[n]);
+      }
+      _bundle = live().catch(function (err) {
+        if (err && err.denied) throw err;                     // ไม่มีสิทธิ์ / token หมดอายุ → ไม่ใช้สำเนา
+        return cacheLoad(email).then(function (c) {
+          if (!c) throw err;                                  // ไม่มีสำเนา → จอ error เดิม
+          const j = c.j;
+          j.meta = Object.assign({}, j.meta || {}, { source: "browser-cache", served_from: "browser-cache", is_stale: true, cache_at: c.at });
+          root.DPT_FROM_CACHE = { at: c.at, error: String((err && err.message) || err) };
+          notice("using-cache", { at: c.at, error: String((err && err.message) || err) });
+          retryInBackground(0);
+          return j;
+        });
       }).then(function (j) {
-        if (!j || j.ok !== true) {
-          // 403 = ไม่มี Role ในชีต (นโยบายจี 23 ก.ย.) → ตั้ง flag ให้ overlay โชว์หน้า "ไม่มีสิทธิ์" (ไม่ใช่ error งง ๆ)
-          if (j && j.status === 403) { try { root.DPT_ACCESS_DENIED = (j.error || "บัญชีนี้ยังไม่ได้รับสิทธิ์เข้าใช้งาน"); } catch (e) {} }
-          throw new Error("GAS backend error: " + ((j && (j.error || ("status " + j.status))) || "unknown"));
-        }
         // RBAC (SPEC §7 ชั้น 1 = client gate เพื่อ UX เท่านั้น): role มาจาก server (j.user.role),
         // default "member". การบังคับสิทธิ์จริงอยู่ที่ doGet/doPost (server) — ปุ่มที่ซ่อนตาม role ไม่ใช่ security.
         root.DPT_ROLE = (j.user && j.user.role) || "member";
@@ -5867,6 +5937,25 @@ setTimeout(applyBoard,300);
 })();</script>
 
 
+<script>/*CACHE-NOTICE*/
+(function(){
+  function fmt(t){ try{ return new Date(t).toLocaleString("th-TH",{timeZone:"Asia/Bangkok",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return String(new Date(t)); } }
+  function bar(){ var el=document.getElementById("dpt-cache-bar"); if(!el){ el=document.createElement("div"); el.id="dpt-cache-bar";
+      el.style.cssText="position:sticky;top:0;z-index:99990;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:9px 16px;font:600 13px 'Plus Jakarta Sans','Sarabun',sans-serif;border-bottom:1px solid";
+      document.body.insertBefore(el, document.body.firstChild); } return el; }
+  function paint(el,bg,fg,bd,html){ el.style.background=bg; el.style.color=fg; el.style.borderColor=bd; el.innerHTML=html; }
+  window.DPT_cacheNotice=function(state,info){
+    var el=bar();
+    if(state==="using-cache") paint(el,"#fffbeb","#92400e","#fcd34d","⚠️ โหลดสดไม่สำเร็จ (Google ส่งข้อมูลไม่ถึง) — กำลังแสดงข้อมูล ณ <b>"+fmt(info.at)+"</b> ที่เก็บไว้ในเครื่องนี้ · ห้ามใช้ตัวเลขนี้เป็นข้อมูลล่าสุด · กำลังลองโหลดใหม่อัตโนมัติ…");
+    else if(state==="fresh-ready"){ paint(el,"#ecfdf5","#065f46","#6ee7b7","✅ ได้ข้อมูลใหม่แล้ว <button type='button' id='dpt-cache-reload' style='font:inherit;font-size:12.5px;border:0;border-radius:8px;padding:5px 12px;background:#047857;color:#fff;cursor:pointer'>โหลดใหม่</button>");
+      var b=document.getElementById("dpt-cache-reload"); if(b) b.onclick=function(){ location.reload(); }; }
+    else if(state==="gave-up") paint(el,"#fef2f2","#991b1b","#fecaca","⚠️ ยังโหลดสดไม่ได้ — ข้อมูลที่เห็นคือ ณ <b>"+(window.DPT_FROM_CACHE?fmt(window.DPT_FROM_CACHE.at):"?")+"</b> · กดรีเฟรชหน้าอีกครั้งภายหลัง");
+    else if(state==="denied") paint(el,"#fef2f2","#991b1b","#fecaca","⚠️ การยืนยันตัวตนหมดอายุหรือไม่มีสิทธิ์ — กดรีเฟรชหน้าเพื่อ login ใหม่");
+  };
+})();
+</script>
+
+
 <script src="https://accounts.google.com/gsi/client" async></script>
 <div id="dpt-login" style="position:fixed;inset:0;z-index:2147483000;background:#f0f2f5;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans','Sarabun',sans-serif">
   <div style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 20px 50px rgba(13,20,33,.14);padding:34px 38px;max-width:390px;text-align:center">
@@ -5883,7 +5972,7 @@ setTimeout(applyBoard,300);
   function dj(t){try{var p=t.split(".")[1].replace(/-/g,"+").replace(/_/g,"/");return JSON.parse(decodeURIComponent(escape(atob(p))));}catch(e){return{};}}
   function grant(email,name){try{localStorage.setItem("dpt_email",email);}catch(e){}window.DPT_USER=email;window.DPT_NAME=name||email;var g=document.getElementById("dpt-login");if(g&&g.parentNode)g.parentNode.removeChild(g);if(window.__DPT_resolveAuth)window.__DPT_resolveAuth();}
   function onCred(resp){var p=dj(resp.credential||"");var email=(p.email||"").toLowerCase();var info=document.getElementById("dpt-lginfo");if(ALLOW&&email.indexOf("@"+ALLOW)<0){if(info)info.textContent="⚠️ ต้องใช้อีเมล @"+ALLOW+" เท่านั้น";return;}window.DPT_ID_TOKEN=resp.credential;try{sessionStorage.setItem("dpt_tok",resp.credential);}catch(e){}grant(email,p.name);}
-  window.dptLogout=function(){try{localStorage.removeItem("dpt_email");sessionStorage.removeItem("dpt_tok");}catch(e){}if(window.google&&google.accounts&&google.accounts.id){try{google.accounts.id.disableAutoSelect();}catch(e){}}location.reload();};
+  window.dptLogout=function(){try{localStorage.removeItem("dpt_email");sessionStorage.removeItem("dpt_tok");}catch(e){}try{if(window.DPT_cacheClear)window.DPT_cacheClear();}catch(e){}if(window.google&&google.accounts&&google.accounts.id){try{google.accounts.id.disableAutoSelect();}catch(e){}}location.reload();};
   // จำ token ไว้ (จี 21 ก.ย.): refresh แล้วใช้ id_token เดิมถ้ายังไม่หมดอายุ (~1ชม.) → ข้าม Google login
   // ทั้งหมด (ไม่ต้อง login ซ้ำทุก refresh + ไม่ต้องรอ GIS โหลด = เร็วขึ้นมาก). sessionStorage = ต่อแท็บ,
   // ปิดแท็บแล้วต้อง login ใหม่ (ปลอดภัยกว่า localStorage). exp เช็คจาก JWT payload.
