@@ -1229,7 +1229,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=132811" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=135703" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6364,7 +6364,16 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   function dot(id, sz) { sz = sz || 9; return '<i style="display:inline-block;width:' + sz + 'px;height:' + sz + 'px;border-radius:3px;background:' + col(id) + ';flex:0 0 ' + sz + 'px"></i>'; }
   function sk(w) { return '<div class="sk" style="width:' + w + '"></div>'; }
   function nl(s) { return esc(s).replace(/\n/g, "<br>"); }
-  function toast(m, ok) { if (typeof gtoast === "function") gtoast(m, ok); else alert(m); }
+  /* แถบข้อความมุมจอ (แทน alert ที่ต้องกด OK) */
+  function toast(m, ok) {
+    try {
+      var el = document.getElementById("sp-toast");
+      if (!el) { el = document.createElement("div"); el.id = "sp-toast"; document.body.appendChild(el);
+        el.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;max-width:min(640px,92vw);padding:11px 18px;border-radius:10px;font:600 13px 'Plus Jakarta Sans','Sarabun',sans-serif;box-shadow:0 8px 24px rgba(13,20,33,.22);transition:opacity .2s;pointer-events:none"; }
+      el.style.background = ok ? "#065f46" : "#991b1b"; el.style.color = "#fff"; el.textContent = m; el.style.opacity = "1";
+      clearTimeout(el._t); el._t = setTimeout(function () { el.style.opacity = "0"; }, ok ? 3500 : 6500);
+    } catch (e) { if (typeof gtoast === "function") gtoast(m, ok); }
+  }
 
   /* ---------- state ---------- */
   var DOCS = {}, ME = {}, APPROVERS = [], LOADED = false, LOADING = false, LOAD_ERR = "";
@@ -6416,8 +6425,43 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   function post(action, body) {
     body = body || {}; body.action = action; body.token = tok();
     return fetch(gurl(), { method: "post", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.text(); })
+      .then(function (t) { var j; try { j = JSON.parse(t); } catch (e) { var er = new Error("Google ส่งผลกลับไม่ถึง"); er.lost = true; throw er; }
+        if (!j || !j.ok) { var e2 = new Error((j && j.error) || "บันทึกไม่สำเร็จ"); e2.code = j && j.status; throw e2; }
+        if (j.doc) DOCS[j.doc.key] = j.doc; return j.doc || j; })
+      .catch(function (err) {
+        // 30 ก.ย.: Google มักบันทึกสำเร็จแต่คำตอบหาย (echo 404) → รอบต่อไปชน 409 · ก่อนแจ้งพัง ตรวจในชีตเองว่าสิ่งที่ส่งไปอยู่ในนั้นแล้วหรือยัง
+        if (action === "sopUploadDiagram" || !body.key) throw err;
+        return fetchDocs().then(function (docs) {
+          var d = docs[body.key];
+          if (d && landed(action, body, d)) { Object.keys(docs).forEach(function (k) { DOCS[k] = docs[k]; }); return d; }
+          if (err.lost) throw new Error("Google ส่งผลกลับไม่ถึง และตรวจแล้วยังไม่พบในชีต — ลองกดใหม่อีกครั้ง");
+          if (/ถูกแก้ไปแล้ว/.test(err.message)) { Object.keys(docs).forEach(function (k) { DOCS[k] = docs[k]; }); throw new Error("มีการแก้เอกสารนี้จากที่อื่น — โหลดฉบับล่าสุดให้แล้ว ลองแก้ใหม่อีกครั้ง"); }
+          throw err;
+        }, function () { throw err.lost ? new Error("Google ส่งผลกลับไม่ถึง — อาจบันทึกไปแล้ว กด Ctrl+Shift+R เพื่อตรวจก่อนกดซ้ำ") : err; });
+      });
+  }
+  function fetchDocs() {
+    var u = gurl();
+    return fetch(u + (u.indexOf("?") < 0 ? "?" : "&") + "action=getSop&token=" + encodeURIComponent(tok()), { redirect: "follow" })
       .then(function (r) { return r.json(); })
-      .then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || "บันทึกไม่สำเร็จ"); if (j.doc) DOCS[j.doc.key] = j.doc; return j.doc || j; });
+      .then(function (j) { if (!j || !j.ok) throw new Error("getSop"); var o = {}; (j.docs || []).forEach(function (d) { o[d.key] = d; }); return o; });
+  }
+  function canon(v) {
+    if (v === null || typeof v !== "object") return JSON.stringify(v === undefined ? null : v);
+    if (Array.isArray(v)) return "[" + v.map(canon).join(",") + "]";
+    return "{" + Object.keys(v).sort().filter(function (k) { return v[k] !== undefined; }).map(function (k) { return JSON.stringify(k) + ":" + canon(v[k]); }).join(",") + "}";
+  }
+  function core(dr) {   // เทียบเนื้อหา โดยไม่นับช่องที่ server ประทับเอง (ผู้แจ้ง/เวลาในรายการปัญหา)
+    var c = JSON.parse(JSON.stringify(dr || {}));
+    if (c.issues) c.issues = c.issues.map(function (x) { return { id: x.id, type: x.type, status: x.status || "open", text: String(x.text || "").trim(), fix: String(x.fix || "").trim(), owner_role: x.owner_role || "", due: x.due || "" }; });
+    return canon(c);
+  }
+  function landed(action, body, d) {
+    if (action === "sopSave") return !!d.draft && core(d.draft) === core(body.draft);
+    if (action === "sopSubmit") { var want = (body.approvers || []).map(function (e) { return String(e).toLowerCase(); }).sort().join(","); return d.status === "pending" && (d.approvals || []).map(function (a) { return a.email; }).sort().join(",") === want; }
+    if (action === "sopDecide") { var me = (d.approvals || []).filter(function (a) { return a.email === String(ME.email || "").toLowerCase(); })[0]; return !!me && me.state === (body.decision === "approve" ? "approved" : "returned"); }
+    return false;
   }
 
   /* ปุ่มที่กด = วงหมุนเล็ก ๆ + ข้อความ (จี 29 ก.ย.) · ปุ่มอื่นในแถวเดียวกันกดไม่ได้ระหว่างรอ · เกิน 5 วิ บอกเวลา
@@ -6829,10 +6873,11 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     };
   }
   function saveIssues(d, fn, btn, msg, closeDrawer) {
+    d = DOCS[d.key] || d;   // ใช้ฉบับล่าสุดตอนกด (กันชนวนซ้ำหลังโหลดฉบับใหม่)
     var base = JSON.parse(JSON.stringify(d.draft || d.published || {}));
     base.issues = fn((base.issues || []).slice());
     var done = busy(btn, "กำลังบันทึก…");
-    post("sopSave", { key: d.key, draft: base, base: d.updated_at }).then(function (doc) {
+    post("sopSave", { key: d.key, draft: base, base: (DOCS[d.key] || d).updated_at }).then(function (doc) {
       done(); if (closeDrawer) dr.classList.remove("open"); toast(msg, true); render();
     }, function (e) { done(); fail(e); });
   }
@@ -6890,7 +6935,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var base = JSON.parse(JSON.stringify(d.draft || d.published || {}));
     if (on) base._deleted = true; else delete base._deleted;
     var done = busy(btn, on ? "กำลังลบ…" : "กำลังยกเลิก…");
-    post("sopSave", { key: key, draft: base, base: d.updated_at }).then(function (doc) {
+    post("sopSave", { key: key, draft: base, base: (DOCS[d.key] || d).updated_at }).then(function (doc) {
       done(); toast(on ? 'ทำเครื่องหมายลบแล้ว (ร่าง) — กด "ส่งอนุมัติ" เพื่อลบจริง' : "ยกเลิกการลบแล้ว (ร่าง)", true);
       render(); if (dr.classList.contains("open")) openDoc(doc.key);
     }, function (e) { done(); fail(e); });
@@ -7138,7 +7183,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       var bn = {}; BOXES.forEach(function (b) { bn[b.key] = b.name; }); (base.boxes || []).forEach(function (b) { if (!bn[b.key]) bn[b.key] = b.name; });
       base.boxes = q("box").map(function (k) { return { key: k, name: bn[k] || k }; });
       var done = busy(this, "กำลังบันทึก…");
-      post("sopSave", { key: d.key, draft: base, base: d.updated_at }).then(function (doc) { done(); EDIT = null; after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); }, function (e) { done(); fail(e); });
+      post("sopSave", { key: d.key, draft: base, base: (DOCS[d.key] || d).updated_at }).then(function (doc) { done(); EDIT = null; after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); }, function (e) { done(); fail(e); });
     };
   }
 
@@ -7190,7 +7235,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
         if (!String(out.name || "").trim()) { toast("ใส่ชื่อก่อน", false); return; }
         if (out.url && !safeUrl(out.url)) { toast("ลิงก์ต้องขึ้นต้นด้วย https://", false); return; }
         var done = busy(this, "กำลังบันทึก…");
-        post("sopSave", { key: key, draft: out, base: d.updated_at }).then(function (doc) { done(); after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); openDoc(doc.key); }, function (e) { done(); fail(e); });
+        post("sopSave", { key: key, draft: out, base: (DOCS[d.key] || d).updated_at }).then(function (doc) { done(); after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); openDoc(doc.key); }, function (e) { done(); fail(e); });
       };
     }
   }
