@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=115943" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=122844" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6177,7 +6177,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   function hide(sel){try{var n=document.querySelectorAll(sel);for(var i=0;i<n.length;i++)n[i].style.display="none";}catch(e){}}
   function gate(){
     var role=window.DPT_ROLE;
-    if(!role||role==="admin"||role.indexOf("head_")===0)return; // Edit-ALL (admin/head_*) / ยังไม่รู้ = ไม่ซ่อน (server คุมจริง)
+    if(!role||role==="admin"||role.indexOf("head_")===0||role==="managing_director")return; // Edit-ALL (admin/head_*) / ยังไม่รู้ = ไม่ซ่อน (server คุมจริง)
     // member หรือ construction_management: GO/After/Overall/Nego = view only → ซ่อน Export + แผงต้นทุน.
     // construction_management ยังแก้ Site Management (ผรม.) ในแผนที่ได้ — map เป็น iframe ไม่โดน CSS/ตัวซ่อนนี้.
     if(document.body){document.body.setAttribute("data-dpt-role",role);document.body.setAttribute("data-dpt-noedit","1");}  // noedit=1 → view-only GO/After (member + construction_management; admin/head returned ก่อนแล้ว)
@@ -6227,6 +6227,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
           head_construction:['Head of Construction','#047857','#d1fae5','#6ee7b7'],
           head_site_expansion:['Head of Site Expansion','#047857','#d1fae5','#6ee7b7'],
           head_site_negotiation:['Head of Site Negotiation','#047857','#d1fae5','#6ee7b7'],
+          managing_director:['Managing Director','#047857','#d1fae5','#6ee7b7'],
+          head_business_strategy:['Head of Business Strategy Excellent','#047857','#d1fae5','#6ee7b7'],
           construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],
           member:['ดูอย่างเดียว (Member)','#475569','#f1f5f9','#cbd5e1']};
         function paintUser(){
@@ -6276,11 +6278,14 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
 (function(){
   var ROLES=[['Admin','admin'],['Head of Construction','head_construction'],
     ['Head of Site Expansion','head_site_expansion'],['Head of Site Negotiation','head_site_negotiation'],
+    ['Managing Director','managing_director'],['Head of Business Strategy Excellent','head_business_strategy'],
     ['Construction Management','construction_management'],['Member','member']];
   var RM={admin:['Admin','#1d4ed8','#dbeafe','#93c5fd'],
     head_construction:['Head of Construction','#047857','#d1fae5','#6ee7b7'],
     head_site_expansion:['Head of Site Expansion','#047857','#d1fae5','#6ee7b7'],
     head_site_negotiation:['Head of Site Negotiation','#047857','#d1fae5','#6ee7b7'],
+          managing_director:['Managing Director','#047857','#d1fae5','#6ee7b7'],
+          head_business_strategy:['Head of Business Strategy Excellent','#047857','#d1fae5','#6ee7b7'],
     construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],
     member:['ดูอย่างเดียว (Member)','#475569','#f1f5f9','#cbd5e1']};
   var DOMAIN='cjmart.co.th';
@@ -6431,8 +6436,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
 (function () {
   "use strict";
   // 1 ต.ค. (จี): เปิดให้ Head 3 ตำแหน่งเห็น — "แค่ View ก่อน" (SOP_VIEW_ONLY_ROLES) · เอา role ออกจาก VIEW_ONLY เมื่อจะให้อนุมัติ/แจ้งปัญหาได้
-  var SOP_VISIBLE_ROLES = window.DPT_SOP_VISIBLE_ROLES || ["admin", "head_site_expansion", "head_construction", "head_site_negotiation"];
-  var SOP_VIEW_ONLY_ROLES = window.DPT_SOP_VIEW_ONLY_ROLES || ["head_site_expansion", "head_construction", "head_site_negotiation"];
+  var SOP_VISIBLE_ROLES = window.DPT_SOP_VISIBLE_ROLES || ["admin", "head_site_expansion", "head_construction", "head_site_negotiation", "managing_director", "head_business_strategy"];
+  var SOP_VIEW_ONLY_ROLES = window.DPT_SOP_VIEW_ONLY_ROLES || ["head_site_expansion", "head_construction", "head_site_negotiation", "managing_director", "head_business_strategy"];   // 1 ต.ค.: +MD +Head BSE (เท่า Head)
   var C = { "ORG-SITEEX": "#0e7490", "ORG-NEGO": "#3b5bdb", "ORG-LEGAL": "#0ca678", "ORG-RATKIT": "#7c3aed", "ORG-CONSTR": "#ea580c", "ORG-TABIEN": "#db2777" };
   function col(id) { return C[id] || "#8a93a8"; }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
