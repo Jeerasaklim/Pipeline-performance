@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=095746" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=102637" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6085,14 +6085,44 @@ setTimeout(applyBoard,300);
   var ALLOW="cjmart.co.th";
   function dj(t){try{var p=t.split(".")[1].replace(/-/g,"+").replace(/_/g,"/");return JSON.parse(decodeURIComponent(escape(atob(p))));}catch(e){return{};}}
   function grant(email,name){try{localStorage.setItem("dpt_email",email);}catch(e){}window.DPT_USER=email;window.DPT_NAME=name||email;var g=document.getElementById("dpt-login");if(g&&g.parentNode)g.parentNode.removeChild(g);if(window.__DPT_resolveAuth)window.__DPT_resolveAuth();}
-  function onCred(resp){var p=dj(resp.credential||"");var email=(p.email||"").toLowerCase();var info=document.getElementById("dpt-lginfo");if(ALLOW&&email.indexOf("@"+ALLOW)<0){if(info)info.textContent="⚠️ ต้องใช้อีเมล @"+ALLOW+" เท่านั้น";return;}window.DPT_ID_TOKEN=resp.credential;try{sessionStorage.setItem("dpt_tok",resp.credential);}catch(e){}grant(email,p.name);}
+  /* 1 ต.ค. ต่ออายุ token (อายุ ~1 ชม.) โดยไม่ต้องรีเฟรช — งานที่เปิด/พิมพ์ค้างไม่หาย */
+  var RENEW_T=null,GIS_INIT=false,WAIT=[],RL=null;
+  function expOf(t){return (dj(t||"").exp||0)*1000;}
+  function schedule(){clearTimeout(RENEW_T);var e=expOf(window.DPT_ID_TOKEN);if(!e)return;RENEW_T=setTimeout(renew,Math.max(5000,e-5*60000-Date.now()));}
+  function gisReady(cb){var n=0,iv2=setInterval(function(){if(window.google&&google.accounts&&google.accounts.id){clearInterval(iv2);cb(true);}else if(++n>100){clearInterval(iv2);cb(false);}},200);}
+  function initGis(){if(GIS_INIT)return;GIS_INIT=true;google.accounts.id.initialize({client_id:CLIENT_ID,callback:onCred,hd:ALLOW,auto_select:true,cancel_on_tap_outside:false});}
+  function relogin(){
+    if(!RL){RL=document.createElement("div");RL.id="dpt-relogin";
+      RL.style.cssText="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100003;background:#fff7ed;color:#9a3412;border:1px solid #fdba74;border-radius:12px;box-shadow:0 10px 30px rgba(13,20,33,.18);padding:10px 14px;display:flex;gap:12px;align-items:center;font:600 13px 'Plus Jakarta Sans','Sarabun',sans-serif;max-width:94vw;flex-wrap:wrap";
+      RL.innerHTML='<span>🔑 การเข้าสู่ระบบหมดอายุ — กด Sign in เพื่อต่ออายุ <span style="font-weight:500">(ไม่ต้องรีเฟรช งานที่เปิดไว้ไม่หาย)</span></span><div id="dpt-rl-btn"></div>';
+      document.body.appendChild(RL);}
+    RL.style.display="flex";
+    gisReady(function(ok){if(!ok){RL.firstChild.textContent="⚠️ โหลด Google Sign-in ไม่ได้ — กดรีเฟรชหน้าเพื่อ login ใหม่";return;}
+      try{initGis();var b=document.getElementById("dpt-rl-btn");if(b&&!b.childNodes.length)google.accounts.id.renderButton(b,{theme:"filled_blue",size:"medium",text:"signin_with",shape:"pill"});}catch(e){}});
+  }
+  function renew(){
+    var e0=expOf(window.DPT_ID_TOKEN);
+    gisReady(function(ok){if(!ok){relogin();return;}
+      try{initGis();google.accounts.id.prompt();}catch(e){}
+      setTimeout(function(){if(expOf(window.DPT_ID_TOKEN)<=e0)relogin();},20000);   // ต่อเงียบไม่สำเร็จใน 20 วิ → ขึ้นปุ่ม
+    });
+  }
+  function renewed(){clearTimeout(RENEW_T);schedule();if(RL)RL.style.display="none";var w=WAIT;WAIT=[];w.forEach(function(f){try{f(window.DPT_ID_TOKEN);}catch(e){}});}
+  // ใช้ตอนเจอ 401: รอ token ใหม่ (ขึ้นปุ่ม Sign in ทันที + ลองต่อเงียบคู่กัน) → resolve เมื่อได้
+  window.DPT_reauth=function(){return new Promise(function(res){WAIT.push(res);relogin();try{if(window.google&&google.accounts&&google.accounts.id){initGis();google.accounts.id.prompt();}}catch(e){}});};
+  function onCred(resp){var p=dj(resp.credential||"");var email=(p.email||"").toLowerCase();var info=document.getElementById("dpt-lginfo");if(ALLOW&&email.indexOf("@"+ALLOW)<0){if(info)info.textContent="⚠️ ต้องใช้อีเมล @"+ALLOW+" เท่านั้น";return;}
+    var again=!!window.DPT_ID_TOKEN&&!!window.DPT_USER;
+    if(again&&email!==String(window.DPT_USER).toLowerCase()){try{sessionStorage.setItem("dpt_tok",resp.credential);localStorage.setItem("dpt_email",email);}catch(e){}location.reload();return;}   // ต่ออายุด้วยบัญชีอื่น = เริ่มใหม่ ห้ามปนข้อมูลคนละคน
+    window.DPT_ID_TOKEN=resp.credential;try{sessionStorage.setItem("dpt_tok",resp.credential);}catch(e){}
+    if(again){renewed();return;}
+    grant(email,p.name);schedule();}
   window.dptLogout=function(){try{localStorage.removeItem("dpt_email");sessionStorage.removeItem("dpt_tok");}catch(e){}try{if(window.DPT_cacheClear)window.DPT_cacheClear();}catch(e){}if(window.google&&google.accounts&&google.accounts.id){try{google.accounts.id.disableAutoSelect();}catch(e){}}location.reload();};
   // จำ token ไว้ (จี 21 ก.ย.): refresh แล้วใช้ id_token เดิมถ้ายังไม่หมดอายุ (~1ชม.) → ข้าม Google login
   // ทั้งหมด (ไม่ต้อง login ซ้ำทุก refresh + ไม่ต้องรอ GIS โหลด = เร็วขึ้นมาก). sessionStorage = ต่อแท็บ,
   // ปิดแท็บแล้วต้อง login ใหม่ (ปลอดภัยกว่า localStorage). exp เช็คจาก JWT payload.
-  function tryStored(){try{var t=sessionStorage.getItem("dpt_tok");if(!t)return false;var p=dj(t);var now=Math.floor(Date.now()/1000);if(!p.exp||p.exp<=now+60){sessionStorage.removeItem("dpt_tok");return false;}var em=(p.email||"").toLowerCase();if(ALLOW&&em.indexOf("@"+ALLOW)<0)return false;window.DPT_ID_TOKEN=t;grant(em,p.name);return true;}catch(e){return false;}}
+  function tryStored(){try{var t=sessionStorage.getItem("dpt_tok");if(!t)return false;var p=dj(t);var now=Math.floor(Date.now()/1000);if(!p.exp||p.exp<=now+60){sessionStorage.removeItem("dpt_tok");return false;}var em=(p.email||"").toLowerCase();if(ALLOW&&em.indexOf("@"+ALLOW)<0)return false;window.DPT_ID_TOKEN=t;grant(em,p.name);schedule();return true;}catch(e){return false;}}
   if(tryStored())return;
-  var iv=setInterval(function(){if(window.google&&google.accounts&&google.accounts.id){clearInterval(iv);try{google.accounts.id.initialize({client_id:CLIENT_ID,callback:onCred,hd:ALLOW});google.accounts.id.renderButton(document.getElementById("dpt-gbtn"),{theme:"filled_blue",size:"large",text:"signin_with",shape:"pill",width:270});google.accounts.id.prompt();}catch(e){var info=document.getElementById("dpt-lginfo");if(info)info.textContent="โหลด Google ไม่สำเร็จ: "+e.message;}}},200);
+  var iv=setInterval(function(){if(window.google&&google.accounts&&google.accounts.id){clearInterval(iv);try{GIS_INIT=true;google.accounts.id.initialize({client_id:CLIENT_ID,callback:onCred,hd:ALLOW,auto_select:true});google.accounts.id.renderButton(document.getElementById("dpt-gbtn"),{theme:"filled_blue",size:"large",text:"signin_with",shape:"pill",width:270});google.accounts.id.prompt();}catch(e){var info=document.getElementById("dpt-lginfo");if(info)info.textContent="โหลด Google ไม่สำเร็จ: "+e.message;}}},200);
 })();</script>
 
 
@@ -6473,7 +6503,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
         render();
       });
   }
-  function post(action, body) {
+  function post(action, body, retried) {
     body = body || {}; body.action = action; body.token = tok();
     return fetch(gurl(), { method: "post", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
       .then(function (r) { return r.text(); })
@@ -6481,6 +6511,11 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
         if (!j || !j.ok) { var e2 = new Error((j && j.error) || "บันทึกไม่สำเร็จ"); e2.code = j && j.status; throw e2; }
         if (j.doc) DOCS[j.doc.key] = j.doc; return j.doc || j; })
       .catch(function (err) {
+        // 1 ต.ค.: token หมดอายุ (เปิดค้างเกิน ~1 ชม.) → ขึ้นปุ่ม Sign in · ได้ token ใหม่แล้วบันทึกซ้ำให้เอง 1 ครั้ง
+        if (err && err.code === 401 && !retried && typeof window.DPT_reauth === "function") {
+          toast("การเข้าสู่ระบบหมดอายุ — กด Sign in ด้านบน แล้วจะบันทึกต่อให้เอง", false);
+          return window.DPT_reauth().then(function () { return post(action, body, true); });
+        }
         // 30 ก.ย.: Google มักบันทึกสำเร็จแต่คำตอบหาย (echo 404) → รอบต่อไปชน 409 · ก่อนแจ้งพัง ตรวจในชีตเองว่าสิ่งที่ส่งไปอยู่ในนั้นแล้วหรือยัง
         if (action === "sopUploadDiagram" || !body.key) throw err;
         return fetchDocs().then(function (docs) {
