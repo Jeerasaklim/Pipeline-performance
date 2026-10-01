@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=095142" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=095746" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6880,8 +6880,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   function usedIn(d, fld) { var id = did(d); return sops().filter(function (s) { return (content(s)[fld] || []).some(function (x) { return x.id === id; }); }).map(function (s) { return esc(did(s)); }).join(", "); }
   function roleNames(a) { return (a || []).map(roleLink).join(", "); }
   function apprView() {
-    var h = '<div class="dgrid"><div class="card">' + refTable("dec", [["name", "เรื่อง"], ["criteria", "Criteria"], ["doa_role", "DOA", function (c) { return c.doa_role ? roleLink(c.doa_role) : ""; }], ["committees", "คณะกรรมการ", function (c) { return (c.committees || []).map(function (x) { return esc(nameOf("com", x)); }).join(", "); }], ["x", "SOP", function (c, d) { return usedIn(d, "decisions"); }]], "⚖️ เรื่องที่ต้องตัดสินใจ", "มีแค่ไม่กี่เรื่อง · แต่ละเรื่องต้องมีเกณฑ์ (Criteria) และผู้อนุมัติ (DOA)") +
-      '</div><div class="card">' + refTable("com", [["name", "คณะกรรมการ"], ["scope", "พิจารณาเรื่อง"], ["members", "ประธาน / สมาชิก", function (c) { return roleNames(c.members); }], ["cadence", "รอบประชุม"]], "🏛 คณะกรรมการ", "เกี่ยวกับทุกกระบวนการ") + "</div></div>";
+    // 1 ต.ค. (จี): คณะกรรมการขึ้นก่อน แล้วค่อยเรื่องที่ต้องตัดสินใจ
+    var h = '<div class="dgrid"><div class="card">' + refTable("com", [["name", "คณะกรรมการ"], ["scope", "พิจารณาเรื่อง"], ["members", "ประธาน / สมาชิก", function (c) { return roleNames(c.members); }], ["cadence", "รอบประชุม"]], "🏛 คณะกรรมการ", "เกี่ยวกับทุกกระบวนการ") +
+      '</div><div class="card">' + refTable("dec", [["name", "เรื่อง"], ["criteria", "Criteria"], ["doa_role", "DOA", function (c) { return c.doa_role ? roleLink(c.doa_role) : ""; }], ["committees", "คณะกรรมการ", function (c) { return (c.committees || []).map(function (x) { return esc(nameOf("com", x)); }).join(", "); }], ["x", "SOP", function (c, d) { return usedIn(d, "decisions"); }]], "⚖️ เรื่องที่ต้องตัดสินใจ", "มีแค่ไม่กี่เรื่อง · แต่ละเรื่องต้องมีเกณฑ์ (Criteria) และผู้อนุมัติ (DOA)") + "</div></div>";
     document.getElementById("sp-view").innerHTML = h; bindCommon(document.getElementById("sp-view"));
   }
   function toolsView() {
