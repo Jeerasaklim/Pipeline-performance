@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=185234" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=093015" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6383,7 +6383,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
  * ========================================================================== */
 (function () {
   "use strict";
-  var SOP_VISIBLE_ROLES = window.DPT_SOP_VISIBLE_ROLES || ["admin"];   // เพิ่ม role ที่นี่เมื่อจะเปิดให้คนอื่นเห็น (เช่น head_* ให้กดอนุมัติได้)
+  // 1 ต.ค. (จี): เปิดให้ Head 3 ตำแหน่งเห็น — "แค่ View ก่อน" (SOP_VIEW_ONLY_ROLES) · เอา role ออกจาก VIEW_ONLY เมื่อจะให้อนุมัติ/แจ้งปัญหาได้
+  var SOP_VISIBLE_ROLES = window.DPT_SOP_VISIBLE_ROLES || ["admin", "head_site_expansion", "head_construction", "head_site_negotiation"];
+  var SOP_VIEW_ONLY_ROLES = window.DPT_SOP_VIEW_ONLY_ROLES || ["head_site_expansion", "head_construction", "head_site_negotiation"];
   var C = { "ORG-SITEEX": "#0e7490", "ORG-NEGO": "#3b5bdb", "ORG-LEGAL": "#0ca678", "ORG-RATKIT": "#7c3aed", "ORG-CONSTR": "#ea580c", "ORG-TABIEN": "#db2777" };
   function col(id) { return C[id] || "#8a93a8"; }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -6405,6 +6407,19 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   var DOCS = {}, ME = {}, APPROVERS = [], LOADED = false, LOADING = false, LOAD_ERR = "";
   var V = "flow", CUR = null, Q = "", EDIT = null, SHOW_DRAFT = true;
   function allowed() { return SOP_VISIBLE_ROLES.indexOf(window.DPT_ROLE) >= 0; }
+  function viewOnly() { return SOP_VIEW_ONLY_ROLES.indexOf(window.DPT_ROLE) >= 0; }
+  /* ดูอย่างเดียว = เหมือนคนทั่วไป: เห็นเฉพาะฉบับใช้จริง (ตัดร่าง/ผู้อนุมัติทิ้ง · ไม่มีฉบับใช้จริง = ไม่แสดง) · ปิดสิทธิ์แก้/อนุมัติฝั่งหน้าจอ */
+  function viewDocs(docs) {
+    var o = {};
+    (docs || []).forEach(function (d) {
+      if (!viewOnly()) { o[d.key] = d; return; }
+      if (!d.published) return;
+      o[d.key] = { key: d.key, type: d.type, status: "published", version: d.version, published: d.published, draft: null, approvals: [],
+        updated_by: "", updated_at: d.updated_at, published_by: d.published_by, published_at: d.published_at };
+    });
+    return o;
+  }
+  function viewMe(me) { me = me || {}; if (viewOnly()) { me.canEdit = false; me.canApprove = false; } return me; }
   function content(d) { if (!d) return {}; return (SHOW_DRAFT && ME.canApprove && d.draft) ? d.draft : (d.published || d.draft || {}); }
   /* ลบ = ตั้ง _deleted:true ในร่าง → อนุมัติครบ = ฉบับใช้จริงถูกลบ → gone() ซ่อนทุกที่ · pendDel() = รออนุมัติการลบ */
   function gone(d) { return !!(d && d.published && d.published._deleted && (!d.draft || d.draft._deleted)); }
@@ -6422,7 +6437,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   /* ---------- backend ---------- */
   function gurl() { return window.DPT_GAS_URL || ""; }
   function tok() { return window.DPT_ID_TOKEN || ""; }
-  var CUBE_WAIT = false, PREFETCHED = false;
+  var CUBE_WAIT = false, PREFETCHED = false, ROLE_AT_LOAD;
   function cubeOn() {
     if (CUBE_WAIT || typeof window.DPT_loadStart !== "function" || typeof window.DPT_loadDone !== "function") return;
     var m = document.getElementById("dpt-loading-msg"); CUBE_WAIT = { el: m, msg0: m ? m.textContent : "" };
@@ -6444,8 +6459,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       .then(function (r) { return r.json(); })
       .then(function (j) {
         if (!j || !j.ok) throw new Error((j && j.error) || "โหลดไม่สำเร็จ");
-        DOCS = {}; (j.docs || []).forEach(function (d) { DOCS[d.key] = d; });
-        ME = j.me || {}; APPROVERS = j.approvers || []; LOADED = true;
+        RAW = { docs: j.docs, me: JSON.parse(JSON.stringify(j.me || {})) }; ROLE_AT_LOAD = window.DPT_ROLE;
+        DOCS = viewDocs(j.docs); ME = viewMe(j.me); APPROVERS = j.approvers || []; LOADED = true;
       })
       .catch(function (e) {
         LOAD_ERR = String((e && e.message) || e);
@@ -6481,7 +6496,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var u = gurl();
     return fetch(u + (u.indexOf("?") < 0 ? "?" : "&") + "action=getSop&token=" + encodeURIComponent(tok()), { redirect: "follow" })
       .then(function (r) { return r.json(); })
-      .then(function (j) { if (!j || !j.ok) throw new Error("getSop"); var o = {}; (j.docs || []).forEach(function (d) { o[d.key] = d; }); return o; });
+      .then(function (j) { if (!j || !j.ok) throw new Error("getSop"); return viewDocs(j.docs); });
   }
   function canon(v) {
     if (v === null || typeof v !== "object") return JSON.stringify(v === undefined ? null : v);
@@ -6615,7 +6630,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     ".tcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}.tcard .th{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}.tcard .th b{font-size:15px}.tcard .tb{padding:12px 16px}",
     ".role{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer}.role:hover{border-color:var(--blue)}",
     ".role .av{width:30px;height:30px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:14px}.role .rn{font-size:13px;font-weight:600;color:var(--text)}.role .rs{font-size:11.5px;color:var(--t3)}",
-    ".dgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}@media (max-width:1000px){.dgrid{grid-template-columns:minmax(0,1fr)}}",
+    ".dgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}"   /* 1 ต.ค.: เดิมคณะกรรมการล็อก 340px ข้างตารางการตัดสินใจ → ชื่อตัดบรรทัด ปุ่มแก้/ลบล้นการ์ด · ซ้อนเต็มกว้างทั้งสองตาราง */,
     ".modal-sop{font:inherit;font-size:12px;font-weight:700;border:0;color:#fff;background:var(--blue);border-radius:8px;padding:7px 13px;cursor:pointer}",
     ".sp-drawer{position:fixed;top:0;right:0;height:100vh;width:480px;max-width:96vw;background:var(--surface);border-left:1px solid var(--border);box-shadow:-10px 0 30px rgba(13,20,33,.16);transform:translateX(102%);transition:transform .22s ease;z-index:100001;display:flex;flex-direction:column}",
     ".sp-drawer.open{transform:none}.sp-drawer .dh{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}.sp-drawer .dh .x{margin-left:auto;border:0;background:var(--s3);border-radius:8px;width:30px;height:30px;cursor:pointer;color:var(--t2)}",
@@ -6655,11 +6670,19 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   window.showTab = function (id) {
     var r = _st.apply(this, arguments);
     document.body.classList.toggle("on-sop", id === "sop");
-    if (id === "sop" && allowed()) { if (LOADING && !LOADED) cubeOn(); else load(false); }
+    if (id === "sop" && allowed()) { if (LOADING && !LOADED) cubeOn(); else if (LOADED) { syncRole(); render(); } else load(false); }
     return r;
   };
+  /* 1 ต.ค. บั๊ก: SOP (prefetch) โหลดเสร็จก่อนรู้ role → หน้าวาด "ยังไม่เปิดให้ใช้งาน" ค้าง · role มาแล้ว = จัดสิทธิ์ดูอย่างเดียวใหม่ + วาดใหม่ */
+  var RAW = null;
+  function syncRole() {
+    if (!LOADED || ROLE_AT_LOAD === window.DPT_ROLE || !RAW) return;
+    ROLE_AT_LOAD = window.DPT_ROLE; DOCS = viewDocs(RAW.docs); ME = viewMe(JSON.parse(JSON.stringify(RAW.me || {})));
+  }
+  var GATE_A = null;
   function gate() {
-    var a = allowed(); tb.style.display = a ? "" : "none"; if (sb) sb.style.display = a ? "" : "none";
+    var a = allowed();
+    if (a !== GATE_A) { GATE_A = a; syncRole(); if (LOADED || LOADING) render(); } tb.style.display = a ? "" : "none"; if (sb) sb.style.display = a ? "" : "none";
     try { if (a) localStorage.setItem("dpt_sop_pref", "1"); else if (window.DPT_ROLE) localStorage.removeItem("dpt_sop_pref"); } catch (e) {}
     if (a) prefetch();
   }
