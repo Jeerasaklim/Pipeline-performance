@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=094232" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=095142" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6703,8 +6703,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var n = (d.approvals || []).length, ok = (d.approvals || []).filter(function (a) { return a.state === "approved"; }).length;
     var dz = pendDel(d) ? '<span class="pill" style="color:#b91c1c;border-color:#fecaca;background:#fef2f2">🗑 รอลบ</span> ' : "";
     if (d.status === "pending") return dz + '<span class="pill pend">รออนุมัติ ' + ok + "/" + n + "</span>";
-    if (dz) return dz + '<span class="pill pend">ร่าง (ยังไม่ส่งอนุมัติ)</span>';
-    if (d.status === "draft") return '<span class="pill pend">ร่าง (ยังไม่ส่งอนุมัติ)</span>';
+    if (dz) return dz + '<span class="pill pend">ร่าง (ยังไม่ใช้จริง)</span>';
+    if (d.status === "draft") return '<span class="pill pend">ร่าง (ยังไม่ใช้จริง)</span>';
     return '<span class="pill pub">ใช้จริง · v' + (d.version || 1) + "</span>";
   }
   function myPending(d) { return d && d.status === "pending" && (d.approvals || []).some(function (a) { return String(a.email).toLowerCase() === String(ME.email || "").toLowerCase() && a.state === "pending"; }); }
@@ -6712,7 +6712,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var h = "";
     if (ME.canEdit) {
       h += '<button class="sp-btn" data-edit="' + esc(d.key) + '">✏️ แก้ไข</button>';
-      if (d.status === "draft" && d.draft) h += '<button class="sp-btn pri" data-submit="' + esc(d.key) + '">ส่งอนุมัติ</button>';
+      if (d.status !== "published" && d.draft) h += '<button class="sp-btn pri" data-pub="' + esc(d.key) + '">✅ ใช้เลย</button>';   // 1 ต.ค.: admin ไม่ต้องส่งอนุมัติ
     }
     if (myPending(d)) h += '<button class="sp-btn ok" data-approve="' + esc(d.key) + '">✅ อนุมัติ</button><button class="sp-btn warn" data-return="' + esc(d.key) + '">↩️ ขอแก้</button>';
     return h;
@@ -6822,7 +6822,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var c = content(d), lanes = lanesOf(c);
     var head = '<div class="sp-head"><div><div class="kick">SOP ' + id + " · " + esc(tn((c.teams || [])[0])) + "</div><h2>" + esc(c.name) + "</h2>" +
       '<div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill">รหัส SOP · ' + esc(c.code || "—") + "</span>" + statusPill(d) +
-      (d.published_at ? '<span class="pill gray">อนุมัติโดย ' + esc(d.published_by) + " · " + esc(d.published_at) + "</span>" : "") + "</div></div>" +
+      (d.published_at ? '<span class="pill gray">ใช้จริงโดย ' + esc(d.published_by) + " · " + esc(d.published_at) + "</span>" : "") + "</div></div>" +
       '<div class="nav2">' + wfButtons(d) + (c.prev || []).map(function (p) { return '<button class="sp-btn" data-go="' + p + '">← ' + esc(nameOf("sop", p)) + "</button>"; }).join("") +
       (c.next || []).map(function (n) { return '<button class="sp-btn" data-go="' + n + '">' + esc(nameOf("sop", n)) + " →</button>"; }).join("") + "</div></div>";
     var resp = [["เจ้าของกระบวนการ", live("role", [c.owner_role].filter(Boolean)).map(roleLink).join("")], ["ผู้ลงมือทำ", live("role", c.doer_roles).map(roleLink).join("<br>")],
@@ -6873,7 +6873,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     return '<div class="sp-h">' + title + " (" + l.length + ")</div>" + (sub ? '<div style="font-size:12.5px;color:var(--t3);margin:-2px 0 10px">' + sub + "</div>" : "") +
       '<table class="data-table" style="width:100%"><thead><tr>' + cols.map(function (c) { return "<th>" + c[1] + "</th>"; }).join("") + "<th></th></tr></thead><tbody>" +
       l.map(function (d) { var c = content(d); return "<tr" + (pendDel(d) ? ' style="opacity:.55;text-decoration:line-through"' : "") + ">" + cols.map(function (x, i) { var v = x[2] ? x[2](c, d) : c[x[0]]; return '<td' + (i ? "" : ' style="font-weight:600"') + ">" + (v ? (x[2] ? v : esc(v)) : sk("60%")) + "</td>"; }).join("") +
-        '<td style="white-space:nowrap">' + (d.status !== "published" ? '<span class="pill pend">' + (d.status === "pending" ? "รออนุมัติ" : "ร่าง") + "</span> " : "") + (pendDel(d) ? '<span class="pill" style="color:#b91c1c;border-color:#fecaca">🗑 รอลบ</span> ' : "") + '<a class="sp-a" data-doc="' + esc(d.key) + '">' + (ME.canEdit ? "✏️ แก้" : "ดู") + "</a>" +
+        '<td style="white-space:nowrap">' + (d.status !== "published" ? '<span class="pill pend">' + (d.status === "pending" ? "รออนุมัติ" : "ร่าง") + "</span> " : "") + (pendDel(d) ? '<span class="pill" style="color:#b91c1c;border-color:#fecaca">🗑 รอลบ</span> ' : "") + (ME.canEdit && d.status !== "published" && d.draft ? '<a class="sp-a" data-pub="' + esc(d.key) + '" style="color:#047857">✅ ใช้เลย</a> · ' : "") + '<a class="sp-a" data-doc="' + esc(d.key) + '">' + (ME.canEdit ? "✏️ แก้" : "ดู") + "</a>" +
         (ME.canEdit ? (pendDel(d) ? ' · <a class="sp-a" data-undel="' + esc(d.key) + '">↩️ ยกเลิกลบ</a>' : ' · <a class="sp-a" data-del="' + esc(d.key) + '" style="color:#b91c1c">🗑 ลบ</a>') : "") + "</td></tr>"; }).join("") +
       "</tbody></table>" + (ME.canEdit ? '<button class="sp-btn" data-new="' + type + '" style="margin-top:10px">＋ เพิ่ม</button>' : "");
   }
@@ -6958,8 +6958,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       '<div class="row2"><div><label>สถานะ</label><select id="is-st">' + Object.keys(ISS_ST).map(function (k) { return '<option value="' + k + '"' + (k === (x.status || "open") ? " selected" : "") + ">" + ISS_ST[k] + "</option>"; }).join("") + "</select></div>" +
       '<div><label>กำหนดเสร็จ (ไม่บังคับ)</label><input type="date" id="is-due" value="' + esc(x.due || "") + '" style="width:100%;font:inherit;font-size:13px;border:1px solid var(--border2);border-radius:8px;padding:6px 9px"></div></div>' +
       '<label>ผู้รับผิดชอบ (ไม่บังคับ)</label><div class="pk"><select id="is-own" data-pick="role">' + roleOpts(x.owner_role, "— ไม่ระบุ —") + "</select>" + plusBtn("role") + "</div>" +
-      '<div class="muted" style="font-size:12px;margin-top:10px">บันทึกแล้วเป็นร่างของ SOP นี้ · ใช้จริงเมื่อส่งอนุมัติและอนุมัติครบ</div>' +
-      '<div class="acts"><button type="button" class="sp-btn" id="is-cx">ยกเลิก</button><button type="button" class="sp-btn pri" id="is-sv">บันทึกร่าง</button></div></div>';
+      '<div class="muted" style="font-size:12px;margin-top:10px">admin บันทึกแล้วใช้จริงทันที</div>' +
+      '<div class="acts"><button type="button" class="sp-btn" id="is-cx">ยกเลิก</button><button type="button" class="sp-btn pri" id="is-sv">บันทึก</button></div></div>';
     dr.classList.add("open");
     var ty = document.getElementById("is-type"), req = document.getElementById("is-req");
     function hint() { req.textContent = ty.value === "problem" ? "(ต้องกรอกสำหรับปัญหา)" : "(ไม่บังคับ)"; }
@@ -6972,7 +6972,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
         by: x.by, at: x.at, upd_by: x.upd_by, upd_at: x.upd_at };
       if (!it.text) { toast("ใส่รายละเอียดก่อน", false); return; }
       if (it.type === "problem" && !it.fix) { toast("ปัญหาต้องใส่แนวทางการแก้ไข", false); return; }
-      saveIssues(d, function (L) { if (isNew) L.push(it); else L = L.map(function (y) { return y.id === it.id ? it : y; }); return L; }, this, "บันทึกแล้ว (ร่าง) — ส่งอนุมัติเมื่อพร้อม", true);
+      saveIssues(d, function (L) { if (isNew) L.push(it); else L = L.map(function (y) { return y.id === it.id ? it : y; }); return L; }, this, "บันทึกแล้ว", true);
     };
   }
   function saveIssues(d, fn, btn, msg, closeDrawer) {
@@ -6988,9 +6988,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var nb = el.querySelector("[data-iss-new]"); if (nb) nb.onclick = function () { issueForm(d, null); };
     el.querySelectorAll("[data-iss-ed]").forEach(function (b) { b.onclick = function () { var id = b.getAttribute("data-iss-ed"); issueForm(d, (content(d).issues || []).filter(function (x) { return x.id === id; })[0]); }; });
     el.querySelectorAll("[data-iss-rm]").forEach(function (b) { b.onclick = function () {
-      if (!confirm("ลบรายการนี้? (จะเป็นร่าง ต้องอนุมัติเหมือนเดิม)")) return;
+      if (!confirm("ลบรายการนี้?")) return;
       var id = b.getAttribute("data-iss-rm");
-      saveIssues(d, function (L) { return L.filter(function (x) { return x.id !== id; }); }, b, "ลบแล้ว (ร่าง)", false);
+      saveIssues(d, function (L) { return L.filter(function (x) { return x.id !== id; }); }, b, "ลบแล้ว", false);
     }; });
   }
 
@@ -7033,13 +7033,13 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var type = key.split(":")[0], name = content(d).name || did(d);
     if (on) {
       var u = usageOf(type, did(d));
-      if (!confirm("ลบ" + (TYPE_NAME[type] || "") + ' "' + name + '"?\n\n' + (u.length ? "⚠️ ใช้อยู่ใน: " + u.join(", ") + "\nลบแล้วจะหายจากที่เหล่านั้นด้วย\n\n" : "") + "การลบต้องส่งอนุมัติเหมือนเนื้อหาอื่น · ยกเลิกได้ก่อนอนุมัติ")) return;
+      if (!confirm("ลบ" + (TYPE_NAME[type] || "") + ' "' + name + '"?\n\n' + (u.length ? "⚠️ ใช้อยู่ใน: " + u.join(", ") + "\nลบแล้วจะหายจากที่เหล่านั้นด้วย\n\n" : "") + "ลบแล้วหายทันที (ไม่ต้องอนุมัติ) · ยกเลิกไม่ได้ ต้องเพิ่มใหม่ัติ")) return;
     }
     var base = JSON.parse(JSON.stringify(d.draft || d.published || {}));
     if (on) base._deleted = true; else delete base._deleted;
     var done = busy(btn, on ? "กำลังลบ…" : "กำลังยกเลิก…");
     post("sopSave", { key: key, draft: base, base: (DOCS[d.key] || d).updated_at }).then(function (doc) {
-      done(); toast(on ? 'ทำเครื่องหมายลบแล้ว (ร่าง) — กด "ส่งอนุมัติ" เพื่อลบจริง' : "ยกเลิกการลบแล้ว (ร่าง)", true);
+      done(); toast(on ? "ลบแล้ว" : "ยกเลิกการลบแล้ว", true);
       render(); if (dr.classList.contains("open")) openDoc(doc.key);
     }, function (e) { done(); fail(e); });
   }
@@ -7099,7 +7099,16 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       else el.insertAdjacentHTML("beforeend", '<label><input type="checkbox" name="' + esc(el.getAttribute("data-name")) + '" value="' + esc(id) + '"' + (el === target ? " checked" : "") + "> " + esc(name) + "</label>");
     });
   }
+  function publishNow(key, btn) {
+    var d = DOCS[key]; if (!d || !d.draft || !ME.canEdit) return;
+    var done = busy(btn, "กำลังบันทึก…");
+    post("sopSave", { key: key, draft: d.draft, base: d.updated_at }).then(function (doc) {
+      done(); after(doc, gone(doc) ? "ลบแล้ว" : "ใช้จริงแล้ว"); if (dr.classList.contains("open") && !gone(doc)) openDoc(doc.key); else if (gone(doc)) dr.classList.remove("open");
+    }, function (e) { done(); fail(e); });
+  }
   document.addEventListener("click", function (ev) {
+    var pb = ev.target.closest && ev.target.closest("[data-pub]");
+    if (pb) { ev.preventDefault(); publishNow(pb.getAttribute("data-pub"), pb); return; }
     var te = ev.target.closest && ev.target.closest("[data-tool-ed]");
     if (te) { ev.preventDefault(); openDoc("tool:" + te.getAttribute("data-tool-ed"), true); return; }
     var btn = ev.target.closest && ev.target.closest("[data-plus]"); if (!btn || !ME.canEdit) return;
@@ -7126,7 +7135,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       var done = busy(ok, "กำลังเพิ่ม…");
       post("sopSave", { key: key, draft: data }).then(function (doc) {
         done(); box.remove(); refreshPickers(type, did(doc), name, target);
-        toast("เพิ่ม" + TYPE_NAME[type] + ' "' + name + '" แล้ว (ร่าง — รายละเอียดกรอกทีหลังได้)', true);
+        toast("เพิ่ม" + TYPE_NAME[type] + ' "' + name + '" แล้ว (รายละเอียดกรอกทีหลังได้)', true);
       }, function (e) { done(); fail(e); });
     };
   });
@@ -7202,7 +7211,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   function wireDgEditor(d) {
     var up = document.getElementById("f-dg-up"), file = document.getElementById("f-dg-file"), rm = document.getElementById("f-dg-rm");
     function redraw() { var box = document.getElementById("f-dg"); if (!box) return; box.outerHTML = dgEditor(FORM_DG === undefined ? (d.draft || d.published || {}).diagram : FORM_DG); wireDgEditor(d); }
-    if (rm) rm.onclick = function () { FORM_DG = null; redraw(); toast('ลบแผนภาพออกจากร่างแล้ว — กด "บันทึกร่าง" เพื่อยืนยัน', true); };
+    if (rm) rm.onclick = function () { FORM_DG = null; redraw(); toast('เอาแผนภาพออกแล้ว — กด "บันทึก" เพื่อยืนยัน', true); };
     if (!up || !file) return;
     up.onclick = function () { file.click(); };
     file.onchange = function () {
@@ -7214,7 +7223,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       rd.onload = function () {
         post("sopUploadDiagram", { key: d.key, name: f.name, html: String(rd.result || "") }).then(function (j) {
           done(); FORM_DG = j.file; DG_CACHE[j.file.id] = String(rd.result || ""); redraw();
-          toast('อัปโหลดแล้ว — กด "บันทึกร่าง" เพื่อใส่แผนภาพนี้ใน SOP', true);
+          toast('อัปโหลดแล้ว — กด "บันทึก" เพื่อใส่แผนภาพนี้ใน SOP', true);
         }, function (e) { done(); fail(e); });
       };
       rd.readAsText(f, "utf-8");
@@ -7250,7 +7259,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var decMap = {}; (c.decisions || []).forEach(function (x) { decMap[x.id] = x.note || ""; });
     var toolMap = {}; (c.tools || []).forEach(function (x) { toolMap[x.id] = x.note || ""; });
     var t0 = (c.teams || [])[0] || "";
-    return '<div class="sp-head"><div><div class="kick">แก้ไข SOP ' + did(d) + '</div><h2>' + esc(c.name) + '</h2><div class="muted" style="font-size:12.5px">บันทึกแล้วเป็น "ร่าง" · คนทั่วไปยังเห็นฉบับใช้จริงเดิมจนกว่าจะอนุมัติครบ</div></div></div>' +
+    return '<div class="sp-head"><div><div class="kick">แก้ไข SOP ' + did(d) + '</div><h2>' + esc(c.name) + '</h2><div class="muted" style="font-size:12.5px">admin บันทึกแล้วใช้จริงทันที · ทุกคนที่เห็นแท็บนี้เห็นฉบับใหม่</div></div></div>' +
       '<div class="fm" style="padding:6px 22px 16px">' +
       '<div class="row2"><div><label>ชื่อ SOP</label><input type="text" id="f-name" value="' + esc(c.name || "") + '"></div><div><label>รหัส SOP</label><input type="text" id="f-code" value="' + esc(c.code || "") + '" placeholder="เช่น SNG-SNG-005.00-v01"></div></div>' +
       '<label>① เจ้าของกระบวนการ</label><div class="pk"><select id="f-owner" data-pick="role">' + roleOpts(c.owner_role) + "</select>" + plusBtn("role", t0) + "</div>" +
@@ -7264,7 +7273,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       '<label>⏱ SLA</label><textarea id="f-sla">' + esc(c.sla_note || "") + "</textarea>" +
       '<label>⚠️ ปัญหา & เรื่องที่ต้องดู</label><div id="f-iss">' + (c.issues || []).map(issueEditRow).join("") + "</div>" +
       '<button class="sp-btn" type="button" id="f-iss-add">＋ เพิ่มรายการ</button>' +
-      '<div class="acts"><button class="sp-btn" type="button" id="f-cancel">ยกเลิก</button><button class="sp-btn pri" type="button" id="f-save">บันทึกร่าง</button></div></div>';
+      '<div class="acts"><button class="sp-btn" type="button" id="f-cancel">ยกเลิก</button><button class="sp-btn pri" type="button" id="f-save">บันทึก</button></div></div>';
   }
   function bindForm(d) {
     var lanes = lanesOf(d.draft || d.published || {});
@@ -7280,7 +7289,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     if (bq) bq.oninput = function () { var q = this.value.trim().toLowerCase(); document.querySelectorAll("#f-boxes [data-bxname]").forEach(function (l) { l.style.display = !q || l.getAttribute("data-bxname").indexOf(q) >= 0 ? "" : "none"; }); };
     document.querySelectorAll('#f-boxes input[name="box"]').forEach(function (x) { x.onchange = function () { document.getElementById("f-bxn").textContent = document.querySelectorAll('#f-boxes input[name="box"]:checked').length; }; });
     var fi = document.getElementById("f-iss");
-    function wireIss() { fi.querySelectorAll("[data-iss-del]").forEach(function (b) { b.onclick = function () { if (confirm("ลบรายการนี้? (ใช้จริงหลังอนุมัติ)")) b.closest("[data-iss-row]").remove(); }; }); }
+    function wireIss() { fi.querySelectorAll("[data-iss-del]").forEach(function (b) { b.onclick = function () { if (confirm("ลบรายการนี้? (หายเมื่อกดบันทึก)")) b.closest("[data-iss-row]").remove(); }; }); }
     wireIss();
     document.getElementById("f-iss-add").onclick = function () { fi.insertAdjacentHTML("beforeend", issueEditRow(null)); wireIss(); var t = fi.lastElementChild.querySelector('[data-i="text"]'); if (t) t.focus(); };
     document.getElementById("f-add").onclick = function () { var box = document.getElementById("f-steps"); box.insertAdjacentHTML("beforeend", stepRow({}, lanes)); wire(); };
@@ -7305,7 +7314,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       var bn = {}; BOXES.forEach(function (b) { bn[b.key] = b.name; }); (base.boxes || []).forEach(function (b) { if (!bn[b.key]) bn[b.key] = b.name; });
       base.boxes = q("box").map(function (k) { return { key: k, name: bn[k] || k }; });
       var done = busy(this, "กำลังบันทึก…");
-      post("sopSave", { key: d.key, draft: base, base: (DOCS[d.key] || d).updated_at }).then(function (doc) { done(); EDIT = null; after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); }, function (e) { done(); fail(e); });
+      post("sopSave", { key: d.key, draft: base, base: (DOCS[d.key] || d).updated_at }).then(function (doc) { done(); EDIT = null; after(doc, "บันทึกแล้ว — ใช้จริงทันที"); }, function (e) { done(); fail(e); });
     };
   }
 
@@ -7337,7 +7346,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var h = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">' + statusPill(d) + "</div>" + (approvalsBox(d) ? approvalsBox(d).replace('style="margin:12px 22px 0"', 'style="margin:0 0 12px"') : "");
     if (editNow && ME.canEdit) {
       if (type === "tool" && !String(c.purpose || "").trim() && toolNoteFromSops(did(d))) { c = JSON.parse(JSON.stringify(c)); c.purpose = toolNoteFromSops(did(d)); }
-      h += '<div class="fm">' + fields.map(function (f) { return fieldInput(f, c[f[0]]); }).join("") + '<div class="acts"><button class="sp-btn" id="sp-cx">ยกเลิก</button><button class="sp-btn pri" id="sp-sv">บันทึกร่าง</button></div></div>';
+      h += '<div class="fm">' + fields.map(function (f) { return fieldInput(f, c[f[0]]); }).join("") + '<div class="acts"><button class="sp-btn" id="sp-cx">ยกเลิก</button><button class="sp-btn pri" id="sp-sv">บันทึก</button></div></div>';
     } else {
       h += fields.map(function (f) { var v = (type === "tool" && f[0] === "purpose") ? (toolPurpose(did(d)) ? nl(toolPurpose(did(d))) : "") : showVal(f, c[f[0]]); return '<div class="rail-card"><div class="sp-h">' + esc(f[1]) + "</div>" + (v || sk("70%") + sk("45%")) + "</div>"; }).join("");
       if (type === "role") { var rs = sops().filter(function (s) { var sc = content(s); return sc.owner_role === did(d) || (sc.doer_roles || []).indexOf(did(d)) >= 0 || (sc.steps || []).some(function (x) { return x.role === did(d); }); }); h += '<div class="rail-card"><div class="sp-h">SOP / งานที่รับผิดชอบ</div>' + (rs.map(function (s) { return '<span class="bxchip" data-s="' + did(s) + '">' + esc(content(s).name) + "</span>"; }).join("") || sk("60%")) + "</div>"; }
@@ -7359,7 +7368,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
         if (out.url && !safeUrl(out.url)) { toast("ลิงก์ต้องขึ้นต้นด้วย https://", false); return; }
         var done = busy(this, "กำลังบันทึก…");
         post("sopSave", { key: key, draft: out, base: (DOCS[d.key] || d).updated_at }).then(function (doc) { done();
-          if (type === "tool") document.querySelectorAll('[data-tool-purp="' + did(doc) + '"]').forEach(function (el) { el.innerHTML = toolPurpHtml(did(doc)); }); after(doc, "บันทึกร่างแล้ว — กด \"ส่งอนุมัติ\" เมื่อพร้อม"); openDoc(doc.key); }, function (e) { done(); fail(e); });
+          if (type === "tool") document.querySelectorAll('[data-tool-purp="' + did(doc) + '"]').forEach(function (el) { el.innerHTML = toolPurpHtml(did(doc)); }); after(doc, "บันทึกแล้ว — ใช้จริงทันที"); openDoc(doc.key); }, function (e) { done(); fail(e); });
       };
     }
   }
