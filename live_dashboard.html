@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=114401" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=115943" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5266,6 +5266,10 @@ setTimeout(applyBoard,300);
     const ds = new Blob([u8]).stream().pipeThrough(new root.DecompressionStream("gzip"));
     return new root.Response(ds).text().then(function (x) { return JSON.parse(x); });
   }
+  // ผู้ใช้แตะหน้าจอแล้วหรือยัง (คลิก/พิมพ์) → ถ้าแตะแล้ว ห้ามรีโหลดเอง (งานที่ทำค้างจะหาย)
+  let _touched = false;
+  try { ["pointerdown", "keydown"].forEach(function (ev) { root.addEventListener(ev, function () { _touched = true; }, { capture: true, once: true }); }); } catch (e) {}
+  function touched() { return _touched; }
   function notice(state, info) { try { if (typeof root.DPT_cacheNotice === "function") root.DPT_cacheNotice(state, info || {}); } catch (e) {} }
 
   function GasRepo(opts) {
@@ -5307,34 +5311,45 @@ setTimeout(applyBoard,300);
           live().then(function () { notice("fresh-ready"); }, function (e) { if (e && e.denied) notice("denied"); else retryInBackground(n + 1); });
         }, waits[n]);
       }
-      function fromCache(c, why) {
+      function fromCache(c, why, quiet) {
         const j = c.j;
         j.meta = Object.assign({}, j.meta || {}, { source: "browser-cache", served_from: "browser-cache", is_stale: true, cache_at: c.at });
         root.DPT_FROM_CACHE = { at: c.at, error: why };
-        notice("using-cache", { at: c.at, error: why });
+        if (!quiet) notice("using-cache", { at: c.at, error: why });
         return j;
       }
       // 30 ก.ย. เย็น: Google "ค้าง" ไม่ตอบเลย (echo pending) → รอ error อย่างเดียวไม่พอ · รอสดได้ไม่เกิน LIVE_WAIT
       // เกิน = เปิดจากสำเนา · คำขอเดิมรอต่อเบื้องหลัง (ไม่ยิงซ้ำ) → ได้ = ป้ายเขียวให้กดโหลดใหม่ · พัง = ลองใหม่ตามรอบเดิม
       // ไม่มีสำเนา = รอคำขอเดิมต่อไปตามเดิม (ไม่ตัดทิ้ง)
-      const LIVE_WAIT = 20000;
+      const LIVE_WAIT = 4000;                                 // 1 ต.ค.: มีสำเนา = รอสดแค่ 4 วิ (เดิม 20 วิ)
+      const AUTO_RELOAD_AGE = 2 * 60000;                      // สำเนาเก่ากว่านี้ + ยังไม่ได้แตะหน้าจอ → ได้ของสดแล้วรีโหลดเอง
       const p = live();
+      const cp = cacheLoad(email);                            // อ่านสำเนาคู่ขนาน (ไม่รอคิว)
       _bundle = new Promise(function (ok, bad) {
         let done = false;
         const t = setTimeout(function () {
           if (done) return;
-          cacheLoad(email).then(function (c) {
-            if (done || !c) return;
+          cp.then(function (c) {
+            if (done || !c) return;                           // ไม่มีสำเนา → รอสดต่อไปตามเดิม
             done = true;
-            ok(fromCache(c, "Google ไม่ตอบภายใน " + (LIVE_WAIT / 1000) + " วินาที"));
-            p.then(function () { notice("fresh-ready"); }, function (e) { if (e && e.denied) notice("denied"); else retryInBackground(0); });
+            const j = fromCache(c, "ยังโหลดสดไม่เสร็จ", true);
+            notice("warming", { at: c.at });
+            ok(j);
+            p.then(function () {
+              if (!touched() && Date.now() - c.at > AUTO_RELOAD_AGE) { notice("reloading"); location.reload(); return; }
+              notice("fresh-ready");
+            }, function (e) {
+              if (e && e.denied) { notice("denied"); return; }
+              notice("using-cache", { at: c.at, error: String((e && e.message) || e) });
+              retryInBackground(0);
+            });
           });
         }, LIVE_WAIT);
         p.then(function (j) { if (done) return; done = true; clearTimeout(t); ok(j); }, function (err) {
           if (done) return;
           done = true; clearTimeout(t);
           if (err && err.denied) { bad(err); return; }        // ไม่มีสิทธิ์ / token หมดอายุ → ไม่ใช้สำเนา
-          cacheLoad(email).then(function (c) {
+          cp.then(function (c) {
             if (!c) { bad(err); return; }                     // ไม่มีสำเนา → จอ error เดิม
             ok(fromCache(c, String((err && err.message) || err)));
             retryInBackground(0);
@@ -6060,7 +6075,9 @@ setTimeout(applyBoard,300);
   function paint(el,bg,fg,bd,html){ el.style.background=bg; el.style.color=fg; el.style.borderColor=bd; el.innerHTML=html; }
   window.DPT_cacheNotice=function(state,info){
     var el=bar();
-    if(state==="using-cache") paint(el,"#fffbeb","#92400e","#fcd34d","⚠️ โหลดสดไม่สำเร็จ (Google ส่งข้อมูลไม่ถึง) — กำลังแสดงข้อมูล ณ <b>"+fmt(info.at)+"</b> ที่เก็บไว้ในเครื่องนี้ · ห้ามใช้ตัวเลขนี้เป็นข้อมูลล่าสุด · กำลังลองโหลดใหม่อัตโนมัติ…");
+    if(state==="warming") paint(el,"#eff6ff","#1e40af","#bfdbfe","⏳ เปิดจากสำเนาในเครื่อง ณ <b>"+fmt(info.at)+"</b> ให้ใช้ได้ทันที — กำลังโหลดข้อมูลสดเบื้องหลัง · ได้แล้วจะขึ้นปุ่มให้กด");
+    else if(state==="reloading") paint(el,"#ecfdf5","#065f46","#6ee7b7","✅ ได้ข้อมูลสดแล้ว — กำลังเปิดใหม่…");
+    else if(state==="using-cache") paint(el,"#fffbeb","#92400e","#fcd34d","⚠️ โหลดสดไม่สำเร็จ (Google ส่งข้อมูลไม่ถึง) — กำลังแสดงข้อมูล ณ <b>"+fmt(info.at)+"</b> ที่เก็บไว้ในเครื่องนี้ · ห้ามใช้ตัวเลขนี้เป็นข้อมูลล่าสุด · กำลังลองโหลดใหม่อัตโนมัติ…");
     else if(state==="fresh-ready"){ paint(el,"#ecfdf5","#065f46","#6ee7b7","✅ ได้ข้อมูลใหม่แล้ว <button type='button' id='dpt-cache-reload' style='font:inherit;font-size:12.5px;border:0;border-radius:8px;padding:5px 12px;background:#047857;color:#fff;cursor:pointer'>โหลดใหม่</button>");
       var b=document.getElementById("dpt-cache-reload"); if(b) b.onclick=function(){ location.reload(); }; }
     else if(state==="gave-up") paint(el,"#fef2f2","#991b1b","#fecaca","⚠️ ยังโหลดสดไม่ได้ — ข้อมูลที่เห็นคือ ณ <b>"+(window.DPT_FROM_CACHE?fmt(window.DPT_FROM_CACHE.at):"?")+"</b> · กดรีเฟรชหน้าอีกครั้งภายหลัง");
