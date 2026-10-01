@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=093015" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=094232" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6546,6 +6546,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     ".pk{display:flex;gap:8px;align-items:center}.pk select{flex:1}",
     ".sp-plus{font:inherit;font-size:12px;font-weight:600;border:1px dashed var(--border2);background:transparent;color:var(--blue);border-radius:8px;padding:4px 10px;cursor:pointer;margin:6px 6px 0 0;white-space:nowrap}.sp-plus:hover{border-color:var(--blue);background:#eff6ff}",
     ".pk .sp-plus{margin:0}",
+    ".sp-qa .pk{flex:0 1 auto}.sp-qa .sp-qa{flex:1 1 100%;margin:4px 0 0;background:var(--s1)}",
     ".sp-qa{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0 2px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--s2)}.fm .sp-qa input[type=text]{flex:1 1 220px;width:auto}.fm .sp-qa select{width:auto;flex:0 1 220px}",
     ".sp-dge{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px dashed var(--border2);border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:13px}",
     ".sp-dg{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:0 0 14px;background:var(--surface)}",
@@ -7106,7 +7107,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var type = btn.getAttribute("data-plus"), target = btn.previousElementSibling;
     if (!target || !target.hasAttribute("data-pick")) target = null;
     var box = document.createElement("div"); box.className = "sp-qa";
-    box.innerHTML = '<input type="text" placeholder="ชื่อ' + TYPE_NAME[type] + 'ใหม่">' + (type === "role" ? '<select title="ทีม">' + teamOpts(btn.getAttribute("data-team") || "") + "</select>" : "") +
+    box.innerHTML = '<input type="text" placeholder="ชื่อ' + TYPE_NAME[type] + 'ใหม่">' + (type === "role" ? '<div class="pk"><select title="ทีม" data-pick="team">' + teamOpts(btn.getAttribute("data-team") || "") + "</select>" + plusBtn("team") + "</div>" : "") +
       (type === "tool" ? '<input type="text" data-qurl placeholder="🔗 ลิงก์ https:// (ไม่บังคับ)" inputmode="url">' : "") +
       '<button type="button" class="sp-btn pri" data-qok>เพิ่ม</button><button type="button" class="sp-btn" data-qx>ยกเลิก</button>';
     (btn.parentNode.classList.contains("pk") ? btn.parentNode : btn).insertAdjacentElement("afterend", box);
