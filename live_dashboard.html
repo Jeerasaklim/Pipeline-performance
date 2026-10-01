@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=102637" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=105815" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6509,7 +6509,10 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       .then(function (r) { return r.text(); })
       .then(function (t) { var j; try { j = JSON.parse(t); } catch (e) { var er = new Error("Google ส่งผลกลับไม่ถึง"); er.lost = true; throw er; }
         if (!j || !j.ok) { var e2 = new Error((j && j.error) || "บันทึกไม่สำเร็จ"); e2.code = j && j.status; throw e2; }
-        if (j.doc) DOCS[j.doc.key] = j.doc; return j.doc || j; })
+        if (j.doc) DOCS[j.doc.key] = j.doc;
+        // 1 ต.ค.: admin บันทึกแล้วต้องเป็น "ใช้จริง" ทันที — ยังเป็นร่าง = Apps Script ยังรันโค้ดเก่า (ไม่ได้ Deploy New version) → เตือนดัง ๆ ห้ามเงียบ
+        if (action === "sopSave" && ME.canEdit && j.doc && j.doc.status !== "published") setTimeout(function () { toast("⚠️ บันทึกแล้วแต่ยังเป็นร่าง — Apps Script ยังใช้โค้ดเก่า: วาง SOP_store.gs แล้ว Deploy → Manage deployments → New version", false); }, 400);
+        return j.doc || j; })
       .catch(function (err) {
         // 1 ต.ค.: token หมดอายุ (เปิดค้างเกิน ~1 ชม.) → ขึ้นปุ่ม Sign in · ได้ token ใหม่แล้วบันทึกซ้ำให้เอง 1 ครั้ง
         if (err && err.code === 401 && !retried && typeof window.DPT_reauth === "function") {
