@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=122844" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=140250" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5270,6 +5270,10 @@ setTimeout(applyBoard,300);
   let _touched = false;
   try { ["pointerdown", "keydown"].forEach(function (ev) { root.addEventListener(ev, function () { _touched = true; }, { capture: true, once: true }); }); } catch (e) {}
   function touched() { return _touched; }
+  // มีอะไรพิมพ์ค้างไหม (ช่องกรอกถูกแก้หลังเปิดหน้า) → ห้ามรีโหลดเอง แม้แท็บอยู่เบื้องหลัง
+  let _dirty = false;
+  try { root.addEventListener("input", function () { _dirty = true; }, { capture: true }); } catch (e) {}
+  function dirty() { return _dirty; }
   function notice(state, info) { try { if (typeof root.DPT_cacheNotice === "function") root.DPT_cacheNotice(state, info || {}); } catch (e) {} }
 
   function GasRepo(opts) {
@@ -5277,6 +5281,44 @@ setTimeout(applyBoard,300);
     const url = opts.url || root.DPT_GAS_URL || "";                 // filled after จี deploys (empty = not ready)
     const getToken = opts.getToken || function () { return root.DPT_ID_TOKEN || ""; };
     let _bundle = null;
+    /* 1 ต.ค.: เช็คข้อมูลใหม่เบื้องหลัง — เทียบ "เนื้อข้อมูล" (ไม่ใช่เวลา: warmCache สร้างใหม่ทุก 5 นาทีแม้ข้อมูลเท่าเดิม) */
+    let SHOWN = null, _bgBusy = false, _lastCheck = Date.now(), _bgStarted = false;
+    const BG_EVERY = 10 * 60000;
+    function sigOf(j) {
+      const s = JSON.stringify([j.tabs, j.extra, j.ar, j.goState, j.overlay, j.cost]);
+      let h = 2166136261;
+      for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return (h >>> 0).toString(36) + ":" + s.length;
+    }
+    // ได้ชุดสดมา: เหมือนที่แสดงอยู่ = อัปเดตเวลาบนป้ายเงียบ ๆ · ต่าง = รีโหลดเอง (ถ้าปลอดภัย) หรือขึ้นปุ่มให้กด
+    function onFresh(j, autoReload) {
+      if (SHOWN && sigOf(j) === SHOWN.sig) {
+        if (j.meta && j.meta.snapshot_date) SHOWN.meta.snapshot_date = j.meta.snapshot_date;
+        SHOWN.meta.is_stale = false; SHOWN.meta.source = "gas-live"; SHOWN.meta.served_from = "gas-prebuilt";
+        root.DPT_FROM_CACHE = null;
+        try { root.DATA_STAMP = SHOWN.meta.snapshot_date + " (สด)"; if (typeof root.DPT_restamp === "function") root.DPT_restamp(); } catch (e) {}
+        notice("hide");
+        return;
+      }
+      if (autoReload) { notice("reloading"); location.reload(); return; }
+      notice("fresh-ready");
+    }
+    function bgCheck() {
+      if (_bgBusy || !SHOWN || !url || !getToken()) return;
+      _bgBusy = true; _lastCheck = Date.now();
+      liveFn().then(function (j) { _bgBusy = false; onFresh(j, !!(root.document && root.document.hidden) && !dirty()); },
+        function (e) { _bgBusy = false; if (e && e.denied && e.status !== 401) notice("denied"); });   // 401 = token กำลังต่ออายุ → รอบหน้า
+    }
+    function startBg() {
+      if (_bgStarted) return; _bgStarted = true;
+      try {
+        setInterval(function () { if (Date.now() - _lastCheck >= BG_EVERY) bgCheck(); }, 60000);
+        if (root.document) root.document.addEventListener("visibilitychange", function () {
+          if (!root.document.hidden && Date.now() - _lastCheck >= BG_EVERY) bgCheck();
+        });
+      } catch (e) {}
+    }
+    let liveFn = function () { return Promise.reject(new Error("not ready")); };
     function fetchBundle() {
       if (_bundle) return _bundle;
       if (!url) return Promise.reject(new Error(
@@ -5284,12 +5326,13 @@ setTimeout(applyBoard,300);
       const token = getToken();
       if (!token) return Promise.reject(new Error(
         "ยังไม่มี Google ID token (window.DPT_ID_TOKEN ว่าง) — ต้อง login ก่อน"));
-      const full = url + (url.indexOf("?") < 0 ? "?" : "&") +
-        "action=getAll" + (CAN_GZ ? "&gz=1" : "") + "&token=" + encodeURIComponent(token);
+      // URL สร้างใหม่ทุกครั้ง (token ต่ออายุได้ระหว่างเปิดหน้า — 1 ต.ค.)
+      function fullUrl() { return url + (url.indexOf("?") < 0 ? "?" : "&") +
+        "action=getAll" + (CAN_GZ ? "&gz=1" : "") + "&token=" + encodeURIComponent(getToken() || token); }
       const email = String(root.DPT_USER || "").toLowerCase();
       // live() → j (ok:true) · throw {denied:true} ถ้า server ปฏิเสธ (ห้ามใช้สำเนาแทน) · throw อื่น = ส่งไม่ถึง
       function live() {
-        return fetch(full, { redirect: "follow" }).then(function (res) {
+        return fetch(fullUrl(), { redirect: "follow" }).then(function (res) {
           if (!res.ok) throw new Error("GAS backend HTTP " + res.status);
           return res.text().then(parseBundleText);
         }).then(function (j) {
@@ -5297,18 +5340,19 @@ setTimeout(applyBoard,300);
             // 403 = ไม่มี Role ในชีต (นโยบายจี 23 ก.ย.) → ตั้ง flag ให้ overlay โชว์หน้า "ไม่มีสิทธิ์" (ไม่ใช่ error งง ๆ)
             if (j && j.status === 403) { try { root.DPT_ACCESS_DENIED = (j.error || "บัญชีนี้ยังไม่ได้รับสิทธิ์เข้าใช้งาน"); } catch (e) {} }
             const er = new Error("GAS backend error: " + ((j && (j.error || ("status " + j.status))) || "unknown"));
-            er.denied = true; throw er;
+            er.denied = true; er.status = j && j.status; throw er;
           }
           if (email) cacheSave(email, j);
           return j;
         });
       }
+      liveFn = live;
       // ลองใหม่เบื้องหลัง (ไม่บล็อกหน้าจอ) · สำเร็จ = สำเนาในเครื่องสดแล้ว → ป้ายให้กดโหลดใหม่
       function retryInBackground(n) {
         const waits = [20000, 40000, 60000, 120000, 240000, 300000];
         if (n >= waits.length) { notice("gave-up"); return; }
         setTimeout(function () {
-          live().then(function () { notice("fresh-ready"); }, function (e) { if (e && e.denied) notice("denied"); else retryInBackground(n + 1); });
+          live().then(function (j) { onFresh(j, false); }, function (e) { if (e && e.denied) notice("denied"); else retryInBackground(n + 1); });
         }, waits[n]);
       }
       function fromCache(c, why, quiet) {
@@ -5335,9 +5379,8 @@ setTimeout(applyBoard,300);
             const j = fromCache(c, "ยังโหลดสดไม่เสร็จ", true);
             notice("warming", { at: c.at });
             ok(j);
-            p.then(function () {
-              if (!touched() && Date.now() - c.at > AUTO_RELOAD_AGE) { notice("reloading"); location.reload(); return; }
-              notice("fresh-ready");
+            p.then(function (jl) {
+              onFresh(jl, !touched() && Date.now() - c.at > AUTO_RELOAD_AGE);
             }, function (e) {
               if (e && e.denied) { notice("denied"); return; }
               notice("using-cache", { at: c.at, error: String((e && e.message) || e) });
@@ -5356,6 +5399,7 @@ setTimeout(applyBoard,300);
           });
         });
       }).then(function (j) {
+        if (!SHOWN) { SHOWN = { sig: sigOf(j), meta: j.meta || {} }; startBg(); }   // ชุดที่หน้าจอแสดงอยู่ (เทียบตอนเช็คเบื้องหลัง)
         // RBAC (SPEC §7 ชั้น 1 = client gate เพื่อ UX เท่านั้น): role มาจาก server (j.user.role),
         // default "member". การบังคับสิทธิ์จริงอยู่ที่ doGet/doPost (server) — ปุ่มที่ซ่อนตาม role ไม่ใช่ security.
         root.DPT_ROLE = (j.user && j.user.role) || "member";
@@ -5588,6 +5632,7 @@ setTimeout(applyBoard,300);
     if (typeof renderDataSource === "function") renderDataSource();
     _renderStamp(r.meta.snapshot_date);
     if (!window.__stampTimer) window.__stampTimer = setInterval(function () { _renderStamp(r.meta.snapshot_date); }, 60000);
+    window.DPT_restamp = function () { _renderStamp(r.meta.snapshot_date); };   // 1 ต.ค.: เช็คเบื้องหลังได้ข้อมูลเท่าเดิม → อัปเดตเวลาบนป้ายทันที
     // Funnel is rendered — hide the loading overlay (GAS mode only; no-op if never shown).
     if (window.USE_GAS_BACKEND === true && typeof window.DPT_loadDone === "function") window.DPT_loadDone();
     console.log("[live] funnel loaded from Google Sheets — approve_all=" +
@@ -6075,6 +6120,7 @@ setTimeout(applyBoard,300);
   function paint(el,bg,fg,bd,html){ el.style.background=bg; el.style.color=fg; el.style.borderColor=bd; el.innerHTML=html; }
   window.DPT_cacheNotice=function(state,info){
     var el=bar();
+    if(state==="hide"){ if(el&&el.parentNode) el.parentNode.removeChild(el); return; }
     if(state==="warming") paint(el,"#eff6ff","#1e40af","#bfdbfe","⏳ เปิดจากสำเนาในเครื่อง ณ <b>"+fmt(info.at)+"</b> ให้ใช้ได้ทันที — กำลังโหลดข้อมูลสดเบื้องหลัง · ได้แล้วจะขึ้นปุ่มให้กด");
     else if(state==="reloading") paint(el,"#ecfdf5","#065f46","#6ee7b7","✅ ได้ข้อมูลสดแล้ว — กำลังเปิดใหม่…");
     else if(state==="using-cache") paint(el,"#fffbeb","#92400e","#fcd34d","⚠️ โหลดสดไม่สำเร็จ (Google ส่งข้อมูลไม่ถึง) — กำลังแสดงข้อมูล ณ <b>"+fmt(info.at)+"</b> ที่เก็บไว้ในเครื่องนี้ · ห้ามใช้ตัวเลขนี้เป็นข้อมูลล่าสุด · กำลังลองโหลดใหม่อัตโนมัติ…");
