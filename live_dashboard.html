@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=150405" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=151301" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6746,7 +6746,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     ".sp-sum-r .ar{margin-left:auto;color:var(--t3);font-size:16px}",
     ".sp-phase{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;color:var(--t2);letter-spacing:.3px;margin:6px 0 8px}",
     ".sp-phase:after{content:'';flex:1;height:1px;background:var(--border)}",
-    ".sp-flow{display:flex;flex-wrap:wrap;gap:14px;padding:2px 2px 12px;margin-bottom:6px}",   /* 5 ต.ค.: ขึ้นบรรทัดใหม่แทนเลื่อนแนวนอน */
+    ".sp-flow{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:14px;padding:2px 2px 12px;margin-bottom:6px}@media (max-width:1500px){.sp-flow{grid-template-columns:repeat(auto-fill,minmax(172px,1fr))}}",   /* 5 ต.ค. (จี): แถวละ 9 กล่อง เต็มความกว้าง · จอแคบ = ขึ้นบรรทัดใหม่ตามที่พอดี ไม่มีเลื่อนแนวนอน */
     ".sp-card.drag{opacity:.35}.sp-card.mk-l{box-shadow:-5px 0 0 0 var(--blue)}.sp-card.mk-r{box-shadow:5px 0 0 0 var(--blue)}.sp-card[draggable=true]{cursor:grab}",
     ".sp-card.sp-add{border:1.5px dashed var(--border2);background:transparent;color:var(--blue);font-weight:700;font-size:13px;justify-content:center;align-items:center;cursor:pointer;box-shadow:none}.sp-card.sp-add:hover{border-color:var(--blue)}",
     ".sp-card{flex:0 0 172px;height:132px;position:relative;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}",
