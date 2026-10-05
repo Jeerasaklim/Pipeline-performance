@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=144515" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=150405" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6746,7 +6746,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     ".sp-sum-r .ar{margin-left:auto;color:var(--t3);font-size:16px}",
     ".sp-phase{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;color:var(--t2);letter-spacing:.3px;margin:6px 0 8px}",
     ".sp-phase:after{content:'';flex:1;height:1px;background:var(--border)}",
-    ".sp-flow{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 12px;margin-bottom:6px}",
+    ".sp-flow{display:flex;flex-wrap:wrap;gap:14px;padding:2px 2px 12px;margin-bottom:6px}",   /* 5 ต.ค.: ขึ้นบรรทัดใหม่แทนเลื่อนแนวนอน */
     ".sp-card.drag{opacity:.35}.sp-card.mk-l{box-shadow:-5px 0 0 0 var(--blue)}.sp-card.mk-r{box-shadow:5px 0 0 0 var(--blue)}.sp-card[draggable=true]{cursor:grab}",
     ".sp-card.sp-add{border:1.5px dashed var(--border2);background:transparent;color:var(--blue);font-weight:700;font-size:13px;justify-content:center;align-items:center;cursor:pointer;box-shadow:none}.sp-card.sp-add:hover{border-color:var(--blue)}",
     ".sp-card{flex:0 0 172px;height:132px;position:relative;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}",
@@ -6988,9 +6988,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   /* ---- ลากย้าย (admin · คอมพิวเตอร์) ---- */
   var DRAG = null;
   function clearMarks(box) { box.querySelectorAll(".mk-l,.mk-r").forEach(function (x) { x.classList.remove("mk-l", "mk-r"); }); }
-  function dropTarget(fl, x) {
+  function dropTarget(fl, x, y) {   // การ์ดหลายบรรทัด: อยู่บรรทัดบน (y < top) หรือบรรทัดเดียวกันแต่ซ้ายของกึ่งกลาง = วางก่อนการ์ดนั้น
     var cs = [].slice.call(fl.querySelectorAll(".sp-card:not(.sp-add)")).filter(function (c) { return c.getAttribute("data-s") !== DRAG; });
-    for (var i = 0; i < cs.length; i++) { var r = cs[i].getBoundingClientRect(); if (x < r.left + r.width / 2) return { el: cs[i], before: true }; }
+    for (var i = 0; i < cs.length; i++) { var r = cs[i].getBoundingClientRect(); if (y < r.top || (y <= r.bottom && x < r.left + r.width / 2)) return { el: cs[i], before: true }; }
     return cs.length ? { el: cs[cs.length - 1], before: false } : { el: null };
   }
   function wireDnD(box) {
@@ -6999,9 +6999,9 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
       c.addEventListener("dragend", function () { DRAG = null; c.classList.remove("drag"); clearMarks(box); });
     });
     box.querySelectorAll(".sp-flow").forEach(function (fl) {
-      fl.addEventListener("dragover", function (e) { if (!DRAG) return; e.preventDefault(); var t = dropTarget(fl, e.clientX); clearMarks(box); if (t.el) t.el.classList.add(t.before ? "mk-l" : "mk-r"); });
+      fl.addEventListener("dragover", function (e) { if (!DRAG) return; e.preventDefault(); var t = dropTarget(fl, e.clientX, e.clientY); clearMarks(box); if (t.el) t.el.classList.add(t.before ? "mk-l" : "mk-r"); });
       fl.addEventListener("dragleave", function (e) { if (!e.relatedTarget || !fl.contains(e.relatedTarget)) clearMarks(box); });
-      fl.addEventListener("drop", function (e) { if (!DRAG) return; e.preventDefault(); var id = DRAG; DRAG = null; var t = dropTarget(fl, e.clientX); clearMarks(box); moveSop(id, fl.getAttribute("data-tab"), t); });
+      fl.addEventListener("drop", function (e) { if (!DRAG) return; e.preventDefault(); var id = DRAG; DRAG = null; var t = dropTarget(fl, e.clientX, e.clientY); clearMarks(box); moveSop(id, fl.getAttribute("data-tab"), t); });
     });
   }
   function moveSop(id, tab, t) {
