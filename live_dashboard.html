@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=184355" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=144515" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6747,6 +6747,8 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     ".sp-phase{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;color:var(--t2);letter-spacing:.3px;margin:6px 0 8px}",
     ".sp-phase:after{content:'';flex:1;height:1px;background:var(--border)}",
     ".sp-flow{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 12px;margin-bottom:6px}",
+    ".sp-card.drag{opacity:.35}.sp-card.mk-l{box-shadow:-5px 0 0 0 var(--blue)}.sp-card.mk-r{box-shadow:5px 0 0 0 var(--blue)}.sp-card[draggable=true]{cursor:grab}",
+    ".sp-card.sp-add{border:1.5px dashed var(--border2);background:transparent;color:var(--blue);font-weight:700;font-size:13px;justify-content:center;align-items:center;cursor:pointer;box-shadow:none}.sp-card.sp-add:hover{border-color:var(--blue)}",
     ".sp-card{flex:0 0 172px;height:132px;position:relative;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}",
     ".sp-card:hover{border-color:var(--border2)}.sp-card.on{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}",
     ".sp-card .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}",
@@ -6877,6 +6879,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var h = "";
     if (ME.canEdit) {
       h += '<button class="sp-btn" data-edit="' + esc(d.key) + '">✏️ แก้ไข</button>';
+      if (d.key.indexOf("sop:") === 0 && !isSeedSop(did(d))) h += '<button class="sp-btn" data-del="' + esc(d.key) + '" style="color:#b91c1c;border-color:#fecaca">🗑 ลบ SOP</button>';   // 5 ต.ค.: ลบได้เฉพาะกล่องที่เพิ่มเอง
       if (d.status !== "published" && d.draft) h += '<button class="sp-btn pri" data-pub="' + esc(d.key) + '">✅ ใช้เลย</button>';   // 1 ต.ค.: admin ไม่ต้องส่งอนุมัติ
     }
     if (myPending(d)) h += '<button class="sp-btn ok" data-approve="' + esc(d.key) + '">✅ อนุมัติ</button><button class="sp-btn warn" data-return="' + esc(d.key) + '">↩️ ขอแก้</button>';
@@ -6890,7 +6893,11 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   }
 
   /* ---------- views ---------- */
-  function sops() { return list("sop"); }
+  /* 5 ต.ค.: ลำดับกล่อง SOP = content.order (ลากย้ายได้) · ไม่มี = เลข SOP × 10 (S01→10) */
+  function sopNo(d) { var m = /^S(\d+)$/.exec(did(d)); return m ? +m[1] : 999; }
+  function orderOf(d) { var v = content(d).order; return (v !== undefined && v !== null && v !== "" && isFinite(Number(v))) ? Number(v) : sopNo(d) * 10; }
+  function sops() { return list("sop").sort(function (a, b) { return (orderOf(a) - orderOf(b)) || (a.key < b.key ? -1 : 1); }); }
+  function isSeedSop(id) { return /^S(0[1-9]|1[0-3])$/.test(id); }      // 13 กล่องตั้งต้น = ลบไม่ได้
   // ชื่อกล่อง = แคตตาล็อกตาม key (แหล่งเดียว · จี 30 ก.ย. เปลี่ยนชื่อ nego_stuck → ติดเงื่อนไข แล้ว SOP เดิมต้องเปลี่ยนตาม)
   function boxNm(b) { var L = window.SOP_BOX_CATALOG || []; for (var i = 0; i < L.length; i++) if (L[i].key === b.key) return L[i].name; return b.name; }
   function hit(d) { if (!Q) return true; var c = content(d); var t = (c.name + " " + (c.teams || []).map(tn).join(" ") + " " + (c.boxes || []).map(boxNm).join(" ")).toLowerCase(); return t.indexOf(Q) >= 0; }
@@ -6933,7 +6940,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   }
   function card(d, last) {
     var c = content(d), id = did(d), st = d.status === "published" ? (hasContent(d.published) ? ["pub", "ใช้จริง"] : ["", "โครง"]) : ["pend", d.status === "pending" ? "รออนุมัติ" : "ร่าง"];
-    return '<div class="sp-card' + (id === CUR ? " on" : "") + '" data-s="' + id + '"><div class="hd"><span class="no">' + id + '</span><span class="stt ' + st[0] + '">' + st[1] + "</span></div>" +
+    return '<div class="sp-card' + (id === CUR ? " on" : "") + '" data-s="' + id + '"' + (ME.canEdit && !Q ? ' draggable="true" title="ลากเพื่อย้ายตำแหน่ง"' : "") + '><div class="hd"><span class="no">' + id + '</span><span class="stt ' + st[0] + '">' + st[1] + "</span></div>" +
       '<div class="nm">' + esc(c.name) + "</div>" +
       '<div class="ft"><span class="tm">' + (c.teams || []).map(function (t) { return dot(t, 8); }).join("") + '<span class="tmn">' + esc((c.teams || []).map(tn).join(" · ") || "ไม่ระบุทีม") + "</span></span>" +
       '<span class="bx">' + (c.boxes || []).length + " กล่อง</span></div>" + (last ? "" : '<span class="arrow">›</span>') + "</div>";
@@ -6960,19 +6967,78 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var ph = [["ก่อนยื่น อ.1", "Overall"], ["หลังยื่น อ.1", "หลังยื่น อ.1"]], h = "";
     ph.forEach(function (p) {
       var l = sops().filter(function (d) { return content(d).tab === p[1] && hit(d); }); if (!l.length) return;
-      h += '<div class="sp-phase">' + p[0].toUpperCase() + " · " + l.length + ' SOP</div><div class="sp-flow">' + l.map(function (d, i) { return card(d, i === l.length - 1); }).join("") + "</div>";
+      h += '<div class="sp-phase">' + p[0].toUpperCase() + " · " + l.length + ' SOP</div><div class="sp-flow" data-tab="' + esc(p[1]) + '">' + l.map(function (d, i) { return card(d, i === l.length - 1); }).join("") +
+        (ME.canEdit && !Q ? '<div class="sp-card sp-add" data-add="' + esc(p[1]) + '">＋ เพิ่ม SOP</div>' : "") + "</div>";
     });
     if (!h) h = '<div class="sp-state">ไม่พบ SOP ที่ตรงกับคำค้น</div>';
     if (cur && EXPAND) h = '<div style="display:flex;justify-content:flex-end;margin:-4px 0 4px"><button class="sp-btn" id="sp-fold">ย่อ ▴</button></div>' + h;
     box.innerHTML = h;
     var fold = document.getElementById("sp-fold"); if (fold) fold.onclick = function () { EXPAND = false; renderCards(); };
-    box.querySelectorAll(".sp-card").forEach(function (c) {
+    if (ME.canEdit && !Q) { wireDnD(box); wireAdd(box); }
+    box.querySelectorAll(".sp-card:not(.sp-add)").forEach(function (c) {
       c.onclick = function () {
         var s2 = c.getAttribute("data-s");
         if (s2 === CUR) { EXPAND = false; renderCards(); return; }            // ใบเดิม = พับกลับ (ฟอร์มที่แก้อยู่ไม่หาย)
         if (EDIT && !confirm("กำลังแก้ SOP อยู่ — ทิ้งที่แก้ไว้แล้วเปิด SOP อื่นไหม?")) return;
         CUR = s2; EDIT = null; EXPAND = false; Q = ""; var qi = document.getElementById("sp-q"); if (qi) qi.value = "";
         flowView(); window.scrollTo({ top: (document.getElementById("tab-sop").offsetTop || 0), behavior: "smooth" });
+      };
+    });
+  }
+  /* ---- ลากย้าย (admin · คอมพิวเตอร์) ---- */
+  var DRAG = null;
+  function clearMarks(box) { box.querySelectorAll(".mk-l,.mk-r").forEach(function (x) { x.classList.remove("mk-l", "mk-r"); }); }
+  function dropTarget(fl, x) {
+    var cs = [].slice.call(fl.querySelectorAll(".sp-card:not(.sp-add)")).filter(function (c) { return c.getAttribute("data-s") !== DRAG; });
+    for (var i = 0; i < cs.length; i++) { var r = cs[i].getBoundingClientRect(); if (x < r.left + r.width / 2) return { el: cs[i], before: true }; }
+    return cs.length ? { el: cs[cs.length - 1], before: false } : { el: null };
+  }
+  function wireDnD(box) {
+    box.querySelectorAll('.sp-card[draggable="true"]').forEach(function (c) {
+      c.addEventListener("dragstart", function (e) { DRAG = c.getAttribute("data-s"); c.classList.add("drag"); try { e.dataTransfer.setData("text/plain", DRAG); e.dataTransfer.effectAllowed = "move"; } catch (x) {} });
+      c.addEventListener("dragend", function () { DRAG = null; c.classList.remove("drag"); clearMarks(box); });
+    });
+    box.querySelectorAll(".sp-flow").forEach(function (fl) {
+      fl.addEventListener("dragover", function (e) { if (!DRAG) return; e.preventDefault(); var t = dropTarget(fl, e.clientX); clearMarks(box); if (t.el) t.el.classList.add(t.before ? "mk-l" : "mk-r"); });
+      fl.addEventListener("dragleave", function (e) { if (!e.relatedTarget || !fl.contains(e.relatedTarget)) clearMarks(box); });
+      fl.addEventListener("drop", function (e) { if (!DRAG) return; e.preventDefault(); var id = DRAG; DRAG = null; var t = dropTarget(fl, e.clientX); clearMarks(box); moveSop(id, fl.getAttribute("data-tab"), t); });
+    });
+  }
+  function moveSop(id, tab, t) {
+    var d = get("sop", id); if (!d || !tab) return;
+    var full = sops().filter(function (x) { return content(x).tab === tab; }).map(did);
+    var L = sops().filter(function (x) { return content(x).tab === tab && did(x) !== id; });
+    var idx = t.el ? L.map(did).indexOf(t.el.getAttribute("data-s")) + (t.before ? 0 : 1) : L.length;
+    if (full.indexOf(id) === idx && content(d).tab === tab) return;                // วางที่เดิม
+    var prev = L[idx - 1], next = L[idx];
+    var o = prev && next ? (orderOf(prev) + orderOf(next)) / 2 : prev ? orderOf(prev) + 10 : next ? orderOf(next) - 10 : 10;
+    var base = JSON.parse(JSON.stringify(d.draft || d.published || {})); base.order = o; base.tab = tab;
+    toast("กำลังย้าย " + id + "…", true);
+    post("sopSave", { key: d.key, draft: base, base: (DOCS[d.key] || d).updated_at }).then(function () { toast("ย้าย " + id + " แล้ว", true); render(); }, function (e) { fail(e); render(); });
+  }
+  /* ---- ＋ เพิ่ม SOP (ท้ายแถว) ---- */
+  function nextSopId() { var n = 0; Object.keys(DOCS).forEach(function (k) { var m = /^sop:S(\d+)$/.exec(k); if (m) n = Math.max(n, +m[1]); }); return "S" + ("0" + (n + 1)).slice(-2); }
+  function wireAdd(box) {
+    box.querySelectorAll(".sp-add").forEach(function (a) {
+      a.onclick = function () {
+        if (a.querySelector("input")) return;
+        var tab = a.getAttribute("data-add");
+        a.innerHTML = '<input type="text" placeholder="ชื่อ SOP ใหม่" style="font:inherit;font-size:13px;width:100%;border:1px solid var(--border2);border-radius:8px;padding:6px 8px">' +
+          '<div style="display:flex;gap:6px;margin-top:8px"><button type="button" class="sp-btn pri" data-ok>เพิ่ม</button><button type="button" class="sp-btn" data-x>ยกเลิก</button></div>';
+        var inp = a.querySelector("input"), ok = a.querySelector("[data-ok]"); inp.focus();
+        a.querySelector("[data-x]").onclick = function (e) { e.stopPropagation(); renderCards(); };
+        inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); ok.click(); } if (e.key === "Escape") renderCards(); };
+        ok.onclick = function (e) {
+          e.stopPropagation();
+          var name = inp.value.trim(); if (!name) { toast("ใส่ชื่อ SOP ก่อน", false); inp.focus(); return; }
+          var L = sops().filter(function (x) { return content(x).tab === tab; }), id = nextSopId();
+          var data = { name: name, tab: tab, teams: [], boxes: [], prev: [], next: [], code: "", owner_role: "", doer_roles: [], consult_roles: [], inform_roles: [],
+            goal: "", steps: [], decisions: [], tools: [], sla_note: "", order: L.length ? orderOf(L[L.length - 1]) + 10 : 10 };
+          var done = busy(ok, "กำลังเพิ่ม…");
+          post("sopSave", { key: "sop:" + id, draft: data }).then(function () {
+            done(); toast('เพิ่ม SOP "' + name + '" (' + id + ') แล้ว — กดกล่องเพื่อกรอกรายละเอียด', true); CUR = id; EXPAND = false; flowView();
+          }, function (er) { done(); fail(er); });
+        };
       };
     });
   }
@@ -7206,6 +7272,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     var done = busy(btn, on ? "กำลังลบ…" : "กำลังยกเลิก…");
     post("sopSave", { key: key, draft: base, base: (DOCS[d.key] || d).updated_at }).then(function (doc) {
       done(); toast(on ? "ลบแล้ว" : "ยกเลิกการลบแล้ว", true);
+      if (on && type === "sop" && did(d) === CUR) { CUR = null; EDIT = null; }     // ลบ SOP ที่เปิดอยู่ = ปิดรายละเอียด
       render(); if (dr.classList.contains("open")) openDoc(doc.key);
     }, function (e) { done(); fail(e); });
   }
@@ -7492,7 +7559,7 @@ body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
     com: [["name", "ชื่อคณะกรรมการ", "text"], ["scope", "พิจารณาเรื่องอะไร", "textarea"], ["members", "ประธาน / สมาชิก (ตำแหน่ง)", "roles"], ["cadence", "รอบประชุม", "text"]],
     tool: [["name", "ชื่อ Tool", "text"], ["url", "🔗 ลิงก์ (https://…)", "url"], ["purpose", "ใช้ทำอะไร", "textarea"], ["users", "ใครใช้", "roles"]]
   };
-  var TYPE_NAME = { team: "ทีม", role: "ตำแหน่ง", dec: "การตัดสินใจ", com: "คณะกรรมการ", tool: "Tool" };
+  var TYPE_NAME = { sop: "SOP ", team: "ทีม", role: "ตำแหน่ง", dec: "การตัดสินใจ", com: "คณะกรรมการ", tool: "Tool" };
   /* ลิงก์ของ Tool (จี 30 ก.ย.): รับเฉพาะ https:// (กัน javascript: / ลิงก์แปลก) · เปิดแท็บใหม่ */
   function safeUrl(u) { u = String(u || "").trim(); return /^https:\/\/[^\s"'<>]+$/i.test(u) ? u : ""; }
   function extLink(u, label) { u = safeUrl(u); return u ? '<a class="sp-a" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + label + " ↗</a>" : label; }
