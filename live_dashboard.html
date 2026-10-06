@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=151301" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=123338" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6256,21 +6256,31 @@ setTimeout(applyBoard,300);
    cost (#go-perf/#go-rssum) ถูกซ่อนโดย script ด้านล่างแล้ว (Export CSV เปิดให้ทุก role — read-only)
    → บล็อกนี้ต่อ "ปุ่มแก้ที่เหลือ" ที่ script ไม่ได้ครอบ. edit-role (admin/head_*) body ไม่มี attr นี้ → เห็นครบ. */
 /* Grand Opening — ปุ่มแก้รายสาขา */
-body[data-dpt-noedit] .go-btn-note,        /* Save โน้ต · รับทราบ/ยกเลิก(vanCancel) · clogReason · useSug · edit */
+/* 6 ต.ค. (จี "Role ที่ View ทุก Role มองเห็นไม่ครบ"): ดูอย่างเดียว = เห็นครบทุกอย่าง แต่แก้ไม่ได้
+   เดิมซ่อน "ช่องโน้ต" ทั้งช่อง → โน้ตที่ทีมเขียนไว้หายไปด้วย (โน้ตอยู่ในช่องกรอกที่เดียว) · ซ่อนปุ่ม Export (ขัดกับ 23 ก.ย.
+   ที่ให้ทุก role export ได้) · ซ่อนปุ่ม ✏️ จัดการ (เปิดดูสถานะปัก/วันจากชีต — ข้างในปุ่มแก้ถูกซ่อนอยู่แล้ว)
+   → เว้นปุ่ม Export + จัดการ · โน้ตที่มีข้อความโชว์เป็นข้อความอ่านอย่างเดียว (ช่องว่าง/ช่องที่ไม่มีค่า = ซ่อน) */
+body[data-dpt-noedit] .go-btn-note:not([onclick*="xport"]):not([onclick*="GO.edit("]),  /* Save โน้ต · รับทราบ/ยกเลิก(vanCancel) · clogReason · useSug — เว้น Export / ✏️ จัดการ */
 body[data-dpt-noedit] .go-btn-clear,       /* ยกเลิก ปัก3 (goCancel) · ล้างวันปัก (clr) */
-body[data-dpt-noedit] .go-verify-btn,      /* ปัก2 (goP2) · ปัก3 (goVerify) */
+body[data-dpt-noedit] .go-verify-btn,      /* ปัก2 (goP2) · ปัก3 (goVerify) — สถานะยังโชว์ที่ .pin-stat */
 body[data-dpt-noedit] .go-nego-btn,        /* toggle "เจรจา" (write) — สถานะยังโชว์ที่ .go-nego-tag */
-body[data-dpt-noedit] .go-btn-save:not([onclick*="goMonth"]),  /* ปัก/บันทึก/เลื่อน/uncancel/exportCsv — เว้นปุ่ม goMonth (นำทาง ไม่ใช่แก้) */
+body[data-dpt-noedit] .go-btn-save:not([onclick*="goMonth"]):not([onclick*="xport"]),  /* ปัก/บันทึก/เลื่อน/uncancel — เว้น goMonth (นำทาง) + Export */
 /* Grand Opening — ช่องกรอกแก้รายสาขา */
-body[data-dpt-noedit] .go-dw,              /* widget ปักวันเปิด (ช่องวันที่ + ปุ่มปฏิทิน) */
-body[data-dpt-noedit] .go-note-in,         /* ช่อง Note (id gn-/gx-/rsr-) */
-body[data-dpt-noedit] .go-cr-who,          /* เลื่อนวัน: เพราะใคร/ฝ่ายไหน */
-body[data-dpt-noedit] .go-cr-reason,       /* เลื่อนวัน: เหตุผล */
+body[data-dpt-noedit] .go-dw,              /* widget ปักวันเปิด (วันที่ยังโชว์เป็นข้อความที่ "วันเปิด:"/"ปักไว้:") */
+body[data-dpt-noedit] .go-note-in:not([value]),   /* ช่องเหตุผลยกเลิก/เลื่อน (gx-/rsr-) = ช่องกรอกล้วน ไม่มีค่าเก็บ */
+body[data-dpt-noedit] .go-note-in[value=""],      /* Note ที่ยังไม่มีใครเขียน */
+body[data-dpt-noedit] .go-cr-who,          /* เลื่อนวัน: เพราะใคร/ฝ่ายไหน — ค่าโชว์ที่ 📝 เหนือช่องแล้ว */
+body[data-dpt-noedit] .go-cr-reason,       /* เลื่อนวัน: เหตุผล — ค่าโชว์ที่ 📝 เหนือช่องแล้ว */
 body[data-dpt-noedit] input[class^="rs-off-"],  /* reschedule: เลือก offer ปลายทาง */
 /* After อ.1 / ทะเบียน — โน้ตรายสาขา */
-body[data-dpt-noedit] .note-input,         /* ช่องกรอกโน้ต */
+body[data-dpt-noedit] .note-input[value=""],  /* โน้ตที่ยังว่าง */
 body[data-dpt-noedit] .note-save {         /* ปุ่ม Save โน้ต */
   display: none !important;
+}
+/* โน้ตที่มีข้อความ = แสดงเป็นข้อความอ่านอย่างเดียว (กดพิมพ์ไม่ได้ · server 403 อยู่ดี) */
+body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
+  pointer-events: none !important; background: transparent !important; border-color: transparent !important;
+  box-shadow: none !important; color: var(--text, #0f172a) !important; padding-left: 0 !important; width: 100%;
 }
 </style>
 <script>/*VIEW-ONLY-GATE*/(function(){
