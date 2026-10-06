@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=123338" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=150403" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6303,6 +6303,19 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   Promise.resolve(p).then(gate).catch(gate);                   // gate หลัง bundle (DPT_ROLE ถูก set แล้ว)
 })();</script>
 
+<style>/*NAV-TOOLS*/
+#dpt-navright{gap:8px!important}
+#dpt-navright #xsearch,#dpt-navright #svm-filter{position:relative!important;top:auto!important;right:auto!important;left:auto!important;bottom:auto!important;margin:0!important;z-index:auto!important;box-shadow:none!important;font-family:inherit!important}
+#dpt-navright #xsearch{width:260px}
+#dpt-navright #xsearch-in{display:block;width:100%;max-width:none!important;height:34px;box-sizing:border-box;padding:0 12px;border:1px solid var(--border2,#cbd5e1);border-radius:10px;background:var(--surface,#fff);color:var(--text,#0d1421);font:inherit;font-size:13px;box-shadow:none!important;outline:none}
+#dpt-navright #xsearch-in:focus{border-color:var(--blue,#2563eb);box-shadow:0 0 0 3px rgba(37,99,235,.12)!important}
+#dpt-navright #xsearch-in::placeholder{color:var(--t3,#8a93a8)}
+#dpt-navright #xsearch-res{position:absolute;top:100%;right:0;margin-top:6px;width:320px;max-width:80vw;z-index:40;font-family:inherit;border:1px solid var(--border,#e3e6ed);border-radius:10px;box-shadow:0 8px 24px rgba(13,20,33,.12)}
+#dpt-navright #xsearch-res:not(.show){border-width:0}
+#dpt-navright #svm-filter{height:34px;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;padding:0 12px;border:1px solid var(--border2,#cbd5e1);border-radius:10px;background:var(--surface,#fff);color:#0f766e;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer}
+#dpt-navright #svm-filter:hover{border-color:#0d9488;background:#f0fdfa}
+#dpt-navright #svm-filter.on{background:#0d9488;border-color:#0d9488;color:#fff}
+</style>
 <script>/*UX-POLISH*/
 (function(){
   function init(){
@@ -6316,16 +6329,10 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         var grp=document.getElementById('dpt-navright');
         if(!grp){ grp=document.createElement('span'); grp.id='dpt-navright';
           grp.style.cssText='margin-left:auto;display:inline-flex;align-items:center;gap:10px'; nav.appendChild(grp); }
-        function unfix(e){ if(!e)return; e.style.position='static'; e.style.top=e.style.right=e.style.left=e.style.bottom='auto'; e.style.margin='0'; e.style.boxShadow='none'; }
-        if(svm&&svm.parentElement!==grp){ unfix(svm); grp.appendChild(svm); }   // สวมอาคาร ก่อน
-        if(xs&&xs.parentElement!==grp){ unfix(xs); grp.appendChild(xs);          // แล้วตามด้วย search
-          var inp=document.getElementById('xsearch-in'); if(inp) inp.style.maxWidth='240px';
-          // กล่องผลลัพธ์ค้นหา: ลอยทับแบบ overlay (absolute) ไม่ดันแถบแท็บ. เดิม #xsearch เป็น position:fixed
-          // (overlay) แต่ unfix() ทำให้ res กลายเป็น in-flow ในแถบ → พอ search แล้วกางดันเนื้อหาลง (จี 21 ก.ย.)
-          xs.style.position='relative';
-          var resEl=document.getElementById('xsearch-res');
-          if(resEl){ resEl.style.position='absolute'; resEl.style.top='100%'; resEl.style.right='0';
-            resEl.style.marginTop='5px'; resEl.style.width='300px'; resEl.style.maxWidth='80vw'; resEl.style.zIndex='99999'; } }
+        // 6 ต.ค.: ย้าย DOM อย่างเดียว — หน้าตา/ชั้น (z-index) อยู่ใน NAV_TOOLS_CSS ที่เดียว (เดิมแปะ inline ทีละจุด
+        // แต่ไม่ได้ลดชั้น 99999 ของ template → ทะลุทุก popup)
+        if(svm&&svm.parentElement!==grp){ grp.appendChild(svm); }   // สวมอาคาร ก่อน
+        if(xs&&xs.parentElement!==grp){ grp.appendChild(xs); }      // แล้วตามด้วย search
       }
       var stamps=document.querySelector('header.top .stamps');
       if(stamps&&!document.getElementById('dpt-userbox')){
