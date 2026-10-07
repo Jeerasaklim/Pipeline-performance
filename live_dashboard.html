@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=165630" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=170355" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6316,8 +6316,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     // member หรือ construction_management: GO/After/Overall/Nego = view only → ซ่อน Export + แผงต้นทุน.
     // construction_management ยังแก้ Site Management (ผรม.) ในแผนที่ได้ — map เป็น iframe ไม่โดน CSS/ตัวซ่อนนี้.
     if(document.body){document.body.setAttribute("data-dpt-role",role);document.body.setAttribute("data-dpt-noedit","1");}  // noedit=1 → view-only GO/After (member + construction_management; admin/head returned ก่อนแล้ว)
-    hide(SEL_COST);
-    var t=0,iv=setInterval(function(){hide(SEL_COST);if(++t>=10)clearInterval(iv);},700);
+    // 7 ต.ค. (จี "เห็นสิ"): ดูอย่างเดียว = เห็นแผงต้นทุน ฿ ด้วย (server ส่ง cost ให้ทุก role แล้ว) → ไม่ซ่อน SEL_COST อีก
   }
   var p = window.__coreTabs || (window.DPT_awaitAuth ? window.DPT_awaitAuth() : Promise.resolve());
   Promise.resolve(p).then(gate).catch(gate);                   // gate หลัง bundle (DPT_ROLE ถูก set แล้ว)
@@ -6578,8 +6577,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
 (function () {
   "use strict";
   // 1 ต.ค. (จี): เปิดให้ Head 3 ตำแหน่งเห็น — "แค่ View ก่อน" (SOP_VIEW_ONLY_ROLES) · เอา role ออกจาก VIEW_ONLY เมื่อจะให้อนุมัติ/แจ้งปัญหาได้
-  var SOP_VISIBLE_ROLES = window.DPT_SOP_VISIBLE_ROLES || ["admin", "head_site_expansion", "head_construction", "head_site_negotiation", "managing_director", "head_business_strategy"];
-  var SOP_VIEW_ONLY_ROLES = window.DPT_SOP_VIEW_ONLY_ROLES || ["head_site_expansion", "head_construction", "head_site_negotiation", "managing_director", "head_business_strategy"];   // 1 ต.ค.: +MD +Head BSE (เท่า Head)
+  var SOP_VISIBLE_ROLES = window.DPT_SOP_VISIBLE_ROLES || ["admin", "head_site_expansion", "head_construction", "head_site_negotiation", "managing_director", "head_business_strategy", "construction_management", "member"];   // 7 ต.ค. (จี "เห็นสิ"): ทุก role เห็นแท็บ SOP
+  var SOP_VIEW_ONLY_ROLES = window.DPT_SOP_VIEW_ONLY_ROLES || ["head_site_expansion", "head_construction", "head_site_negotiation", "managing_director", "head_business_strategy", "construction_management", "member"];   // 1 ต.ค.: +MD +Head BSE (เท่า Head)
   var C = { "ORG-SITEEX": "#0e7490", "ORG-NEGO": "#3b5bdb", "ORG-LEGAL": "#0ca678", "ORG-RATKIT": "#7c3aed", "ORG-CONSTR": "#ea580c", "ORG-TABIEN": "#db2777" };
   function col(id) { return C[id] || "#8a93a8"; }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
