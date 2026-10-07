@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=150403" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=164104" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5369,8 +5369,14 @@ setTimeout(applyBoard,300);
       if (_bgBusy || !SHOWN || !url || !getToken()) return;
       _bgBusy = true; _lastCheck = Date.now();
       liveFn().then(function (j) { _bgBusy = false; onFresh(j, !!(root.document && root.document.hidden) && !dirty()); },
-        function (e) { _bgBusy = false; if (e && e.denied && e.status !== 401) notice("denied"); });   // 401 = token กำลังต่ออายุ → รอบหน้า
+        function (e) {
+          _bgBusy = false;
+          if (e && e.denied && e.status !== 401) notice("denied");   // 401 = token กำลังต่ออายุ → รอบหน้า
+          // 7 ต.ค.: 401 ขณะใช้บัตร 1 วัน = บัตรใช้ไม่ได้แล้ว (live() ทิ้งให้แล้ว) → ขึ้นปุ่ม Sign in ต่ออายุ (ไม่ต้องรีเฟรช)
+          else if (e && e.status === 401 && !getToken() && root.DPT_reauth) { try { root.DPT_reauth(); } catch (x) {} }
+        });
     }
+    root.DPT_bgNow = function () { _lastCheck = 0; bgCheck(); };   // LOGIN_GATE เรียกหลังต่ออายุ Google → ได้บัตร 1 วันใบใหม่ทันที
     function startBg() {
       if (_bgStarted) return; _bgStarted = true;
       try {
@@ -5398,9 +5404,14 @@ setTimeout(applyBoard,300);
           if (!j || j.ok !== true) {
             // 403 = ไม่มี Role ในชีต (นโยบายจี 23 ก.ย.) → ตั้ง flag ให้ overlay โชว์หน้า "ไม่มีสิทธิ์" (ไม่ใช่ error งง ๆ)
             if (j && j.status === 403) { try { root.DPT_ACCESS_DENIED = (j.error || "บัญชีนี้ยังไม่ได้รับสิทธิ์เข้าใช้งาน"); } catch (e) {} }
+            // 7 ต.ค.: บัตร 1 วัน (s1.) ถูกปฏิเสธ (หมดอายุ/กุญแจเปลี่ยน) → ทิ้งบัตร ไม่งั้นรีเฟรชแล้ววนใช้บัตรเสียซ้ำ
+            if (j && j.status === 401 && String(getToken()).indexOf("s1.") === 0 && root.DPT_dropSession) { try { root.DPT_dropSession(); } catch (e) {} }
             const er = new Error("GAS backend error: " + ((j && (j.error || ("status " + j.status))) || "unknown"));
             er.denied = true; er.status = j && j.status; throw er;
           }
+          // 7 ต.ค.: server แนบบัตร 1 วันมาเมื่อเข้าด้วย Google token → เก็บ แล้วลบออกก่อนเซฟสำเนาในเครื่อง (บัตรอยู่ที่เดียว)
+          if (j.user && j.user.session) { try { if (root.DPT_setSession) root.DPT_setSession(j.user.session); } catch (e) {} }
+          if (j.user) { delete j.user.session; delete j.user.sessionExp; }
           if (email) cacheSave(email, j);
           return j;
         });
@@ -6231,17 +6242,26 @@ setTimeout(applyBoard,300);
   }
   function renewed(){clearTimeout(RENEW_T);schedule();if(RL)RL.style.display="none";var w=WAIT;WAIT=[];w.forEach(function(f){try{f(window.DPT_ID_TOKEN);}catch(e){}});}
   // ใช้ตอนเจอ 401: รอ token ใหม่ (ขึ้นปุ่ม Sign in ทันที + ลองต่อเงียบคู่กัน) → resolve เมื่อได้
-  window.DPT_reauth=function(){return new Promise(function(res){WAIT.push(res);relogin();try{if(window.google&&google.accounts&&google.accounts.id){initGis();google.accounts.id.prompt();}}catch(e){}});};
+  window.DPT_reauth=function(){try{if(String(window.DPT_ID_TOKEN||"").indexOf("s1.")===0&&window.DPT_dropSession)window.DPT_dropSession();}catch(e){}   /* 7 ต.ค.: 401 ขณะใช้บัตร 1 วัน = บัตรเสีย → ทิ้ง */
+    return new Promise(function(res){WAIT.push(res);relogin();try{if(window.google&&google.accounts&&google.accounts.id){initGis();google.accounts.id.prompt();}}catch(e){}});};
   function onCred(resp){var p=dj(resp.credential||"");var email=(p.email||"").toLowerCase();var info=document.getElementById("dpt-lginfo");if(ALLOW&&email.indexOf("@"+ALLOW)<0){if(info)info.textContent="⚠️ ต้องใช้อีเมล @"+ALLOW+" เท่านั้น";return;}
     var again=!!window.DPT_ID_TOKEN&&!!window.DPT_USER;
-    if(again&&email!==String(window.DPT_USER).toLowerCase()){try{sessionStorage.setItem("dpt_tok",resp.credential);localStorage.setItem("dpt_email",email);}catch(e){}location.reload();return;}   // ต่ออายุด้วยบัญชีอื่น = เริ่มใหม่ ห้ามปนข้อมูลคนละคน
+    if(again&&email!==String(window.DPT_USER).toLowerCase()){try{sessionStorage.setItem("dpt_tok",resp.credential);localStorage.setItem("dpt_email",email);localStorage.removeItem("dpt_sess");}catch(e){}location.reload();return;}   // ต่ออายุด้วยบัญชีอื่น = เริ่มใหม่ ห้ามปนข้อมูลคนละคน
     window.DPT_ID_TOKEN=resp.credential;try{sessionStorage.setItem("dpt_tok",resp.credential);}catch(e){}
-    if(again){renewed();return;}
+    if(again){renewed();try{if(window.DPT_bgNow)window.DPT_bgNow();}catch(e){}return;}   // ต่ออายุแล้ว → ขอบัตร 1 วันใบใหม่เลย (ไม่รอรอบ 10 นาที)
     grant(email,p.name);schedule();}
-  window.dptLogout=function(){try{localStorage.removeItem("dpt_email");sessionStorage.removeItem("dpt_tok");}catch(e){}try{if(window.DPT_cacheClear)window.DPT_cacheClear();}catch(e){}if(window.google&&google.accounts&&google.accounts.id){try{google.accounts.id.disableAutoSelect();}catch(e){}}location.reload();};
+  /* 7 ต.ค. (จี "ทำไมต้อง login บ่อย"): บัตรผ่านของแอป อายุ 1 วัน (server ออกให้ใน bundle.user.session ตอนเข้าด้วย Google)
+     เก็บ localStorage → เปิดแท็บใหม่/ปิด Chrome ไม่ต้อง login จนครบ 1 วัน · ใช้แทน Google token ทุกที่ (DPT_ID_TOKEN)
+     server ยังเช็ค role กับชีตทุก request · บัตรใช้ไม่ได้ (401) → ทิ้ง แล้ว login Google ใหม่ */
+  window.DPT_setSession=function(tok){var p=dj(tok||"");var em=(p.email||"").toLowerCase();if(!p.exp||!em||em!==String(window.DPT_USER||"").toLowerCase())return;if(p.exp*1000<=Date.now()+5*60000)return;
+    window.DPT_ID_TOKEN=tok;try{localStorage.setItem("dpt_sess",tok);}catch(e){}schedule();};
+  window.DPT_dropSession=function(){try{localStorage.removeItem("dpt_sess");}catch(e){}if(String(window.DPT_ID_TOKEN||"").indexOf("s1.")===0){try{var g=sessionStorage.getItem("dpt_tok");window.DPT_ID_TOKEN=(g&&expOf(g)>Date.now()+60000)?g:"";}catch(e){window.DPT_ID_TOKEN="";}}};
+  window.dptLogout=function(){try{localStorage.removeItem("dpt_email");localStorage.removeItem("dpt_sess");sessionStorage.removeItem("dpt_tok");}catch(e){}try{if(window.DPT_cacheClear)window.DPT_cacheClear();}catch(e){}if(window.google&&google.accounts&&google.accounts.id){try{google.accounts.id.disableAutoSelect();}catch(e){}}location.reload();};
   // จำ token ไว้ (จี 21 ก.ย.): refresh แล้วใช้ id_token เดิมถ้ายังไม่หมดอายุ (~1ชม.) → ข้าม Google login
   // ทั้งหมด (ไม่ต้อง login ซ้ำทุก refresh + ไม่ต้องรอ GIS โหลด = เร็วขึ้นมาก). sessionStorage = ต่อแท็บ,
   // ปิดแท็บแล้วต้อง login ใหม่ (ปลอดภัยกว่า localStorage). exp เช็คจาก JWT payload.
+  function trySess(){try{var t=localStorage.getItem("dpt_sess");if(!t)return false;var p=dj(t);var now=Math.floor(Date.now()/1000);if(String(t).indexOf("s1.")!==0||!p.exp||p.exp<=now+60){localStorage.removeItem("dpt_sess");return false;}var em=(p.email||"").toLowerCase();if(ALLOW&&em.indexOf("@"+ALLOW)<0)return false;window.DPT_ID_TOKEN=t;grant(em,p.name);schedule();return true;}catch(e){return false;}}
+  if(trySess())return;   // 7 ต.ค.: บัตร 1 วัน มาก่อน (ไม่ต้องรอ Google เลย)
   function tryStored(){try{var t=sessionStorage.getItem("dpt_tok");if(!t)return false;var p=dj(t);var now=Math.floor(Date.now()/1000);if(!p.exp||p.exp<=now+60){sessionStorage.removeItem("dpt_tok");return false;}var em=(p.email||"").toLowerCase();if(ALLOW&&em.indexOf("@"+ALLOW)<0)return false;window.DPT_ID_TOKEN=t;grant(em,p.name);schedule();return true;}catch(e){return false;}}
   if(tryStored())return;
   var iv=setInterval(function(){if(window.google&&google.accounts&&google.accounts.id){clearInterval(iv);try{GIS_INIT=true;google.accounts.id.initialize({client_id:CLIENT_ID,callback:onCred,hd:ALLOW,auto_select:true});google.accounts.id.renderButton(document.getElementById("dpt-gbtn"),{theme:"filled_blue",size:"large",text:"signin_with",shape:"pill",width:270});google.accounts.id.prompt();}catch(e){var info=document.getElementById("dpt-lginfo");if(info)info.textContent="โหลด Google ไม่สำเร็จ: "+e.message;}}},200);
