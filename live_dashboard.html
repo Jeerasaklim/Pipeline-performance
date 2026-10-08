@@ -567,7 +567,8 @@
       </g>
           <g class="gnode own-nego" onclick="openDetail('hold_nego')"><title>คลิกเพื่อดูรายชื่อ</title>
         <rect x="182.0" y="454.0" width="100" height="76" rx="7" class="fnode clickable"/>
-        <text x="232.0" y="481.0" class="flabel">Hold เจรจา</text>
+        <text x="232.0" y="475.0" class="flabel">Potential</text>
+        <text x="232.0" y="487.0" class="flabel">with cons</text>
         <text id="cnt-hold_nego" x="232.0" y="501.0" class="fcount">&mdash;</text>
         <text id="pic-hold_nego" x="232.0" y="519.0" class="fpic"></text>
         <text x="271.0" y="466.0" class="fexpand">&#10530;</text>
@@ -966,7 +967,7 @@
       <div class="card">
         <div class="ssbar">
           <span class="ssnote">เดือน &gt; Complete / In progress &middot; <b id="sr-total">0</b> ไซท์
-            (ไม่รวมสถานะ ยกเลิก และ Hold)</span>
+            (ไม่รวมสถานะ ยกเลิก และ Potential with cons)</span>
           <span class="ssgrow">
             <button type="button" class="dflink" onclick="srAll(true)">ขยายทั้งหมด</button>
             <button type="button" class="dflink" onclick="srAll(false)">ย่อทั้งหมด</button>
@@ -1167,7 +1168,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=190744" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=194032" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -1328,7 +1329,7 @@ tr.go-nd-hide{display:none!important}
     "ready_o1": [["ratkit_send_doc","วันส่งเอกสารให้รัฐกิจ"]]
   };
   var DETAIL_LABELS = { "approve": "อนุมัติรถตู้ (ยังไม่เปิด) · Approved, not yet opened",
-    "hold_nego": "Hold เจรจา · Status APPSHEET 6.1 Hold เจรจาราคา", "potential": "ความเป็นไปได้ต่ำ · Potential with cons", "nego_stuck": "ติดเงื่อนไข · Blocked by conditions (สถานะเจรจา 2.เจรจา-ติดขัด)", "wait_kt": "รอเสนอใบปะหน้าใหม่ · Cover sheet waiting to go back to KT", "sign_contract": "รอเซ็นสัญญา · Waiting to sign", "send_check": "รอส่งตรวจสอบสัญญา · Waiting to send for check", "check_contract": "รอ Legal ตรวจสอบสัญญา · Legal checking", "contract_final": "สัญญา Final · Contract final", "gotn4": "รอคัด น.4 · Waiting for น.4", "survey": "รอรังวัด · Waiting for survey", "wip": "Work in process", "confirm_o1": "ยื่น อ.1 · Submitted อ.1", "measure": "รอวัดระดับ · Waiting for level survey", "plan_wait": "จัดทำผัง · Preparing ผัง (EO blank)", "plan_done": "รออนุมัติผัง · ผัง done, waiting approval (EO filled)", "plan_approved": "เข้าคณะกรรมการแล้ว รออนุมัติ · Plan pending approval", "make_permit": "จัดทำแบบขออนุญาต · Preparing permit form", "permit7": "แบบขออนุญาต Final · Permit form submitted", "make_n2_pre": "รอเอกสารเพื่อ น.2 · น.2 docs, still in early ผัง", "make_n2_docs": "ดำเนินการเอกสาร น.2 · Processing น.2 docs", "getn2_docs": "ได้รับเอกสาร น.2 · Received น.2 docs", "make_n4_pre": "รอเอกสารเพื่อ น.4 · น.4 docs, still in early ผัง", "make_n4_docs": "ดำเนินการเอกสาร น.4 · Processing น.4 docs", "getn4_docs": "ได้รับเอกสาร น.4 · Received น.4 docs", "n4n2": "เอกสาร น.2+น.4 Final · Docs sent to รัฐกิจ", "wait_o1": "เตรียมเอกสารยื่น อ.1 · Docs not yet sent to รัฐกิจ", "ready_o1": "รอยื่น อ.1 · Docs sent to รัฐกิจ, ready to submit", "wait_n4_plan": "รังวัดแล้ว รอคัด น.4 · Surveyed, waiting น.4", "approve_all": "อนุมัติทั้งหมด · All approved sites (เปิดแล้ว + ยกเลิก + อนุมัติรถตู้ (ยังไม่เปิด))", "opened": "เปิดแล้ว · Opened (I = 01.เปิดแล้ว)", "cancelled": "ยกเลิก · Cancelled (I = 10.ยกเลิก or BB = 5.ยกเลิก)", "stage_group": "Stage ไซท์อนุมัติ ยังไม่ยื่น อ.1 · Approved, not yet submitted อ.1", "site_ex": "รอนำเสนอใหม่ · Site Expansion 09.รอนำเสนอใหม่", "util_temp_prep": "เตรียมเอกสาร น้ำ-ไฟ ชั่วคราว · Prep temp utility docs", "util_temp_req": "ขอน้ำ-ไฟ ชั่วคราว · Request temp utility", "util_temp_wait": "รอน้ำ-ไฟ ชั่วคราว · Waiting temp utility", "util_temp_got": "ได้ น้ำ-ไฟ ชั่วคราว · Got temp utility", "util_water_prep": "เตรียมเอกสาร น้ำถาวร · Prep permanent water docs", "util_water_req": "ขอน้ำถาวร · Request permanent water", "util_water_wait": "รอน้ำถาวร · Waiting permanent water", "util_water_got": "ได้น้ำถาวร · Got permanent water", "util_elec_prep": "เตรียมเอกสารไฟถาวร · Prep permanent power docs", "util_elec_req": "ขอไฟถาวร · Request permanent power", "util_elec_wait": "รอไฟถาวร · Waiting permanent power", "util_elec_got": "ได้ไฟถาวร · Got permanent power" };
+    "hold_nego": "Potential with cons · สถานะเจรจา 0.Potential with cons", "potential": "ความเป็นไปได้ต่ำ · สถานะเจรจา 8.ความเป็นไปได้ต่ำ", "nego_stuck": "ติดเงื่อนไข · Blocked by conditions (สถานะเจรจา 2.เจรจา-ติดขัด)", "wait_kt": "รอเสนอใบปะหน้าใหม่ · Cover sheet waiting to go back to KT", "sign_contract": "รอเซ็นสัญญา · Waiting to sign", "send_check": "รอส่งตรวจสอบสัญญา · Waiting to send for check", "check_contract": "รอ Legal ตรวจสอบสัญญา · Legal checking", "contract_final": "สัญญา Final · Contract final", "gotn4": "รอคัด น.4 · Waiting for น.4", "survey": "รอรังวัด · Waiting for survey", "wip": "Work in process", "confirm_o1": "ยื่น อ.1 · Submitted อ.1", "measure": "รอวัดระดับ · Waiting for level survey", "plan_wait": "จัดทำผัง · Preparing ผัง (EO blank)", "plan_done": "รออนุมัติผัง · ผัง done, waiting approval (EO filled)", "plan_approved": "เข้าคณะกรรมการแล้ว รออนุมัติ · Plan pending approval", "make_permit": "จัดทำแบบขออนุญาต · Preparing permit form", "permit7": "แบบขออนุญาต Final · Permit form submitted", "make_n2_pre": "รอเอกสารเพื่อ น.2 · น.2 docs, still in early ผัง", "make_n2_docs": "ดำเนินการเอกสาร น.2 · Processing น.2 docs", "getn2_docs": "ได้รับเอกสาร น.2 · Received น.2 docs", "make_n4_pre": "รอเอกสารเพื่อ น.4 · น.4 docs, still in early ผัง", "make_n4_docs": "ดำเนินการเอกสาร น.4 · Processing น.4 docs", "getn4_docs": "ได้รับเอกสาร น.4 · Received น.4 docs", "n4n2": "เอกสาร น.2+น.4 Final · Docs sent to รัฐกิจ", "wait_o1": "เตรียมเอกสารยื่น อ.1 · Docs not yet sent to รัฐกิจ", "ready_o1": "รอยื่น อ.1 · Docs sent to รัฐกิจ, ready to submit", "wait_n4_plan": "รังวัดแล้ว รอคัด น.4 · Surveyed, waiting น.4", "approve_all": "อนุมัติทั้งหมด · All approved sites (เปิดแล้ว + ยกเลิก + อนุมัติรถตู้ (ยังไม่เปิด))", "opened": "เปิดแล้ว · Opened (I = 01.เปิดแล้ว)", "cancelled": "ยกเลิก · Cancelled (I = 10.ยกเลิก or BB = 5.ยกเลิก)", "stage_group": "Stage ไซท์อนุมัติ ยังไม่ยื่น อ.1 · Approved, not yet submitted อ.1", "site_ex": "รอนำเสนอใหม่ · Site Expansion 09.รอนำเสนอใหม่", "util_temp_prep": "เตรียมเอกสาร น้ำ-ไฟ ชั่วคราว · Prep temp utility docs", "util_temp_req": "ขอน้ำ-ไฟ ชั่วคราว · Request temp utility", "util_temp_wait": "รอน้ำ-ไฟ ชั่วคราว · Waiting temp utility", "util_temp_got": "ได้ น้ำ-ไฟ ชั่วคราว · Got temp utility", "util_water_prep": "เตรียมเอกสาร น้ำถาวร · Prep permanent water docs", "util_water_req": "ขอน้ำถาวร · Request permanent water", "util_water_wait": "รอน้ำถาวร · Waiting permanent water", "util_water_got": "ได้น้ำถาวร · Got permanent water", "util_elec_prep": "เตรียมเอกสารไฟถาวร · Prep permanent power docs", "util_elec_req": "ขอไฟถาวร · Request permanent power", "util_elec_wait": "รอไฟถาวร · Waiting permanent power", "util_elec_got": "ได้ไฟถาวร · Got permanent power" };
   var DETAIL_COLS_DEFAULT = [ ["code","SITE CODE"], ["name","NAME"], ["date","วันอนุมัติรถตู้"], ["aging","AGING FROM วันอนุมัติรถตู้ to today (วันทำการ)"], ["note","SITE NEGO NOTE"] ];
   var DETAIL_COLS_BY_KEY = {
     "approve": [ ["code","SITE CODE"], ["name","NAME"], ["date","วันอนุมัติรถตู้"], ["status","STATUS (STAGE)"] ],
@@ -2221,7 +2222,7 @@ tr.go-nd-hide{display:none!important}
   var SS_STATUS_FILL = [
     ["เซ็นสัญญาแล้ว", "var(--gmid)",    "var(--green)"],
     ["รอเซ็นสัญญา",   "var(--bmid)",    "var(--blue)"],
-    ["Hold",          "var(--pmid)",    "var(--purple)"],
+    ["Potential with cons", "var(--pmid)", "var(--purple)"],
     ["ยกเลิก",        "var(--border2)", "var(--t3)"]
   ];
   function ssChartMonths(){          // chronological, oldest first (the table runs newest first)
@@ -2429,7 +2430,7 @@ tr.go-nd-hide{display:none!important}
     // ยกเลิก has no aging at all, and Hold has aging but no SLA to judge it
     // against -- neither belongs in a bucket table that is read as "how long is this taking".
     return SIGN_SLA_ROWS.filter(function(r){
-      return r.status !== 'ยกเลิก' && r.status !== 'Hold' && r.aging !== ''; });
+      return r.status !== 'ยกเลิก' && r.status !== 'Potential with cons' && r.aging !== ''; });
   }
   function srBucket(aging){
     for(var i = 0; i < SR_RANGES.length; i++) if(aging <= SR_RANGES[i][1]) return i;
@@ -3004,8 +3005,10 @@ setTimeout(applyBoard,300);
   // (ก่อนแก้ สถานะ 12 ไม่มีใครรู้จัก → ไหลเข้า WIP/รอเซ็น/รอรังวัด). match แบบ prefix กันช่องว่าง/วงเล็บท้ายเปลี่ยน.
   function isRepropose(v) { v = String(v == null ? "" : v).trim(); return EXP_PULLOUT.has(v) || /^12\.\s*รอนำเสนอ/.test(v); }
   const EXP_EXCLUDE = new Set([EXP_OPENED, EXP_CANCEL]);
-  const APPSHEET_HOLD_NEGO = "6.1 Hold เจรจาราคา";
-  const NEGO_POTENTIAL = "0.Potential with cons";
+  // 8 ต.ค. 26 (จี): สถานะเจรจาใช้คอลัมน์ BB (GSheet Nego) อย่างเดียว — เลิกใช้คอลัมน์ G "APPSHEET NS Site Approval ห้ามใช้" (เดิม "6.1 Hold เจรจาราคา")
+  //   กล่อง hold_nego ("Potential with cons") = BB 0.Potential with cons · กล่อง potential ("ความเป็นไปได้ต่ำ") = BB 8.ความเป็นไปได้ต่ำ
+  const NEGO_HOLD = "0.Potential with cons";
+  const NEGO_POTENTIAL = "8.ความเป็นไปได้ต่ำ";
   const NEGO_STUCK = "2.เจรจา-ติดขัด";
   const GLOBAL_EXCLUDE_EXP = new Set(["ขึ้นรถตู้วันนี้", "Reject"]);  // exact-match "dormant" rule G1
   const GLOBAL_EXCLUDE_NEGO = new Set(["5.ยกเลิก"]);
@@ -3177,7 +3180,7 @@ setTimeout(applyBoard,300);
   /* ==== predicates (refresh_data.py) ====================================== */
   function expExcluded(v) { return GLOBAL_EXCLUDE_EXP.has((v || "").trim()); }            // :208
   function negoStatus(r, L) { return cell(r, COL_NEGO) || (L.nego2[cell(r, COL_CODE)] || ""); } // :736
-  function isHoldNego(r) { return nospace(cell(r, COL_APPSHEET)) === nospace(APPSHEET_HOLD_NEGO); } // :2052
+  function isHoldNego(r, L) { return negoStatus(r, L) === NEGO_HOLD; }   // 8 ต.ค.: BB (ว่าง → Site Nego J) แทนคอลัมน์ G
   function isSigned(r, L) { return cell(r, COL_SIGN_DATE) !== "" || (L.sign2[cell(r, COL_CODE)] || "") !== ""; } // :730
   function isOpened(r) { return cell(r, COL_EXPANSION) === EXP_OPENED; }                  // :775
   function isCancelled(r, L) { return cell(r, COL_EXPANSION) === EXP_CANCEL || negoStatus(r, L) === "5.ยกเลิก"; } // :780
@@ -3259,8 +3262,8 @@ setTimeout(applyBoard,300);
 
     const approved = data.filter(r => !EXP_EXCLUDE.has(cell(r, COL_EXPANSION)));           // อนุมัติรถตู้ (incl 09)
     const pulled = approved.filter(r => !isRepropose(cell(r, COL_EXPANSION)));         // drop Site Ex first
-    const holdNego = pulled.filter(r => isHoldNego(r));
-    const active = pulled.filter(r => !isHoldNego(r));                                     // drop Hold second
+    const holdNego = pulled.filter(r => isHoldNego(r, L));
+    const active = pulled.filter(r => !isHoldNego(r, L));                                  // drop Hold second
     const base = active.filter(r => {                                                      // WIP
       const ns = negoStatus(r, L); return ns !== NEGO_POTENTIAL && ns !== NEGO_STUCK;
     });
@@ -3555,7 +3558,7 @@ setTimeout(applyBoard,300);
     const data = pipelineRows(slaRows, L);
     const approved = data.filter(r => !EXP_EXCLUDE.has(cell(r, COL_EXPANSION)));
     const pulled = approved.filter(r => !isRepropose(cell(r, COL_EXPANSION)));
-    const active = pulled.filter(r => !isHoldNego(r));
+    const active = pulled.filter(r => !isHoldNego(r, L));
     const base = active.filter(r => { const ns = negoStatus(r, L); return ns !== NEGO_POTENTIAL && ns !== NEGO_STUCK; });
     return base
       .filter(r => cell(r, COL_SUBMIT_O1) !== "" || cell(r, COL_GOT_O1) !== "")
@@ -4200,10 +4203,11 @@ setTimeout(applyBoard,300);
     if (surveyM(r, L) !== "" || cell(r, COL_SURVEY_RESULT) !== "") return "รอวัดระดับ";
     return "รอรังวัด";
   }
-  const SD_APPROVE_ORDER = ["รอนำเสนอใหม่", "ติดเงื่อนไข", "ความเป็นไปได้ต่ำ", "ยังยื่น อ.1", "ยื่น อ.1 แล้ว"];
+  const SD_APPROVE_ORDER = ["รอนำเสนอใหม่", "Potential with cons", "ติดเงื่อนไข", "ความเป็นไปได้ต่ำ", "ยังยื่น อ.1", "ยื่น อ.1 แล้ว"];
   function sdApproveStage(r, L) {
     if (isRepropose(cell(r, COL_EXPANSION))) return "รอนำเสนอใหม่";
     const ns = negoStatus(r, L);
+    if (ns === NEGO_HOLD) return "Potential with cons";      // 8 ต.ค.: กล่อง hold_nego
     if (ns === NEGO_STUCK) return "ติดเงื่อนไข";
     if (ns === NEGO_POTENTIAL) return "ความเป็นไปได้ต่ำ";
     if (cell(r, COL_SUBMIT_O1) !== "" || cell(r, COL_GOT_O1) !== "") return "ยื่น อ.1 แล้ว";
@@ -4250,8 +4254,8 @@ setTimeout(applyBoard,300);
     const data = pipelineRows(rows, L);
     const approved = data.filter(r => !EXP_EXCLUDE.has(cell(r, COL_EXPANSION)));
     const pulled = approved.filter(r => !isRepropose(cell(r, COL_EXPANSION)));
-    const holdNego = pulled.filter(r => isHoldNego(r));
-    const active = pulled.filter(r => !isHoldNego(r));
+    const holdNego = pulled.filter(r => isHoldNego(r, L));
+    const active = pulled.filter(r => !isHoldNego(r, L));
     const base = active.filter(r => { const ns = negoStatus(r, L); return ns !== NEGO_POTENTIAL && ns !== NEGO_STUCK; });
     const ubase = base.filter(r => legalScan(r, L) !== "");
     const noO1 = r => cell(r, COL_SUBMIT_O1) === "" && cell(r, COL_GOT_O1) === "";
@@ -4881,9 +4885,9 @@ setTimeout(applyBoard,300);
    * port บรรทัดต่อบรรทัดของ build_sign_sla_rows / sign_sla_type / sign_sla_status (จี 29 ก.ย.: เอาแท็บกลับมา)
    * อ่านชีต SLA ดิบ (มี เปิดแล้ว/ยกเลิก โดยตั้งใจ) · กรองเฉพาะ G1 (expExcluded) + ปีอนุมัติรถตู้ ≥ 2026 */
   const SIGN_SLA_FROM_YEAR = 2026;
-  const SIGN_SLA_STATUS_ORDER = ["เซ็นสัญญาแล้ว", "รอเซ็นสัญญา", "Hold", "ยกเลิก"];
+  const SIGN_SLA_STATUS_ORDER = ["เซ็นสัญญาแล้ว", "รอเซ็นสัญญา", "Potential with cons", "ยกเลิก"];   // 8 ต.ค.: เดิม "Hold"
   const SIGN_SLA_TYPE_ORDER = ["เซ็นสัญญาแล้ว รอเปิด", "เปิดแล้ว", "รอเซ็นสัญญาทั่วไป", "รอเสนอใบปะหน้าใหม่", "ติดเงื่อนไข",
-    "ความเป็นไปได้ต่ำ", "Hold เจรจา", "รอนำเสนอใหม่", "ยกเลิก"];
+    "ความเป็นไปได้ต่ำ", "Potential with cons", "รอนำเสนอใหม่", "ยกเลิก"];
   /* 30 ก.ย. (จี: "ต้องใช้ Logic เดียวกับ TAP Overall"): ใช้ predicate เดียวกับ Overall —
    *   สถานะเจรจา = negoStatus (SLA BB ว่าง → Site Nego J) · รอนำเสนอใหม่ = isRepropose (09 + 12.) ·
    *   เซ็นแล้ว = isSigned (วันเซ็น SLA AA หรือ Site Nego R) · เดิม (port HTML รายวัน) ดู BB/AA/09 อย่างเดียว → 9 สาขาไม่ตรง Overall */
@@ -4893,7 +4897,7 @@ setTimeout(applyBoard,300);
     if (isOpened(r)) return "เปิดแล้ว";
     if (isCancelled(r, L)) return "ยกเลิก";
     if (isRepropose(cell(r, COL_EXPANSION))) return "รอนำเสนอใหม่";
-    if (isHoldNego(r)) return "Hold เจรจา";
+    if (isHoldNego(r, L)) return "Potential with cons";
     if (nego === NEGO_POTENTIAL) return "ความเป็นไปได้ต่ำ";
     if (nego === NEGO_STUCK) return "ติดเงื่อนไข";
     if (isSigned(r, L)) return "เซ็นสัญญาแล้ว รอเปิด";
@@ -4903,7 +4907,7 @@ setTimeout(applyBoard,300);
   function signSlaStatus(t) {                                 // :2090
     if (t === "เปิดแล้ว" || t === "เซ็นสัญญาแล้ว รอเปิด") return "เซ็นสัญญาแล้ว";
     if (t === "รอเซ็นสัญญาทั่วไป" || t === "รอเสนอใบปะหน้าใหม่" || t === "ติดเงื่อนไข" || t === "ความเป็นไปได้ต่ำ") return "รอเซ็นสัญญา";
-    if (t === "Hold เจรจา" || t === "รอนำเสนอใหม่") return "Hold";
+    if (t === "Potential with cons" || t === "รอนำเสนอใหม่") return "Potential with cons";
     if (t === "ยกเลิก") return "ยกเลิก";
     return t;
   }
@@ -4922,7 +4926,7 @@ setTimeout(applyBoard,300);
       // 8 ต.ค. (จี "ต้องเอา นำเสนอใหม่ ออก"): รอนำเสนอใหม่ = กลับไปสรรหา ไม่ใช่งานรอเซ็น — Overall ก็แยกเป็นผลลัพธ์
       //   แถวเดียวกับ เปิดแล้ว/ยกเลิก (ไม่อยู่ใต้ อนุมัติรถตู้ยังไม่เปิด) → ไม่นับในกราฟ/ตาราง/CSV SLA เซ็นสัญญา (เดิมนับเป็น Hold)
       if (t === "รอนำเสนอใหม่") continue;
-      const cancelled = t === "ยกเลิก", held = signSlaStatus(t) === "Hold";
+      const cancelled = t === "ยกเลิก", held = signSlaStatus(t) === "Potential with cons";
       const kt = normDate(pnegoKt[code] || ""), ktd = parseDate(kt);
       let ktUsed = false, aging = null, sla = null;
       if (!cancelled) {
@@ -6533,7 +6537,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
 })();
 </script>
 
-<script>/*SOP-BOXES*/window.SOP_BOX_CATALOG=[{"key": "site_ex", "tab": "Overall", "name": "รอนำเสนอใหม่"}, {"key": "nego_stuck", "tab": "Overall", "name": "ติดเงื่อนไข"}, {"key": "potential", "tab": "Overall", "name": "ความเป็นไปได้ต่ำ"}, {"key": "hold_nego", "tab": "Overall", "name": "Hold เจรจา"}, {"key": "wait_kt", "tab": "Overall", "name": "รอเสนอใบปะหน้าใหม่"}, {"key": "sign_contract", "tab": "Overall", "name": "รอเซ็นสัญญา"}, {"key": "send_check", "tab": "Overall", "name": "รอส่งตรวจสอบสัญญา"}, {"key": "check_contract", "tab": "Overall", "name": "รอ Legal ตรวจสอบสัญญา"}, {"key": "contract_final", "tab": "Overall", "name": "สัญญา Final"}, {"key": "survey", "tab": "Overall", "name": "รอรังวัด"}, {"key": "wait_n4_plan", "tab": "Overall", "name": "รังวัดแล้ว รอคัด น.4"}, {"key": "gotn4", "tab": "Overall", "name": "รอคัด น.4"}, {"key": "measure", "tab": "Overall", "name": "รอวัดระดับ"}, {"key": "plan_wait", "tab": "Overall", "name": "จัดทำผัง"}, {"key": "plan_done", "tab": "Overall", "name": "รออนุมัติผัง"}, {"key": "plan_approved", "tab": "Overall", "name": "เข้าคณะกรรมการแล้ว รออนุมัติ"}, {"key": "make_permit", "tab": "Overall", "name": "จัดทำแบบขออนุญาต"}, {"key": "permit7", "tab": "Overall", "name": "แบบขออนุญาต Final"}, {"key": "make_n2_pre", "tab": "Overall", "name": "รอเอกสารเพื่อ น.2"}, {"key": "make_n2_docs", "tab": "Overall", "name": "ดำเนินการเอกสาร น.2"}, {"key": "getn2_docs", "tab": "Overall", "name": "ได้รับเอกสาร น.2"}, {"key": "make_n4_pre", "tab": "Overall", "name": "รอเอกสารเพื่อ น.4"}, {"key": "make_n4_docs", "tab": "Overall", "name": "ดำเนินการเอกสาร น.4"}, {"key": "getn4_docs", "tab": "Overall", "name": "ได้รับเอกสาร น.4"}, {"key": "n4n2", "tab": "Overall", "name": "เอกสาร น.2+น.4 Final"}, {"key": "wait_o1", "tab": "Overall", "name": "เตรียมเอกสารยื่น อ.1"}, {"key": "ready_o1", "tab": "Overall", "name": "รอยื่น อ.1"}, {"key": "confirm_o1", "tab": "Overall", "name": "ยื่น อ.1"}, {"key": "util_temp_prep", "tab": "Overall", "name": "เตรียมเอกสาร น้ำ-ไฟ ชั่วคราว"}, {"key": "util_temp_req", "tab": "Overall", "name": "ขอน้ำ-ไฟ ชั่วคราว"}, {"key": "util_temp_wait", "tab": "Overall", "name": "รอน้ำ-ไฟ ชั่วคราว"}, {"key": "util_temp_got", "tab": "Overall", "name": "ได้ น้ำ-ไฟ ชั่วคราว"}, {"key": "util_water_prep", "tab": "Overall", "name": "เตรียมเอกสาร น้ำถาวร"}, {"key": "util_water_req", "tab": "Overall", "name": "ขอน้ำถาวร"}, {"key": "util_water_wait", "tab": "Overall", "name": "รอน้ำถาวร"}, {"key": "util_water_got", "tab": "Overall", "name": "ได้น้ำถาวร"}, {"key": "util_elec_prep", "tab": "Overall", "name": "เตรียมเอกสารไฟถาวร"}, {"key": "util_elec_req", "tab": "Overall", "name": "ขอไฟถาวร"}, {"key": "util_elec_wait", "tab": "Overall", "name": "รอไฟถาวร"}, {"key": "util_elec_got", "tab": "Overall", "name": "ได้ไฟถาวร"}, {"key": "d_head", "tab": "หลังยื่น อ.1", "name": "ยื่น อ.1"}, {"key": "d_wait_o1", "tab": "หลังยื่น อ.1", "name": "รอ อ.1 (ยังไม่ออก)"}, {"key": "d_got_o1", "tab": "หลังยื่น อ.1", "name": "ได้ อ.1 แล้ว"}, {"key": "d_waiver", "tab": "หลังยื่น อ.1", "name": "อนุโลม (ก่อสร้างก่อน อ.1)"}, {"key": "d_handover", "tab": "หลังยื่น อ.1", "name": "ส่งมอบพื้นที่"}, {"key": "d_ready_con", "tab": "หลังยื่น อ.1", "name": "🏗 พร้อมเริ่ม Pre Con"}, {"key": "d_survey", "tab": "หลังยื่น อ.1", "name": "สำรวจพื้นที่"}, {"key": "d_precon_start", "tab": "หลังยื่น อ.1", "name": "งาน Pre Con (ผรม.เริ่ม)"}, {"key": "d_precon_done", "tab": "หลังยื่น อ.1", "name": "ตรวจรับ Pre Con"}, {"key": "d_layout", "tab": "หลังยื่น อ.1", "name": "นัดวางผัง"}, {"key": "d_build_start", "tab": "หลังยื่น อ.1", "name": "เริ่มงาน ก่อสร้าง"}, {"key": "d_store", "tab": "หลังยื่น อ.1", "name": "ส่งมอบร้าน"}, {"key": "d_ready", "tab": "หลังยื่น อ.1", "name": "รอเปิดร้าน"}, {"key": "d_reg_ready", "tab": "หลังยื่น อ.1", "name": "🏠 พร้อมขอ ทะเบียน (D-25)"}, {"key": "rg_house_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ ทะเบียนบ้าน"}, {"key": "rg_house_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ ทะเบียนบ้าน"}, {"key": "rg_branch_s", "tab": "หลังยื่น อ.1", "name": "ยื่นจดเพิ่มสาขา ภ.พ.09"}, {"key": "rg_branch_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ ภ.พ.09"}, {"key": "rg_liquor_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ สุรา+อาหารสัตว์"}, {"key": "rg_liquor_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ สุรา+อาหารสัตว์"}, {"key": "rg_carcass_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ ค้าซากสัตว์"}, {"key": "rg_carcass_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ ค้าซากสัตว์"}, {"key": "rg_food_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ สะสม+จำหน่าย"}, {"key": "rg_food_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ สะสม+จำหน่าย"}, {"key": "rg_pest_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ ยาฆ่าแมลง"}, {"key": "rg_pest_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ ยาฆ่าแมลง"}, {"key": "rg_gas_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ แก็ซ"}, {"key": "rg_gas_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ แก็ซ"}, {"key": "rg_trash_p", "tab": "หลังยื่น อ.1", "name": "ขอใช้ถังเทศบาล (ต่างจังหวัด)"}, {"key": "rg_trash_b", "tab": "หลังยื่น อ.1", "name": "สั่งซื้อถัง (กทม./SCM)"}, {"key": "rg_sound", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ ใช้เสียง"}, {"key": "rg_tax", "tab": "หลังยื่น อ.1", "name": "ยื่น ภาษีป้าย"}, {"key": "rg_pp06", "tab": "หลังยื่น อ.1", "name": "จดทะเบียน ภพ.06"}, {"key": "opened", "tab": "Overall", "name": "เปิดแล้ว"}, {"key": "d_open", "tab": "หลังยื่น อ.1", "name": "🎉 เปิดร้านแล้ว (ทั้งบริษัท)"}, {"key": "approve_all", "tab": "Overall", "name": "อนุมัติทั้งหมด"}, {"key": "cancelled", "tab": "Overall", "name": "ยกเลิก"}, {"key": "approve", "tab": "Overall", "name": "อนุมัติรถตู้ (ยังไม่เปิด)"}, {"key": "wip", "tab": "Overall", "name": "Work in process"}, {"key": "stage_group", "tab": "Overall", "name": "Stage ไซท์อนุมัติ ยังไม่ยื่น อ.1"}];</script>
+<script>/*SOP-BOXES*/window.SOP_BOX_CATALOG=[{"key": "site_ex", "tab": "Overall", "name": "รอนำเสนอใหม่"}, {"key": "nego_stuck", "tab": "Overall", "name": "ติดเงื่อนไข"}, {"key": "potential", "tab": "Overall", "name": "ความเป็นไปได้ต่ำ"}, {"key": "hold_nego", "tab": "Overall", "name": "Potential with cons"}, {"key": "wait_kt", "tab": "Overall", "name": "รอเสนอใบปะหน้าใหม่"}, {"key": "sign_contract", "tab": "Overall", "name": "รอเซ็นสัญญา"}, {"key": "send_check", "tab": "Overall", "name": "รอส่งตรวจสอบสัญญา"}, {"key": "check_contract", "tab": "Overall", "name": "รอ Legal ตรวจสอบสัญญา"}, {"key": "contract_final", "tab": "Overall", "name": "สัญญา Final"}, {"key": "survey", "tab": "Overall", "name": "รอรังวัด"}, {"key": "wait_n4_plan", "tab": "Overall", "name": "รังวัดแล้ว รอคัด น.4"}, {"key": "gotn4", "tab": "Overall", "name": "รอคัด น.4"}, {"key": "measure", "tab": "Overall", "name": "รอวัดระดับ"}, {"key": "plan_wait", "tab": "Overall", "name": "จัดทำผัง"}, {"key": "plan_done", "tab": "Overall", "name": "รออนุมัติผัง"}, {"key": "plan_approved", "tab": "Overall", "name": "เข้าคณะกรรมการแล้ว รออนุมัติ"}, {"key": "make_permit", "tab": "Overall", "name": "จัดทำแบบขออนุญาต"}, {"key": "permit7", "tab": "Overall", "name": "แบบขออนุญาต Final"}, {"key": "make_n2_pre", "tab": "Overall", "name": "รอเอกสารเพื่อ น.2"}, {"key": "make_n2_docs", "tab": "Overall", "name": "ดำเนินการเอกสาร น.2"}, {"key": "getn2_docs", "tab": "Overall", "name": "ได้รับเอกสาร น.2"}, {"key": "make_n4_pre", "tab": "Overall", "name": "รอเอกสารเพื่อ น.4"}, {"key": "make_n4_docs", "tab": "Overall", "name": "ดำเนินการเอกสาร น.4"}, {"key": "getn4_docs", "tab": "Overall", "name": "ได้รับเอกสาร น.4"}, {"key": "n4n2", "tab": "Overall", "name": "เอกสาร น.2+น.4 Final"}, {"key": "wait_o1", "tab": "Overall", "name": "เตรียมเอกสารยื่น อ.1"}, {"key": "ready_o1", "tab": "Overall", "name": "รอยื่น อ.1"}, {"key": "confirm_o1", "tab": "Overall", "name": "ยื่น อ.1"}, {"key": "util_temp_prep", "tab": "Overall", "name": "เตรียมเอกสาร น้ำ-ไฟ ชั่วคราว"}, {"key": "util_temp_req", "tab": "Overall", "name": "ขอน้ำ-ไฟ ชั่วคราว"}, {"key": "util_temp_wait", "tab": "Overall", "name": "รอน้ำ-ไฟ ชั่วคราว"}, {"key": "util_temp_got", "tab": "Overall", "name": "ได้ น้ำ-ไฟ ชั่วคราว"}, {"key": "util_water_prep", "tab": "Overall", "name": "เตรียมเอกสาร น้ำถาวร"}, {"key": "util_water_req", "tab": "Overall", "name": "ขอน้ำถาวร"}, {"key": "util_water_wait", "tab": "Overall", "name": "รอน้ำถาวร"}, {"key": "util_water_got", "tab": "Overall", "name": "ได้น้ำถาวร"}, {"key": "util_elec_prep", "tab": "Overall", "name": "เตรียมเอกสารไฟถาวร"}, {"key": "util_elec_req", "tab": "Overall", "name": "ขอไฟถาวร"}, {"key": "util_elec_wait", "tab": "Overall", "name": "รอไฟถาวร"}, {"key": "util_elec_got", "tab": "Overall", "name": "ได้ไฟถาวร"}, {"key": "d_head", "tab": "หลังยื่น อ.1", "name": "ยื่น อ.1"}, {"key": "d_wait_o1", "tab": "หลังยื่น อ.1", "name": "รอ อ.1 (ยังไม่ออก)"}, {"key": "d_got_o1", "tab": "หลังยื่น อ.1", "name": "ได้ อ.1 แล้ว"}, {"key": "d_waiver", "tab": "หลังยื่น อ.1", "name": "อนุโลม (ก่อสร้างก่อน อ.1)"}, {"key": "d_handover", "tab": "หลังยื่น อ.1", "name": "ส่งมอบพื้นที่"}, {"key": "d_ready_con", "tab": "หลังยื่น อ.1", "name": "🏗 พร้อมเริ่ม Pre Con"}, {"key": "d_survey", "tab": "หลังยื่น อ.1", "name": "สำรวจพื้นที่"}, {"key": "d_precon_start", "tab": "หลังยื่น อ.1", "name": "งาน Pre Con (ผรม.เริ่ม)"}, {"key": "d_precon_done", "tab": "หลังยื่น อ.1", "name": "ตรวจรับ Pre Con"}, {"key": "d_layout", "tab": "หลังยื่น อ.1", "name": "นัดวางผัง"}, {"key": "d_build_start", "tab": "หลังยื่น อ.1", "name": "เริ่มงาน ก่อสร้าง"}, {"key": "d_store", "tab": "หลังยื่น อ.1", "name": "ส่งมอบร้าน"}, {"key": "d_ready", "tab": "หลังยื่น อ.1", "name": "รอเปิดร้าน"}, {"key": "d_reg_ready", "tab": "หลังยื่น อ.1", "name": "🏠 พร้อมขอ ทะเบียน (D-25)"}, {"key": "rg_house_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ ทะเบียนบ้าน"}, {"key": "rg_house_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ ทะเบียนบ้าน"}, {"key": "rg_branch_s", "tab": "หลังยื่น อ.1", "name": "ยื่นจดเพิ่มสาขา ภ.พ.09"}, {"key": "rg_branch_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ ภ.พ.09"}, {"key": "rg_liquor_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ สุรา+อาหารสัตว์"}, {"key": "rg_liquor_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ สุรา+อาหารสัตว์"}, {"key": "rg_carcass_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ ค้าซากสัตว์"}, {"key": "rg_carcass_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ ค้าซากสัตว์"}, {"key": "rg_food_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ สะสม+จำหน่าย"}, {"key": "rg_food_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ สะสม+จำหน่าย"}, {"key": "rg_pest_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ ยาฆ่าแมลง"}, {"key": "rg_pest_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ ยาฆ่าแมลง"}, {"key": "rg_gas_s", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ แก็ซ"}, {"key": "rg_gas_g", "tab": "หลังยื่น อ.1", "name": "ได้รับ แก็ซ"}, {"key": "rg_trash_p", "tab": "หลังยื่น อ.1", "name": "ขอใช้ถังเทศบาล (ต่างจังหวัด)"}, {"key": "rg_trash_b", "tab": "หลังยื่น อ.1", "name": "สั่งซื้อถัง (กทม./SCM)"}, {"key": "rg_sound", "tab": "หลังยื่น อ.1", "name": "ยื่นขอ ใช้เสียง"}, {"key": "rg_tax", "tab": "หลังยื่น อ.1", "name": "ยื่น ภาษีป้าย"}, {"key": "rg_pp06", "tab": "หลังยื่น อ.1", "name": "จดทะเบียน ภพ.06"}, {"key": "opened", "tab": "Overall", "name": "เปิดแล้ว"}, {"key": "d_open", "tab": "หลังยื่น อ.1", "name": "🎉 เปิดร้านแล้ว (ทั้งบริษัท)"}, {"key": "approve_all", "tab": "Overall", "name": "อนุมัติทั้งหมด"}, {"key": "cancelled", "tab": "Overall", "name": "ยกเลิก"}, {"key": "approve", "tab": "Overall", "name": "อนุมัติรถตู้ (ยังไม่เปิด)"}, {"key": "wip", "tab": "Overall", "name": "Work in process"}, {"key": "stage_group", "tab": "Overall", "name": "Stage ไซท์อนุมัติ ยังไม่ยื่น อ.1"}];</script>
 <script>/*SOP-TAB*/
 /* ============================================================================
  * sop-tab.js — แท็บ SOP ของแอป Pipeline (จี 29 ก.ย. 2026)
