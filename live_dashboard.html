@@ -942,60 +942,6 @@
         <h1>🤝 Site Negotiation <span class="page-th">เจรจาพื้นที่</span></h1>
       </div>
 
-      <!-- 1. ARE WE ON TRACK? -->
-      <div class="status-strip">
-        <span class="badge neutral">&mdash;</span>
-        <div class="status-text">
-          <div class="status-main">Status pending &mdash; data not yet wired</div>
-          <div class="status-sub">Key metric vs target will appear here</div>
-        </div>
-      </div>
-
-      <!-- KEY METRICS -->
-      <div class="section-label">KEY METRICS</div>
-      <div class="kpi-row">
-          <div class="kpi-card">
-            <div class="kpi-label">🏪 METRIC 1</div>
-            <div class="kpi-value">&mdash;</div>
-            <div class="kpi-tags"><span class="tag muted">&mdash; TG</span><span class="tag muted">&mdash; LM</span></div>
-            <div class="kpi-sub">awaiting data</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">🎯 METRIC 2</div>
-            <div class="kpi-value">&mdash;</div>
-            <div class="kpi-tags"><span class="tag muted">&mdash; TG</span><span class="tag muted">&mdash; LM</span></div>
-            <div class="kpi-sub">awaiting data</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">📈 METRIC 3</div>
-            <div class="kpi-value">&mdash;</div>
-            <div class="kpi-tags"><span class="tag muted">&mdash; TG</span><span class="tag muted">&mdash; LM</span></div>
-            <div class="kpi-sub">awaiting data</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">⚠ METRIC 4</div>
-            <div class="kpi-value">&mdash;</div>
-            <div class="kpi-tags"><span class="tag muted">&mdash; TG</span><span class="tag muted">&mdash; LM</span></div>
-            <div class="kpi-sub">awaiting data</div>
-          </div>
-      </div>
-
-
-
-      <!-- Aging range matrix — same rows as SLA เซ็นสัญญา, excluding ยกเลิก and Hold -->
-      <div class="section-label">AGING RANGE &mdash; SLA เซ็นสัญญา</div>
-      <div class="card">
-        <div class="ssbar">
-          <span class="ssnote">เดือน &gt; Complete / In progress &middot; <b id="sr-total">0</b> ไซท์
-            (ไม่รวมสถานะ ยกเลิก และ Hold)</span>
-          <span class="ssgrow">
-            <button type="button" class="dflink" onclick="srAll(true)">ขยายทั้งหมด</button>
-            <button type="button" class="dflink" onclick="srAll(false)">ย่อทั้งหมด</button>
-          </span>
-        </div>
-        <div class="table-wrap sswrap"><table class="data-table sstable srtable" id="sr-table"></table></div>
-        <div class="srnote" id="sr-note"></div>
-      </div>
       <!-- SLA เซ็นสัญญา — from the SLA sheet (+ site nego AL / K) -->
       <div class="section-label">SLA เซ็นสัญญา</div>
       <div class="card">
@@ -1014,6 +960,20 @@
           <div class="sstip" id="ss-tip"></div>
         </div>
         <div class="table-wrap sswrap"><table class="data-table sstable" id="ss-table"></table></div>
+      </div>
+      <!-- Aging range matrix — same rows as SLA เซ็นสัญญา, excluding ยกเลิก and Hold -->
+      <div class="section-label">AGING RANGE &mdash; SLA เซ็นสัญญา</div>
+      <div class="card">
+        <div class="ssbar">
+          <span class="ssnote">เดือน &gt; Complete / In progress &middot; <b id="sr-total">0</b> ไซท์
+            (ไม่รวมสถานะ ยกเลิก และ Hold)</span>
+          <span class="ssgrow">
+            <button type="button" class="dflink" onclick="srAll(true)">ขยายทั้งหมด</button>
+            <button type="button" class="dflink" onclick="srAll(false)">ย่อทั้งหมด</button>
+          </span>
+        </div>
+        <div class="table-wrap sswrap"><table class="data-table sstable srtable" id="sr-table"></table></div>
+        <div class="srnote" id="sr-note"></div>
       </div>
       <!-- Weekly signed vs sign-backlog (Site Negotiation tab) -->
       <div class="section-label">เซ็นสัญญารายสัปดาห์ เทียบ Backlog รอเซ็น (ตั้งแต่ 1 ม.ค. 26)</div>
@@ -1228,7 +1188,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=140929" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=174923" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
