@@ -1167,7 +1167,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=183541" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=184158" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -7706,7 +7706,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     "#tab-registration td.rg-wait{text-align:center;color:var(--t3,#8a93a8);padding:18px}",
     ".rg-cl-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:4px 4px 10px}.rg-cl-head span{font-size:12px;color:var(--t3,#8a93a8)}",
     "#tab-registration tr.rg-grp td{background:var(--s3,#f1f5f9);font-weight:700;font-size:12.5px}",
-    "#tab-registration td.rg-in{color:var(--t3,#8a93a8)}#tab-registration td.rg-na{color:#cbd5e1;font-size:11.5px}"
+    "#tab-registration td.rg-in{color:var(--t3,#8a93a8)}#tab-registration td.rg-na{color:#cbd5e1;font-size:11.5px}",
+    ".rg-note2{display:block;background:#eff6ff;color:#1e40af;border-color:#bfdbfe;border-radius:10px}",
+    ".rg-segwrap{margin:0 0 16px}.rg-empty{text-align:center;color:var(--t3,#8a93a8);padding:28px 16px;line-height:1.8;font-size:13px}.rg-empty b{color:var(--text,#0d1421);font-size:14px}"
   ].join("");
   document.head.appendChild(css);
 
@@ -7718,26 +7720,85 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var after = nav.querySelector('.tab-btn[data-tab="sop"]') || nav.querySelector('.tab-btn[data-tab="sitemgmt"]');
   nav.insertBefore(tb, after ? after.nextSibling : null);
 
+  /* 8 ต.ค. (จี "ต่อใบอนุญาตอยู่ตรงไหน แล้วภาษีป้าย ภาษีที่ดิน ประกันร้านค้าอยู่ตรงไหน") → แยกหน้าย่อย
+   * ป้ายคอลัมน์หยิบจากชีต 0. CJx Store Document_New (snapshot 22 ก.ย.): ต่ออายุ = แท็บ "  ต่ออายุใบอนุญาต" (9 ใบ + D-x)
+   * · ภาษีป้าย = ตาราง "รายละเอียดภาษีป้าย" + "ภาษีป้าย 2568" · ภาษีที่ดิน = ตาราง "ภาษีที่ดิน 2568" (สถานะ/ภาษีที่ดิน/วันชำระ/หมายเหตุ)
+   * · ประกันร้านค้า = ไม่มีในชีตทะเบียน ("เงินประกัน" ในชีต = มัดจำมิเตอร์น้ำ-ไฟ) → ยังไม่ตั้งคอลัมน์ (ห้ามเดา) */
+  var LIC = [["ใบอนุญาตขายสุรา ประเภท 1 (ค้าส่ง)", "D-90"], ["ใบอนุญาตขายสุรา ประเภท 2 (ค้าปลีก)", "D-90"], ["ใบอนุญาตขายยาสูบประเภท 2 (ค้าปลีก)", "D-90"],
+    ["ใบอนุญาตค้าซากสัตว์", "D-60"], ["ใบอนุญาตขายอาหารสัตว์", "D-90"], ["ใบอนุญาตสะสมอาหาร", "D-45"], ["ใบอนุญาต/หนังสือจำหน่ายอาหาร", "D-45"],
+    ["ใบอนุญาตประกอบกิจการอันตราย (สะสมยาฆ่าแมลง)", "D-45"], ["ใบอนุญาตประกอบกิจการอันตราย (สะสมแก๊สกระป๋อง)", "D-45"]];
+  var LIC_SHORT = ["สุรา ป.1 (ส่ง)", "สุรา ป.2 (ปลีก)", "ยาสูบ ป.2", "ค้าซากสัตว์", "อาหารสัตว์", "สะสมอาหาร", "จำหน่ายอาหาร", "อันตราย (ยาฆ่าแมลง)", "อันตราย (แก๊สกระป๋อง)"];   // หัวคอลัมน์ตาราง matrix (ชื่อเต็มอยู่ในตาราง "ประเภทใบอนุญาต")
+  function bar(extra) {
+    return '<div class="rg-bar"><input type="text" placeholder="🔍 ค้นหา Site Code / ชื่อสาขา" disabled><select disabled><option>จังหวัด: ทั้งหมด</option></select>' +
+      (extra || "") + '<select disabled><option>สถานะ: ทั้งหมด</option></select></div>';
+  }
+  function licLegend() {
+    return '<div class="card"><div class="rg-cl-head"><b>ใบอนุญาตที่ต้องต่ออายุ</b> <span>เตือนล่วงหน้าตามประเภทใบ (จากหัวคอลัมน์ในชีต)</span></div>' +
+      '<div class="table-wrap"><table class="data-table"><thead><tr><th>ใบอนุญาต</th><th>เตือนล่วงหน้า</th><th>สาขาที่มีใบ</th><th>ถึงรอบต่อ</th><th>หมดอายุแล้ว</th></tr></thead><tbody>' +
+      LIC.map(function (l) { return "<tr><td>" + esc(l[0]) + "</td><td>" + l[1] + "</td><td>" + DASH + "</td><td>" + DASH + "</td><td>" + DASH + "</td></tr>"; }).join("") +
+      "</tbody></table></div></div>";
+  }
+  var VIEWS = {
+    newstore: ["🏗️ สาขาใหม่ (ก่อนเปิด)", function () {
+      return bar('<select disabled><option>ขั้นตอน: ทั้งหมด</option></select>') +
+        '<div class="rg-kpis">' + kpi("📋 สาขากำลังทำทะเบียน") + kpi("🔴 เลยเดดไลน์ D-day") + kpi("🟠 ใกล้ D-day ≤7 วัน") + kpi("✅ ทะเบียนครบ") + kpi("ยังไม่จบ") + "</div>" +
+        '<div class="section-label">งานค้างแต่ละขั้น</div>' + stages() +
+        '<div class="section-label">งานใกล้ / เลย SLA</div>' +
+        table(["Site Code", "ชื่อสาขา", "จังหวัด", "วันเปิด (D-0)", "เอกสาร", "ครบกำหนด", "เหลือ / เลย (วัน)", "ขั้นตอน", "บันทึก"], "เรียงจากเลยนานสุด") +
+        '<div class="section-label">รายสาขา</div>' +
+        table(["Site Code", "ชื่อสาขา", "จังหวัด", "รัฐกิจ", "วันเปิด (D-0)", "ขั้นตอน", "เสร็จ (ใบ)", "สถานะ"]) +
+        checklist() +
+        '<div class="section-label">ภาพรวม</div>' +
+        table(["เอกสาร", "ได้แล้ว", "ยังไม่ได้", "เลย SLA"], "เอกสารแต่ละใบ — ได้แล้ว / ทุกสาขา") +
+        table(["Site Code", "ชื่อสาขา", "วันเปิด (D-0)", "เอกสารค้าง", "เลยมาแล้ว (วัน)"], "ต้องเร่งด่วนที่สุด");
+    }],
+    renew: ["🔄 ต่ออายุใบอนุญาต", function () {
+      return bar('<select disabled><option>ใบอนุญาต: ทั้งหมด</option></select>') +
+        '<div class="rg-kpis">' + kpi("🔴 หมดอายุแล้ว") + kpi("🟠 ถึงรอบต่ออายุ", "เข้าช่วงเตือน D-90 / D-60 / D-45") + kpi("✅ ยังไม่ถึงรอบ") + kpi("📋 ใบทั้งหมด") + kpi("สาขาที่เปิดแล้ว") + "</div>" +
+        '<div class="section-label">ต้องต่ออายุ</div>' +
+        table(["Site Code", "ชื่อสาขา", "จังหวัด", "ใบอนุญาต", "วันหมดอายุ", "เตือนล่วงหน้า", "เหลือ / เลย (วัน)", "วันที่ต่ออายุ", "บันทึก"], "เรียงจากหมดก่อน") +
+        '<div class="section-label">รายสาขา × ใบอนุญาต</div>' +
+        table(["Site Code", "ชื่อสาขา", "หน่วยงานท้องถิ่น"].concat(LIC_SHORT)) +
+        '<div class="section-label">ประเภทใบอนุญาต</div>' + licLegend();
+    }],
+    signtax: ["🪧 ภาษีป้าย", function () {
+      return bar('<select disabled><option>ปีภาษี: ทั้งหมด</option></select>') +
+        '<div class="rg-kpis">' + kpi("📋 สาขาที่ต้องยื่น") + kpi("📝 ยื่น ภป.1 แล้ว") + kpi("📄 รับ ภป.3 แล้ว") + kpi("✅ ชำระแล้ว") + kpi("🔴 ยังไม่ยื่น") + "</div>" +
+        '<div class="section-label">รายสาขา</div>' +
+        table(["Site Code", "ชื่อสาขา", "จังหวัด", "หน่วยงานท้องถิ่น", "ปีภาษี", "สถานะ", "วันที่ยื่น ภป.1", "วันที่รับ ภป.3", "ค่าภาษีป้าย", "วันที่ชำระเงิน", "หมายเหตุ", "บันทึก"]);
+    }],
+    landtax: ["🏞️ ภาษีที่ดิน", function () {
+      return bar('<select disabled><option>ปีภาษี: ทั้งหมด</option></select>') +
+        '<div class="rg-kpis">' + kpi("📋 สาขาที่ต้องชำระ") + kpi("✅ ชำระแล้ว") + kpi("🔴 ยังไม่ชำระ") + kpi("ค่าภาษีที่ดินรวม") + kpi("หน่วยงานท้องถิ่น") + "</div>" +
+        '<div class="section-label">รายสาขา</div>' +
+        table(["Site Code", "ชื่อสาขา", "จังหวัด", "หน่วยงานท้องถิ่น", "ปีภาษี", "สถานะ", "ภาษีที่ดิน", "วันชำระ", "หมายเหตุ", "บันทึก"]);
+    }],
+    // จี 8 ต.ค. "เพิ่มงานไปก่อนไม่ต้องมีข้อมูลก็ได้" → คอลัมน์ = ร่างที่ผมตั้งเอง (ชีตทะเบียนไม่มีประกันร้านค้า) · รอยืนยันกับเจ้าของงาน
+    insure: ["🛡️ ประกันร้านค้า", function () {
+      return '<div class="rg-note rg-note2">คอลัมน์ร่าง — ยังไม่มีต้นทางข้อมูล (ชีตทะเบียนไม่มีประกันร้านค้า · "เงินประกัน" ในชีต = มัดจำมิเตอร์น้ำ-ไฟ) · รอยืนยันว่าต้องติดตามอะไร</div>' +
+        bar('<select disabled><option>บริษัทประกัน: ทั้งหมด</option></select>') +
+        '<div class="rg-kpis">' + kpi("🔴 หมดอายุแล้ว") + kpi("🟠 ใกล้หมดอายุ") + kpi("✅ คุ้มครองอยู่") + kpi("⚪ ยังไม่มีกรมธรรม์") + kpi("📋 สาขาทั้งหมด") + "</div>" +
+        '<div class="section-label">ต้องต่ออายุ</div>' +
+        table(["Site Code", "ชื่อสาขา", "บริษัทประกัน", "เลขที่กรมธรรม์", "วันหมดอายุ", "เหลือ / เลย (วัน)", "บันทึก"], "เรียงจากหมดก่อน") +
+        '<div class="section-label">รายสาขา</div>' +
+        table(["Site Code", "ชื่อสาขา", "จังหวัด", "บริษัทประกัน", "เลขที่กรมธรรม์", "ความคุ้มครอง", "ทุนประกัน", "เบี้ยประกัน", "วันเริ่ม", "วันหมดอายุ", "สถานะ", "หมายเหตุ", "บันทึก"]);
+    }]
+  };
+  var ORDER = ["newstore", "renew", "signtax", "landtax", "insure"], CURV = "newstore";
+
   var sec = document.createElement("section"); sec.id = "tab-registration"; sec.className = "tab-panel";
   sec.innerHTML =
     '<div class="page-head"><h1>📋 Registration and License <span class="page-th">งานทะเบียน · ใบอนุญาต</span></h1></div>' +
     '<div class="rg-note">โครงหน้าจอ — ยังไม่ต่อข้อมูล (เห็นเฉพาะ Admin)</div>' +
-    '<div class="rg-bar"><input type="text" placeholder="🔍 ค้นหา Site Code / ชื่อสาขา" disabled>' +
-    '<select disabled><option>จังหวัด: ทั้งหมด</option></select><select disabled><option>ขั้นตอน: ทั้งหมด</option></select>' +
-    '<select disabled><option>สถานะ: ทั้งหมด</option></select></div>' +
-    '<div class="rg-kpis">' + kpi("📋 สาขากำลังทำทะเบียน") + kpi("🔴 เลยเดดไลน์ D-day") + kpi("🟠 ใกล้ D-day ≤7 วัน") + kpi("✅ ทะเบียนครบ") + kpi("ยังไม่จบ") + "</div>" +
-    '<div class="section-label">งานค้างแต่ละขั้น</div>' + stages() +
-    '<div class="section-label">งานใกล้ / เลย SLA</div>' +
-    table(["Site Code", "ชื่อสาขา", "จังหวัด", "วันเปิด (D-0)", "เอกสาร", "ครบกำหนด", "เหลือ / เลย (วัน)", "ขั้นตอน", "บันทึก"], "เรียงจากเลยนานสุด") +
-    '<div class="section-label">รายสาขา</div>' +
-    table(["Site Code", "ชื่อสาขา", "จังหวัด", "รัฐกิจ", "วันเปิด (D-0)", "ขั้นตอน", "เสร็จ (ใบ)", "สถานะ"]) +
-    checklist() +
-    '<div class="section-label">ภาพรวม</div>' +
-    table(["เอกสาร", "ได้แล้ว", "ยังไม่ได้", "เลย SLA"], "เอกสารแต่ละใบ — ได้แล้ว / ทุกสาขา") +
-    table(["Site Code", "ชื่อสาขา", "วันเปิด (D-0)", "เอกสารค้าง", "เลยมาแล้ว (วัน)"], "ต้องเร่งด่วนที่สุด") +
-    '<div class="section-label">ใบอนุญาต + ต่ออายุ (สาขาที่เปิดแล้ว)</div>' +
-    table(["Site Code", "ชื่อสาขา", "ใบอนุญาต", "วันหมดอายุ", "เตือนล่วงหน้า", "เหลือ (วัน)", "สถานะ"], "เฟส 2");
+    '<div class="rg-segwrap"><div class="sp-seg" id="rg-seg">' + ORDER.map(function (k) { return '<button type="button" data-v="' + k + '"' + (k === CURV ? ' class="on"' : "") + ">" + VIEWS[k][0] + "</button>"; }).join("") + "</div></div>" +
+    '<div id="rg-view"></div>';
   main.appendChild(sec);
+  function render() {
+    document.getElementById("rg-view").innerHTML = VIEWS[CURV][1]();
+    [].forEach.call(document.querySelectorAll("#rg-seg button"), function (b) { b.classList.toggle("on", b.getAttribute("data-v") === CURV); });
+  }
+  [].forEach.call(document.querySelectorAll("#rg-seg button"), function (b) { b.onclick = function () { CURV = b.getAttribute("data-v"); render(); }; });
+  render();
 
   function gate() { tb.style.display = allowed() ? "" : "none"; }
   var gi = 0, giv = setInterval(function () { gate(); if (++gi > 60) clearInterval(giv); }, 1000);
