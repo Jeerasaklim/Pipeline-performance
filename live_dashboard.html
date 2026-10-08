@@ -1228,7 +1228,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=170355" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=140929" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -4954,6 +4954,9 @@ setTimeout(applyBoard,300);
       const appr = cell(r, COL_APPROVED), d = parseDate(appr);
       if (!d || d.getFullYear() < SIGN_SLA_FROM_YEAR) continue;
       const t = signSlaType(r, L), sign = normDate(cell(r, COL_SIGN_DATE) || (L.sign2 ? (L.sign2[code] || "") : ""));   // วันเซ็นชุดเดียวกับ Overall (sdSignedDate)
+      // 8 ต.ค. (จี "ต้องเอา นำเสนอใหม่ ออก"): รอนำเสนอใหม่ = กลับไปสรรหา ไม่ใช่งานรอเซ็น — Overall ก็แยกเป็นผลลัพธ์
+      //   แถวเดียวกับ เปิดแล้ว/ยกเลิก (ไม่อยู่ใต้ อนุมัติรถตู้ยังไม่เปิด) → ไม่นับในกราฟ/ตาราง/CSV SLA เซ็นสัญญา (เดิมนับเป็น Hold)
+      if (t === "รอนำเสนอใหม่") continue;
       const cancelled = t === "ยกเลิก", held = signSlaStatus(t) === "Hold";
       const kt = normDate(pnegoKt[code] || ""), ktd = parseDate(kt);
       let ktUsed = false, aging = null, sla = null;
