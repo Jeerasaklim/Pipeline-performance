@@ -1167,7 +1167,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=185145" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=185449" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -3435,9 +3435,12 @@ setTimeout(applyBoard,300);
     ["rg_gas_s", 30], ["rg_gas_g", 31], ["rg_trash_p", 18], ["rg_trash_b", 19],
     ["rg_sound", 20], ["rg_tax", 23], ["rg_pp06", 32],
   ];
-  const AF_REG_SLA = { rg_house_s: 18, rg_house_g: 9, rg_branch_s: 15, rg_trash_p: 10,
-    rg_trash_b: 10, rg_sound: 10, rg_liquor_s: 10, rg_tax: 7, rg_carcass_s: 7,
-    rg_food_s: 7, rg_pest_s: 7, rg_gas_s: 7, rg_pp06: 7 };
+  // 8 ต.ค. (จี "หัวข้อใน Sheet ถูก"): SLA = แถว D-x บนหัวชีต Template_งานทะเบียน (c14 D-19 · c15 D-9 · c16 D-16 ·
+  //   c18/c20/c21 D-11 · c23/c24/c26/c28/c30/c32 D-8) · เดิม (port build_after_tab.py:185) น้อยกว่าหัวชีต 1 วัน ยกเว้น house_g
+  //   rg_trash_b (c19 สั่งซื้อถัง SCM) หัวชีตไม่มี D-x → คงค่าเดิม 10 ไว้ก่อน (รอจีเคาะ)
+  const AF_REG_SLA = { rg_house_s: 19, rg_house_g: 9, rg_branch_s: 16, rg_trash_p: 11,
+    rg_trash_b: 10, rg_sound: 11, rg_liquor_s: 11, rg_tax: 8, rg_carcass_s: 8,
+    rg_food_s: 8, rg_pest_s: 8, rg_gas_s: 8, rg_pp06: 8 };
 
   /** afPdate — port of build_after_tab.py pdate() (:70). Only "d-Mon-y[y[yy]]".
    *  2-digit year -> +2000 (matches Python; funnel dates are all 20xx). */
