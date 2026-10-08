@@ -1167,7 +1167,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=180741" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=183541" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -7639,14 +7639,76 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
 <script>/*REGISTRATION-TAB*/
 /* ============================================================================
  * registration-tab.js — แท็บ Registration and License (จี 8 ต.ค. 2026)
- * ⛔ ตอนนี้ = "โครง" เท่านั้น (จี: "ทำโครงก่อน ข้อมูลยังไม่ต้องเอามาใส่ ไม่งั้นมั่วไปยกเลิกของเดิม")
- *    หัวข้อเปล่า ไม่มีข้อมูล ไม่อ่าน/ไม่เขียนชีตใด ๆ · ของเดิม (Template_งานทะเบียน / Portal) ไม่ถูกแตะ
+ * ⛔ ตอนนี้ = "โครง": หน้าจอครบทุกชิ้น (การ์ด · ตัวกรอง · ขั้นตอน · ตาราง+หัวคอลัมน์ · เช็กลิสต์) แต่ยังไม่มีข้อมูล
+ *    ไม่อ่าน/ไม่เขียนชีตใด ๆ · ของเดิม (Template_งานทะเบียน / Site Nego Portal) ไม่ถูกแตะ
+ * ป้าย/ชื่อเอกสาร/SLA หยิบจากของจริง: ชีต Template_งานทะเบียน (หัวคอลัมน์ c5–c33 + แถว D-x)
+ *   และ Site Nego Portal track ทะเบียน (cjx_siteops.html:511 KPI · :1327 REG_STEPS · :1333 DOCS · :990 dashReg)
  * เห็นเฉพาะ admin (แบบแท็บ SOP) · ขอบเขต/คำถามค้าง = PRD_Registration.md
  * ========================================================================== */
 (function () {
   "use strict";
   var VISIBLE_ROLES = ["admin"];
   function allowed() { return VISIBLE_ROLES.indexOf(window.DPT_ROLE) >= 0; }
+
+  /* ขั้นตอนงานทะเบียน = Portal REG_STEPS */
+  var STEPS = [
+    ["📝", "เตรียมเอกสารทะเบียนบ้าน", "รวบรวมเอกสารเริ่มต้น — งานแรกของทีมทะเบียน", "เริ่มที่นี่"],
+    ["🏠", "ทะเบียนบ้าน + ภ.พ.09", "ยื่นทะเบียนบ้าน D-19 → ได้ D-9 · จดเพิ่มสาขา ภ.พ.09 (D-16)", "ได้บ้านก่อน D-9"],
+    ["💧", "น้ำ-ไฟ", "น้ำ-ไฟ ชั่วคราว + ถาวร (เตรียม/ขอ/ได้)", "ให้ทันวันเปิด"],
+    ["📄", "ใบอนุญาต (D-11~D-8)", "เสียง/ถัง/สุรา/ป้าย/ซากสัตว์/อาหาร/อันตราย/ภพ.06/ภอ.11", "ยื่นก่อน D-8"],
+    ["✅", "จดทะเบียนครบ (จบ)", "ครบทุกใบ · เปิดร้านได้", "จบงานทะเบียน"]];
+  /* เอกสารรายสาขา = Portal DOCS · คอลัมน์ = ชีต Template_งานทะเบียน (เตรียม / ยื่น / ได้) · SLA = แถวหัว D-x ของชีต */
+  var DOCS = [
+    ["น้ำ-ไฟ", [["น้ำ-ไฟ ชั่วคราว", "c5", "c6", "c7", ""], ["น้ำ ถาวร", "c8", "c9", "c10", ""], ["ไฟ ถาวร", "c11", "c12", "c13", ""]]],
+    ["ทะเบียนบ้าน + ภ.พ.09", [["ทะเบียนบ้าน", "", "c14", "c15", "ยื่น D-19 · ได้ D-9"], ["ภ.พ.09 เพิ่มสาขา", "", "c16", "c17", "ยื่น D-16"]]],
+    ["ใบอนุญาต (D-11~D-8)", [["ขอใช้เสียง", "", "c20", "", "D-11"], ["ถังเทศบาล + ถังขยะ", "", "c18", "", "D-11"],
+      ["สุรา + อาหารสัตว์", "", "c21", "c22", "D-11"], ["ภาษีป้าย + สิ่งปลูกสร้าง", "", "c23", "", "D-8"], ["ค้าซากสัตว์", "", "c24", "c25", "D-8"],
+      ["สะสม+จำหน่ายอาหาร", "", "c26", "c27", "D-8"], ["กิจการอันตราย (ยาฆ่าแมลง)", "", "c28", "c29", "D-8"],
+      ["กิจการอันตราย (แก็ซกระป๋อง)", "", "c30", "c31", "D-8"], ["ภพ.06", "", "c32", "", "D-8"], ["ภอ.11", "", "c33", "", "D-8"]]]];
+  var DASH = "—";
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function kpi(lbl, sub) { return '<div class="kpi-card"><div class="kpi-label">' + lbl + '</div><div class="kpi-value">' + DASH + '</div><div class="kpi-sub">' + (sub || "&nbsp;") + "</div></div>"; }
+  function table(cols, note) {
+    return '<div class="card"><div class="table-wrap"><table class="data-table"><thead><tr>' + cols.map(function (c) { return "<th>" + esc(c) + "</th>"; }).join("") +
+      '</tr></thead><tbody><tr><td colspan="' + cols.length + '" class="rg-wait">ยังไม่ต่อข้อมูล' + (note ? " · " + esc(note) : "") + "</td></tr></tbody></table></div></div>";
+  }
+  function stages() {
+    return '<div class="rg-stages">' + STEPS.map(function (s, i) {
+      return '<div class="rg-stage"><div class="rg-st-h"><span>' + s[0] + "</span><b>" + esc(s[1]) + '</b></div><div class="rg-st-n">' + DASH +
+        '</div><div class="rg-st-t">' + esc(s[2]) + '</div><div class="rg-st-s">' + esc(s[3]) + "</div></div>" + (i < STEPS.length - 1 ? '<div class="rg-arrow">→</div>' : "");
+    }).join("") + "</div>";
+  }
+  function checklist() {
+    var h = '<div class="card"><div class="rg-cl-head"><b>เช็กลิสต์เอกสาร</b> <span>เลือกสาขาจากตาราง "รายสาขา" เพื่อดู/บันทึก · Site Code ' + DASH + " · เปิด " + DASH + " · เสร็จ " + DASH + " / 15 ใบ</span></div>" +
+      '<div class="table-wrap"><table class="data-table rg-cl"><thead><tr><th>เอกสาร</th><th>เตรียมเอกสาร</th><th>ยื่น</th><th>ได้</th><th>SLA</th><th>สถานะ</th></tr></thead><tbody>';
+    DOCS.forEach(function (g) {
+      h += '<tr class="rg-grp"><td colspan="6">' + esc(g[0]) + "</td></tr>";
+      g[1].forEach(function (d) {
+        var cell = function (c) { return c ? '<td class="rg-in">' + DASH + "</td>" : '<td class="rg-na">ไม่มีขั้นนี้</td>'; };
+        h += "<tr><td>" + esc(d[0]) + "</td>" + cell(d[1]) + cell(d[2]) + cell(d[3]) + "<td>" + esc(d[4] || "ให้ทันวันเปิด") + "</td><td>" + DASH + "</td></tr>";
+      });
+    });
+    return h + "</tbody></table></div></div>";
+  }
+
+  var css = document.createElement("style");
+  css.textContent = [
+    ".rg-note{display:inline-block;margin:0 0 14px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}",
+    ".rg-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 16px}",
+    ".rg-bar input,.rg-bar select{height:34px;box-sizing:border-box;padding:0 12px;border:1px solid var(--border2,#cbd5e1);border-radius:10px;background:var(--surface,#fff);font:inherit;font-size:13px;color:var(--t2,#475569)}",
+    ".rg-bar input{width:260px}",
+    ".rg-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:6px}@media (max-width:1100px){.rg-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}",
+    ".rg-stages{display:flex;align-items:stretch;gap:8px;margin-bottom:6px;overflow:visible;flex-wrap:wrap}",
+    ".rg-stage{flex:1 1 170px;background:var(--surface,#fff);border:1px solid var(--border,#e3e6ed);border-radius:12px;padding:12px 14px}",
+    ".rg-st-h{display:flex;gap:6px;align-items:center;font-size:13px}.rg-st-n{font-size:24px;font-weight:800;margin:6px 0 4px;color:var(--text,#0d1421)}",
+    ".rg-st-t{font-size:12px;color:var(--t3,#8a93a8);line-height:1.45}.rg-st-s{margin-top:6px;font-size:11.5px;font-weight:700;color:var(--blue,#2563eb)}",
+    ".rg-arrow{align-self:center;color:var(--t3,#8a93a8);font-size:18px}",
+    "#tab-registration td.rg-wait{text-align:center;color:var(--t3,#8a93a8);padding:18px}",
+    ".rg-cl-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:4px 4px 10px}.rg-cl-head span{font-size:12px;color:var(--t3,#8a93a8)}",
+    "#tab-registration tr.rg-grp td{background:var(--s3,#f1f5f9);font-weight:700;font-size:12.5px}",
+    "#tab-registration td.rg-in{color:var(--t3,#8a93a8)}#tab-registration td.rg-na{color:#cbd5e1;font-size:11.5px}"
+  ].join("");
+  document.head.appendChild(css);
 
   var nav = document.querySelector("nav.tabs"), main = document.querySelector("main");
   if (!nav || !main) return;
@@ -7657,11 +7719,24 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   nav.insertBefore(tb, after ? after.nextSibling : null);
 
   var sec = document.createElement("section"); sec.id = "tab-registration"; sec.className = "tab-panel";
-  sec.innerHTML = '<div class="page-head"><h1>📋 Registration and License <span class="page-th">งานทะเบียน · ใบอนุญาต</span></h1></div>' +
+  sec.innerHTML =
+    '<div class="page-head"><h1>📋 Registration and License <span class="page-th">งานทะเบียน · ใบอนุญาต</span></h1></div>' +
+    '<div class="rg-note">โครงหน้าจอ — ยังไม่ต่อข้อมูล (เห็นเฉพาะ Admin)</div>' +
+    '<div class="rg-bar"><input type="text" placeholder="🔍 ค้นหา Site Code / ชื่อสาขา" disabled>' +
+    '<select disabled><option>จังหวัด: ทั้งหมด</option></select><select disabled><option>ขั้นตอน: ทั้งหมด</option></select>' +
+    '<select disabled><option>สถานะ: ทั้งหมด</option></select></div>' +
+    '<div class="rg-kpis">' + kpi("📋 สาขากำลังทำทะเบียน") + kpi("🔴 เลยเดดไลน์ D-day") + kpi("🟠 ใกล้ D-day ≤7 วัน") + kpi("✅ ทะเบียนครบ") + kpi("ยังไม่จบ") + "</div>" +
+    '<div class="section-label">งานค้างแต่ละขั้น</div>' + stages() +
     '<div class="section-label">งานใกล้ / เลย SLA</div>' +
+    table(["Site Code", "ชื่อสาขา", "จังหวัด", "วันเปิด (D-0)", "เอกสาร", "ครบกำหนด", "เหลือ / เลย (วัน)", "ขั้นตอน", "บันทึก"], "เรียงจากเลยนานสุด") +
     '<div class="section-label">รายสาขา</div>' +
+    table(["Site Code", "ชื่อสาขา", "จังหวัด", "รัฐกิจ", "วันเปิด (D-0)", "ขั้นตอน", "เสร็จ (ใบ)", "สถานะ"]) +
+    checklist() +
     '<div class="section-label">ภาพรวม</div>' +
-    '<div class="section-label">ใบอนุญาต + ต่ออายุ (สาขาที่เปิดแล้ว)</div>';
+    table(["เอกสาร", "ได้แล้ว", "ยังไม่ได้", "เลย SLA"], "เอกสารแต่ละใบ — ได้แล้ว / ทุกสาขา") +
+    table(["Site Code", "ชื่อสาขา", "วันเปิด (D-0)", "เอกสารค้าง", "เลยมาแล้ว (วัน)"], "ต้องเร่งด่วนที่สุด") +
+    '<div class="section-label">ใบอนุญาต + ต่ออายุ (สาขาที่เปิดแล้ว)</div>' +
+    table(["Site Code", "ชื่อสาขา", "ใบอนุญาต", "วันหมดอายุ", "เตือนล่วงหน้า", "เหลือ (วัน)", "สถานะ"], "เฟส 2");
   main.appendChild(sec);
 
   function gate() { tb.style.display = allowed() ? "" : "none"; }
