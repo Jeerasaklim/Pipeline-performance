@@ -1167,7 +1167,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=185449" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=190744" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -3722,7 +3722,30 @@ setTimeout(applyBoard,300);
     AF_DATA_KEYS.forEach(k => { counts[k] = buckets[k].length; });
     AF_EXTRA.forEach(([k]) => { counts[k] = buckets[k].length; });
     counts.head = cohort.length;
-    return { counts: counts, buckets: buckets, sla: sla };
+
+    // 8 ต.ค. (จี): ตารางรายสาขาของแท็บ Registration and License — กติกาเดียวกับกล่องทะเบียนข้างบนเป๊ะ
+    //   (cohort ยื่น อ.1 · ช่องกรอกแล้ว = ทำแล้ว · เดดไลน์ = วันเปิดในชีตทะเบียน − D · ถังเทศบาล=ต่างจังหวัด / SCM=กทม.)
+    //   d25 = กลุ่มเดียวกับกล่อง d_reg_ready · เพิ่มสาขาที่ยังไม่เปิดแต่ไกลกว่า D-25 ไว้ให้ตัวกรองเลือกดู (ไม่กระทบตัวเลขกล่อง)
+    const regRows = [];
+    records.forEach(function (rec) {
+      const opPlan = afPdate(rec.open_date);
+      const opD = afPdate(rec.open_date_raw);
+      const openOk = !!rec._openable && !!opD && opD <= today;
+      if (openOk) return;                                              // เปิดแล้ว = ไม่ใช่งานทะเบียนก่อนเปิด
+      const r = regNf.row[rec.code] || null, prov = provOf[rec.code] || "";
+      const op = afPiso(cell(r, REG_NF_OPEN));
+      const cells = {};
+      for (const [key, ci] of AF_EXTRA) {
+        if ((key === "rg_trash_p" && prov.indexOf(BKK) >= 0) || (key === "rg_trash_b" && prov.indexOf(BKK) < 0)) { cells[key] = { na: 1 }; continue; }
+        const val = cell(r, ci), filled = !!val && val.indexOf("1899") < 0 && val.indexOf("1900") < 0;
+        const dd = (key in AF_REG_SLA) ? AF_REG_SLA[key] : null;
+        const dl = (dd != null && op) ? addDays(op, -dd) : null;
+        cells[key] = { v: filled ? val : "", dl: dl ? fmtDMY2(dl) : "", left: (!filled && dl) ? daysBetween(today, dl) : null };
+      }
+      regRows.push({ code: rec.code, name: rec.name, prov: prov, open: op ? fmtDMY2(op) : "", open_iso: op ? (op.getFullYear() + "-" + _pad2(op.getMonth() + 1) + "-" + _pad2(op.getDate())) : "",
+        d25: !!(opPlan && daysBetween(today, opPlan) <= 25), cells: cells });
+    });
+    return { counts: counts, buckets: buckets, sla: sla, reg: { keys: AF_EXTRA.map(function (x) { return x[0]; }), sla: AF_REG_SLA, rows: regRows } };
   }
 
   function daysBetween(a, b) { return Math.round((b.getTime() - a.getTime()) / 86400000); }
@@ -5694,6 +5717,7 @@ setTimeout(applyBoard,300);
     var model = CE.buildAfterModel(tabs, L, extra);
     window.AFTER_COUNTS = model.counts;
     window.AFTER_SLA = model.sla;
+    window.AFTER_REG = model.reg;   // 8 ต.ค.: ตารางรายสาขาของแท็บ Registration and License (กติกาเดียวกับกล่องทะเบียน)
     // M1: head count (#cnt-after-*) and popup rows must come from the SAME live source.
     // The After boxes reuse the shared STEP_DETAILS / SLA_SUMMARY popup stores; push the
     // live buckets/sla into them. Keys are After-only (d_*/rg_*) — no collision with
@@ -7717,6 +7741,12 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ".rg-box-n{font-size:22px;font-weight:800;color:var(--text,#0d1421)}.rg-box-t{font-size:12px;color:var(--t2,#475569);line-height:1.4;margin-top:2px}.rg-box-s{font-size:11.5px;margin-top:4px}",
     ".rg-bad{color:#dc2626;font-weight:700}.rg-ok{color:#047857;font-weight:600}.rg-src{font-size:11.5px;color:var(--t3,#8a93a8);margin:-4px 0 14px}",
     "#tab-registration tr.rg-row,#rg-drawer tr.rg-row{cursor:pointer}#tab-registration tr.rg-row:hover td,#rg-drawer tr.rg-row:hover td{background:#f8fafc}.rg-dsub{font-size:12px;color:var(--t3,#8a93a8);margin:0 0 10px;line-height:1.5}",
+    ".rg-bar select{color:var(--text,#0d1421)}.rg-clear{height:34px;padding:0 12px;border:1px solid var(--border2,#cbd5e1);border-radius:10px;background:var(--surface,#fff);font:inherit;font-size:12.5px;cursor:pointer;color:var(--blue,#2563eb)}",
+    ".rg-kf{cursor:pointer}.rg-kf.on{border-color:var(--blue,#2563eb);box-shadow:0 0 0 2px rgba(37,99,235,.15)}",
+    ".rg-legend{font-size:12px;color:var(--t3,#8a93a8);margin:-2px 0 10px}.rg-legend span{display:inline-block;min-width:18px;text-align:center;border-radius:5px;padding:0 4px;font-weight:700}",
+    "table.rg-mx th,table.rg-mx td{white-space:nowrap}table.rg-mx th.rg-gh{text-align:center;border-left:1px solid var(--border,#e3e6ed)}table.rg-mx th.rg-sh{text-align:center;font-size:11px}table.rg-mx th.rg-sh span{font-weight:400;color:var(--t3,#8a93a8)}",
+    "td.rg-c{text-align:center;font-weight:700;font-size:12.5px;min-width:34px}.rg-done{color:#047857;background:#ecfdf5}.rg-late{color:#fff;background:#dc2626}.rg-wait2{color:#92400e;background:#fffbeb}.rg-nosla{color:#94a3b8}.rg-na{color:#cbd5e1}",
+    ".rg-u-got{color:#047857}.rg-u-wait{color:#92400e}.rg-u-prep{color:#94a3b8}.rg-d{font-size:11px;color:var(--t3,#8a93a8)}",
     ".rg-segwrap{margin:0 0 16px}.rg-empty{text-align:center;color:var(--t3,#8a93a8);padding:28px 16px;line-height:1.8;font-size:13px}.rg-empty b{color:var(--text,#0d1421);font-size:14px}"
   ].join("");
   document.head.appendChild(css);
@@ -7747,62 +7777,112 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       LIC.map(function (l) { return "<tr><td>" + esc(l[0]) + "</td><td>" + l[1] + "</td><td>" + DASH + "</td><td>" + DASH + "</td><td>" + DASH + "</td></tr>"; }).join("") +
       "</tbody></table></div></div>";
   }
-  /* ===== หน้า "สาขาใหม่" = ข้อมูลจริงชุดเดียวกับแท็บ Overall (กล่องน้ำ-ไฟ util_*) และ After อ.1 (กล่องทะเบียน d_reg_ready + rg_*)
-   * (จี 8 ต.ค.: "ทำเหมือน TAP SOP · ข้อมูลของจริงต้องเอาจากหน้า Overall กับ After อ.1")
-   * อ่านจาก window.STEP_DETAILS / SLA_SUMMARY ที่ Overall + After bootstrap คำนวณไว้แล้ว → ตัวเลขเท่ากล่องในสองแท็บนั้นเป๊ะ (ไม่คำนวณซ้ำ)
-   * ชื่อกล่อง = window.SOP_BOX_CATALOG (แหล่งเดียวกับแท็บ SOP) · อ่านอย่างเดียว ยังไม่บันทึก ===== */
-  var UTIL_ROWS = [["น้ำ-ไฟ ชั่วคราว", ["util_temp_prep", "util_temp_req", "util_temp_wait", "util_temp_got"]],
-    ["น้ำถาวร", ["util_water_prep", "util_water_req", "util_water_wait", "util_water_got"]],
-    ["ไฟถาวร", ["util_elec_prep", "util_elec_req", "util_elec_wait", "util_elec_got"]]];
-  var REG_ROWS = [["ทะเบียนบ้าน + ภ.พ.09", ["d_reg_ready", "rg_house_s", "rg_house_g", "rg_branch_s", "rg_branch_g"]],
-    ["ใบอนุญาต", ["rg_liquor_s", "rg_liquor_g", "rg_carcass_s", "rg_carcass_g", "rg_food_s", "rg_food_g", "rg_pest_s", "rg_pest_g", "rg_gas_s", "rg_gas_g"]],
-    ["ถังขยะ · เสียง · ภาษีป้าย · ภพ.06", ["rg_trash_p", "rg_trash_b", "rg_sound", "rg_tax", "rg_pp06"]]];
-  var RG_KEYS = REG_ROWS.reduce(function (a, r) { return a.concat(r[1]); }, []).filter(function (k) { return k !== "d_reg_ready"; });
+  /* ===== 8 ต.ค. (จี "งงมาก" → ตารางรายสาขา 1 สาขา = 1 แถว แบบชีตที่ทีมทะเบียนใช้ + ตัวกรอง)
+   * ข้อมูล = window.AFTER_REG (คำนวณใน CalcEngine.buildAfterModel กติกาเดียวกับกล่องทะเบียนของ After อ.1)
+   *   + window.STEP_DETAILS util_* (กล่องน้ำ-ไฟของ Overall) · อ่านอย่างเดียว ===== */
+  var RCOLS = [["ทะเบียนบ้าน", [["rg_house_s", "ยื่น"], ["rg_house_g", "ได้"]]], ["ภ.พ.09", [["rg_branch_s", "ยื่น"], ["rg_branch_g", "ได้"]]],
+    ["สุรา+อาหารสัตว์", [["rg_liquor_s", "ยื่น"], ["rg_liquor_g", "ได้"]]], ["ค้าซากสัตว์", [["rg_carcass_s", "ยื่น"], ["rg_carcass_g", "ได้"]]],
+    ["สะสม+จำหน่าย", [["rg_food_s", "ยื่น"], ["rg_food_g", "ได้"]]], ["ยาฆ่าแมลง", [["rg_pest_s", "ยื่น"], ["rg_pest_g", "ได้"]]],
+    ["แก็ซ", [["rg_gas_s", "ยื่น"], ["rg_gas_g", "ได้"]]], ["ถังขยะ", [["rg_trash_p", "เทศบาล"], ["rg_trash_b", "SCM"]]],
+    ["ใช้เสียง", [["rg_sound", "ยื่น"]]], ["ภาษีป้าย", [["rg_tax", "ยื่น"]]], ["ภพ.06", [["rg_pp06", "จด"]]]];
+  var UTRK = [["น้ำ-ไฟ ชั่วคราว", "util_temp"], ["น้ำถาวร", "util_water"], ["ไฟถาวร", "util_elec"]];
+  var USTEP = { prep: "ยังไม่เตรียมเอกสาร", req: "เตรียมแล้ว · ยังไม่ขอ", wait: "ขอแล้ว · รอ", got: "ได้แล้ว" };
+  var F = { q: "", st: "all", month: "", prov: "", range: "d25" };
   function boxName(k) { var c = (window.SOP_BOX_CATALOG || []).filter(function (x) { return x.key === k; })[0]; return c ? c.name : k; }
   function det(k) { var d = window.STEP_DETAILS && window.STEP_DETAILS[k]; return Array.isArray(d) ? d : null; }
-  function slaOf(k) { return (window.SLA_SUMMARY && window.SLA_SUMMARY[k]) || null; }
-  function ready() { return !!(det("util_temp_prep") && det("rg_house_s") && det("d_reg_ready")); }
-  function num(v) { return v == null ? DASH : String(v); }
-  function boxCard(k) {
-    var d = det(k), s = slaOf(k), sub = "";
-    if (s && s.n_exceed) sub += '<span class="rg-bad">เกิน SLA ' + s.n_exceed + "</span>";
-    if (k.indexOf("rg_") === 0 && s && s.n_within != null) sub += (sub ? " · " : "") + '<span class="rg-ok">เสร็จ ' + s.n_within + "</span>";
-    return '<div class="rg-box" data-box="' + k + '"><div class="rg-box-n">' + (d ? d.length : DASH) + '</div><div class="rg-box-t">' + esc(boxName(k)) +
-      '</div><div class="rg-box-s">' + (sub || "&nbsp;") + "</div></div>";
+  function REG() { var r = window.AFTER_REG; return (r && Array.isArray(r.rows)) ? r : null; }
+  function ready() { return !!(REG() && det("util_temp_prep")); }
+  function rowState(r) {
+    var over = 0, pend = 0, n = 0;
+    Object.keys(r.cells).forEach(function (k) { var c = r.cells[k]; if (c.na) return; n++; if (!c.v) { pend++; if (c.left != null && c.left < 0) over = Math.max(over, -c.left); } });
+    return { over: over, pend: pend, n: n, st: over ? "over" : (pend ? "pend" : "done") };
   }
-  function laneRows(rows, src) {
-    return rows.map(function (r) {
-      return '<div class="rg-lane"><div class="rg-lane-h">' + esc(r[0]) + '</div><div class="rg-boxes">' + r[1].map(boxCard).join("") + "</div></div>";
-    }).join("") + '<div class="rg-src">ที่มา: ' + src + "</div>";
+  function inRange(r) { return F.range === "all" || r.d25; }
+  function filtered() {
+    var q = F.q.trim().toLowerCase();
+    return REG().rows.filter(function (r) {
+      if (!inRange(r)) return false;
+      if (q && (r.code + " " + r.name).toLowerCase().indexOf(q) < 0) return false;
+      if (F.month && r.open_iso.slice(0, 7) !== F.month) return false;
+      if (F.prov && r.prov !== F.prov) return false;
+      if (F.st !== "all" && rowState(r).st !== F.st) return false;
+      return true;
+    }).sort(function (a, b) { var x = rowState(a), y = rowState(b); return (y.over - x.over) || String(a.open_iso).localeCompare(String(b.open_iso)) || (a.code < b.code ? -1 : 1); });
   }
-  function overdueRows() {
-    var out = [];
-    RG_KEYS.forEach(function (k) { (det(k) || []).forEach(function (x) { out.push({ k: k, x: x, over: parseInt(String(x.sla_over || "").replace("+", ""), 10) || 0 }); }); });
-    out.sort(function (a, b) { return (b.over - a.over) || String(a.x.deadline || "").localeCompare(String(b.x.deadline || "")); });
-    return out;
+  function cellHtml(c) {
+    if (!c || c.na) return '<td class="rg-c rg-na">–</td>';
+    if (c.v) return '<td class="rg-c rg-done" title="ทำแล้ว ' + esc(c.v) + '">✓</td>';
+    if (c.left != null && c.left < 0) return '<td class="rg-c rg-late" title="เดดไลน์ ' + esc(c.dl) + " · เลยมา " + (-c.left) + ' วัน">' + (-c.left) + "</td>";
+    if (c.left != null) return '<td class="rg-c rg-wait2" title="เดดไลน์ ' + esc(c.dl) + " · เหลือ " + c.left + ' วัน">' + c.left + "</td>";
+    return '<td class="rg-c rg-nosla" title="ยังไม่ทำ (ไม่มี SLA)">·</td>';
+  }
+  function opts(list, cur, all) { return '<option value="">' + all + "</option>" + list.map(function (v) { return '<option value="' + esc(v[0]) + '"' + (v[0] === cur ? " selected" : "") + ">" + esc(v[1]) + "</option>"; }).join(""); }
+  var THM = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  function utilRows() {
+    var by = {};
+    UTRK.forEach(function (t) {
+      ["prep", "req", "wait", "got"].forEach(function (s) {
+        (det(t[1] + "_" + s) || []).forEach(function (x) { var o = by[x.code] = by[x.code] || { code: x.code, name: x.name, t: {} }; o.t[t[1]] = { s: s, prep: x.reg_prep, req: x.reg_req, got: x.reg_got }; });
+      });
+    });
+    return Object.keys(by).map(function (k) { return by[k]; });
   }
   function newStoreView() {
     if (!ready()) return '<div class="card"><div class="rg-empty"><b>กำลังโหลดข้อมูลชุดเดียวกับแท็บ Overall และ After อ.1…</b><br>ถ้าค้างนาน แปลว่าสองแท็บนั้นยังโหลดไม่เสร็จ/โหลดไม่สำเร็จ — ตัวเลขที่นี่จะยังไม่ขึ้น (ไม่ใช่ไม่มีงาน)</div></div>';
-    var exceed = 0, within = 0, pend = 0, wait = 0;
-    RG_KEYS.forEach(function (k) { var s = slaOf(k); pend += (det(k) || []).length; if (s) { exceed += s.n_exceed || 0; within += s.n_within || 0; } });
-    ["util_temp_wait", "util_water_wait", "util_elec_wait"].forEach(function (k) { wait += (det(k) || []).length; });
-    var od = overdueRows();
-    function kv(lbl, v, sub, cls) { return '<div class="kpi-card' + (cls ? " " + cls : "") + '"><div class="kpi-label">' + lbl + '</div><div class="kpi-value">' + num(v) + '</div><div class="kpi-sub">' + (sub || "&nbsp;") + "</div></div>"; }
-    return '<div class="rg-kpis">' +
-      kv("🏠 พร้อมขอ ทะเบียน (D-25)", det("d_reg_ready").length, "สาขาที่ใกล้เปิดใน 25 วัน (After อ.1)") +
-      kv("🔴 เอกสารหลุด SLA", exceed, "เลยเดดไลน์แล้วยังไม่ทำ") +
-      kv("🟠 เอกสารค้าง", pend, "ยังไม่ได้ทำ (รวมที่หลุด SLA)") +
-      kv("✅ เอกสารเสร็จ", within, "ทำแล้ว ในสาขากลุ่ม D-25") +
-      kv("💧 รอน้ำ-ไฟ", wait, "ยื่นขอแล้ว ยังไม่ได้ (Overall)") + "</div>" +
-      '<div class="section-label">เอกสารทะเบียน · กดกล่องเพื่อดูรายชื่อสาขา</div>' + laneRows(REG_ROWS, "ชุดเดียวกับแท็บ After อ.1 (กล่อง 🏠 พร้อมขอ ทะเบียน + เอกสารแต่ละใบ)") +
-      '<div class="section-label">น้ำ-ไฟ · กดกล่องเพื่อดูรายชื่อสาขา</div>' + laneRows(UTIL_ROWS, "ชุดเดียวกับแท็บ Overall (กล่องน้ำ-ไฟ ชั่วคราว / น้ำถาวร / ไฟถาวร)") +
-      '<div class="section-label">งานใกล้ / เลย SLA · ' + od.length + ' รายการ</div>' +
-      '<div class="card"><div class="table-wrap"><table class="data-table"><thead><tr><th>Site Code</th><th>ชื่อสาขา</th><th>เอกสาร</th><th>เดดไลน์</th><th>สถานะ</th><th>เลยมา (วัน)</th></tr></thead><tbody>' +
-      (od.length ? od.map(function (o) {
-        return '<tr class="rg-row" data-code="' + esc(o.x.code) + '"><td><b>' + esc(o.x.code) + "</b></td><td>" + esc(o.x.name || "") + "</td><td>" + esc(boxName(o.k)) + "</td><td>" + esc(o.x.deadline || DASH) +
-          '</td><td class="' + (o.over > 0 ? "rg-bad" : "") + '">' + esc(o.x.rstatus || "") + "</td><td>" + (o.over > 0 ? o.over : DASH) + "</td></tr>";
-      }).join("") : '<tr><td colspan="6" class="rg-wait">ไม่มีเอกสารค้างในสาขากลุ่ม D-25 ✓</td></tr>') +
-      "</tbody></table></div></div>";
+    var all = REG().rows.filter(inRange), rows = filtered();
+    var st = { over: 0, pend: 0, done: 0 }; all.forEach(function (r) { st[rowState(r).st]++; });
+    var wait = 0; UTRK.forEach(function (t) { wait += (det(t[1] + "_wait") || []).length; });
+    var months = {}, provs = {}; all.forEach(function (r) { if (r.open_iso) months[r.open_iso.slice(0, 7)] = 1; if (r.prov) provs[r.prov] = 1; });
+    var mlist = Object.keys(months).sort().map(function (m) { return [m, THM[+m.slice(5, 7) - 1] + " " + m.slice(0, 4)]; });
+    var plist = Object.keys(provs).sort().map(function (p) { return [p, p]; });
+    function kv(lbl, v, sub, f) { return '<div class="kpi-card rg-kf' + (F.st === f ? " on" : "") + '" data-st="' + f + '"><div class="kpi-label">' + lbl + '</div><div class="kpi-value">' + v + '</div><div class="kpi-sub">' + sub + "</div></div>"; }
+    var SLA = REG().sla || {};
+    var head1 = '<tr><th rowspan="2">Site Code</th><th rowspan="2">ชื่อสาขา</th><th rowspan="2">วันเปิด</th>' + RCOLS.map(function (g) { return '<th colspan="' + g[1].length + '" class="rg-gh">' + esc(g[0]) + "</th>"; }).join("") + '<th rowspan="2">ค้าง</th></tr>';
+    var head2 = "<tr>" + RCOLS.map(function (g) { return g[1].map(function (c) { var d = SLA[c[0]]; return '<th class="rg-sh" title="' + esc(boxName(c[0])) + (d != null ? " · เดดไลน์ D-" + d : "") + '">' + c[1] + (d != null ? "<br><span>D-" + d + "</span>" : "") + "</th>"; }).join(""); }).join("") + "</tr>";
+    var body = rows.map(function (r) {
+      var s = rowState(r);
+      return '<tr class="rg-row" data-code="' + esc(r.code) + '"><td><b>' + esc(r.code) + "</b></td><td>" + esc(r.name) + "</td><td>" + esc(r.open || DASH) + "</td>" +
+        RCOLS.map(function (g) { return g[1].map(function (c) { return cellHtml(r.cells[c[0]]); }).join(""); }).join("") +
+        '<td class="' + (s.over ? "rg-bad" : "") + '">' + (s.pend ? s.pend + " ใบ" : '<span class="rg-ok">ครบ</span>') + "</td></tr>";
+    }).join("");
+    var ncol = 4 + RCOLS.reduce(function (a, g) { return a + g[1].length; }, 0);
+    var qq = F.q.trim().toLowerCase();
+    var ut = utilRows().filter(function (u) { return !qq || (u.code + " " + u.name).toLowerCase().indexOf(qq) >= 0; }).sort(function (a, b) { return a.code < b.code ? -1 : 1; });
+    return '<div class="rg-bar"><input type="text" id="rg-q" placeholder="🔍 ค้นหา Site Code / ชื่อสาขา" value="' + esc(F.q) + '">' +
+      '<select id="rg-range"><option value="d25"' + (F.range === "d25" ? " selected" : "") + '>ช่วงวันเปิด: D-25 (ตาม After อ.1)</option><option value="all"' + (F.range === "all" ? " selected" : "") + ">ช่วงวันเปิด: ทุกสาขาที่ยังไม่เปิด</option></select>" +
+      '<select id="rg-st">' + opts([["over", "🔴 มีเอกสารหลุด SLA"], ["pend", "⏳ ค้าง ยังไม่หลุด"], ["done", "✓ ครบแล้ว"]], F.st === "all" ? "" : F.st, "สถานะ: ทั้งหมด") + "</select>" +
+      '<select id="rg-month">' + opts(mlist, F.month, "เดือนที่เปิด: ทั้งหมด") + "</select>" +
+      '<select id="rg-prov">' + opts(plist, F.prov, "จังหวัด: ทั้งหมด") + "</select>" +
+      (F.q || F.st !== "all" || F.month || F.prov ? '<button type="button" class="rg-clear" id="rg-clear">ล้างตัวกรอง</button>' : "") + "</div>" +
+      '<div class="rg-kpis">' + kv("📋 สาขาในรายการ", all.length, F.range === "d25" ? "เหลือ ≤25 วันถึงวันเปิด (กลุ่มเดียวกับ After อ.1)" : "ยื่น อ.1 แล้ว · ยังไม่เปิด", "all") +
+      kv("🔴 มีเอกสารหลุด SLA", st.over, "สาขาที่มีอย่างน้อย 1 ใบเลยเดดไลน์", "over") + kv("⏳ ค้าง ยังไม่หลุด", st.pend, "ยังไม่ถึงเดดไลน์", "pend") +
+      kv("✓ เอกสารครบ", st.done, "ทำครบทุกใบแล้ว", "done") +
+      '<div class="kpi-card"><div class="kpi-label">💧 รอน้ำ-ไฟ</div><div class="kpi-value">' + wait + '</div><div class="kpi-sub">ยื่นขอแล้ว ยังไม่ได้ (Overall)</div></div></div>' +
+      '<div class="section-label">เอกสารทะเบียน รายสาขา · ' + rows.length + " สาขา</div>" +
+      '<div class="rg-legend"><span class="rg-done">✓</span> ทำแล้ว · <span class="rg-late">5</span> เลยเดดไลน์มา 5 วัน · <span class="rg-wait2">3</span> เหลืออีก 3 วัน · <span class="rg-nosla">·</span> ยังไม่ทำ (ไม่มี SLA) · <span class="rg-na">–</span> ไม่ต้องทำ · กดแถวเพื่อดูเช็กลิสต์ · ชี้เมาส์ที่ช่องเพื่อดูวันที่</div>' +
+      '<div class="card"><div class="table-wrap"><table class="data-table rg-mx"><thead>' + head1 + head2 + "</thead><tbody>" +
+      (body || '<tr><td colspan="' + ncol + '" class="rg-wait">' + (all.length ? "ไม่มีสาขาตรงตัวกรอง" : "ไม่มีสาขาในช่วงนี้") + "</td></tr>") + "</tbody></table></div></div>" +
+      '<div class="rg-src">ที่มา: กติกาเดียวกับกล่องทะเบียนในแท็บ After อ.1 (เดดไลน์ = วันเปิดในชีตทะเบียน − D ตามหัวชีต)</div>' +
+      '<div class="section-label">น้ำ-ไฟ รายสาขา · ' + ut.length + " สาขา</div>" +
+      '<div class="card"><div class="table-wrap"><table class="data-table"><thead><tr><th>Site Code</th><th>ชื่อสาขา</th>' + UTRK.map(function (t) { return "<th>" + t[0] + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      (ut.map(function (u) {
+        return '<tr class="rg-row" data-code="' + esc(u.code) + '"><td><b>' + esc(u.code) + "</b></td><td>" + esc(u.name || "") + "</td>" + UTRK.map(function (t) {
+          var x = u.t[t[1]]; if (!x) return "<td>" + DASH + "</td>";
+          var d = x.s === "got" ? x.got : (x.s === "wait" ? x.req : (x.s === "req" ? x.prep : ""));
+          return '<td class="rg-u-' + x.s + '">' + USTEP[x.s] + (d ? ' <span class="rg-d">' + esc(d) + "</span>" : "") + "</td>";
+        }).join("") + "</tr>";
+      }).join("") || '<tr><td colspan="5" class="rg-wait">ไม่มีสาขา</td></tr>') + "</tbody></table></div></div>" +
+      '<div class="rg-src">ที่มา: กล่องน้ำ-ไฟ ชั่วคราว / น้ำถาวร / ไฟถาวร ในแท็บ Overall (ชุดสาขาเดียวกัน)</div>';
+  }
+  function bindNewStore(v) {
+    var q = v.querySelector("#rg-q"); if (!q) return;
+    q.oninput = function () { F.q = q.value; var pos = q.selectionStart; render(); var q2 = document.getElementById("rg-q"); if (q2) { q2.focus(); try { q2.setSelectionRange(pos, pos); } catch (e) {} } };
+    v.querySelector("#rg-range").onchange = function () { F.range = this.value; F.month = ""; F.prov = ""; render(); };
+    v.querySelector("#rg-st").onchange = function () { F.st = this.value || "all"; render(); };
+    v.querySelector("#rg-month").onchange = function () { F.month = this.value; render(); };
+    v.querySelector("#rg-prov").onchange = function () { F.prov = this.value; render(); };
+    var cl = v.querySelector("#rg-clear"); if (cl) cl.onclick = function () { F.q = ""; F.st = "all"; F.month = ""; F.prov = ""; render(); };
+    [].forEach.call(v.querySelectorAll(".rg-kf"), function (k) { k.onclick = function () { var s = k.getAttribute("data-st"); F.st = (F.st === s || s === "all") ? "all" : s; render(); }; });
   }
   /* ---- หน้าต่างด้านขวา (แบบแท็บ SOP) ---- */
   var DR = null;
@@ -7815,34 +7895,26 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       document.addEventListener("keydown", function (e) { if (e.key === "Escape") DR.classList.remove("open"); });
     }
     document.getElementById("rg-dt").textContent = title; document.getElementById("rg-db").innerHTML = html; DR.classList.add("open");
-    [].forEach.call(DR.querySelectorAll(".rg-row"), function (tr) { tr.onclick = function () { siteDrawer(tr.getAttribute("data-code")); }; });
-  }
-  function boxDrawer(k) {
-    var d = det(k) || [], util = k.indexOf("util_") === 0, s = slaOf(k);
-    var cols = util ? ["Site Code", "ชื่อสาขา", "เตรียม", "ยื่นขอ", "ได้", "อายุงาน"] : (k === "d_reg_ready" ? ["Site Code", "ชื่อสาขา", "วันเปิด"] : ["Site Code", "ชื่อสาขา", "เดดไลน์", "สถานะ", "เลยมา"]);
-    var rows = d.map(function (x) {
-      var c = util ? [x.reg_prep, x.reg_req, x.reg_got, x.aging] : (k === "d_reg_ready" ? [x.open_date] : [x.deadline, x.rstatus, x.sla_over]);
-      return '<tr class="rg-row" data-code="' + esc(x.code) + '"><td><b>' + esc(x.code) + "</b></td><td>" + esc(x.name || "") + "</td>" + c.map(function (v) { return "<td>" + esc(v == null || v === "" ? DASH : v) + "</td>"; }).join("") + "</tr>";
-    }).join("");
-    drawer(boxName(k) + " · " + d.length + " สาขา",
-      (s && s.sla_text ? '<div class="rg-dsub">' + esc(s.sla_text) + "</div>" : "") +
-      '<div class="table-wrap"><table class="data-table"><thead><tr>' + cols.map(function (c) { return "<th>" + c + "</th>"; }).join("") + "</tr></thead><tbody>" +
-      (rows || '<tr><td colspan="' + cols.length + '" class="rg-wait">ไม่มีสาขาในกล่องนี้</td></tr>') + "</tbody></table></div>");
   }
   function siteDrawer(code) {
-    var lines = [], name = "";
-    REG_ROWS.concat(UTIL_ROWS).forEach(function (r) {
-      r[1].forEach(function (k) {
-        var x = (det(k) || []).filter(function (y) { return y.code === code; })[0];
-        if (!x) return; name = name || x.name || "";
-        var st = k.indexOf("rg_") === 0 ? (x.rstatus || "ค้าง") + (x.deadline ? " · เดดไลน์ " + x.deadline : "") + (x.sla_over ? " · เลย " + x.sla_over + " วัน" : "") : "อยู่ในกล่องนี้";
-        lines.push('<tr><td>' + esc(r[0]) + "</td><td>" + esc(boxName(k)) + '</td><td class="' + (x.sla_over ? "rg-bad" : "") + '">' + esc(st) + "</td></tr>");
-      });
-    });
-    drawer(code + (name ? " · " + name : ""),
-      '<div class="rg-dsub">กล่องที่สาขานี้อยู่ตอนนี้ (Overall + After อ.1) · เอกสารที่ทำเสร็จแล้วไม่แสดง</div>' +
-      '<div class="table-wrap"><table class="data-table"><thead><tr><th>กลุ่ม</th><th>กล่อง</th><th>สถานะ</th></tr></thead><tbody>' +
-      (lines.join("") || '<tr><td colspan="3" class="rg-wait">ไม่มีเอกสารค้าง</td></tr>') + "</tbody></table></div>");
+    var r = REG() && REG().rows.filter(function (x) { return x.code === code; })[0];
+    var u = utilRows().filter(function (x) { return x.code === code; })[0];
+    var h = "";
+    if (r) {
+      var s = rowState(r);
+      h += '<div class="rg-dsub">วันเปิด (ชีตทะเบียน) ' + esc(r.open || DASH) + " · " + esc(r.prov || "") + " · ค้าง " + s.pend + " / " + s.n + " ใบ" + (s.over ? ' · <span class="rg-bad">หลุด SLA</span>' : "") + "</div>" +
+        '<div class="table-wrap"><table class="data-table"><thead><tr><th>เอกสาร</th><th>เดดไลน์</th><th>สถานะ</th></tr></thead><tbody>' +
+        RCOLS.map(function (g) {
+          return g[1].map(function (c) {
+            var x = r.cells[c[0]] || {};
+            var stt = x.na ? '<span class="rg-na">ไม่ต้องทำ</span>' : (x.v ? '<span class="rg-ok">✓ ทำแล้ว ' + esc(x.v) + "</span>" : (x.left != null && x.left < 0 ? '<span class="rg-bad">เลยมา ' + (-x.left) + " วัน</span>" : (x.left != null ? "เหลือ " + x.left + " วัน" : "ยังไม่ทำ")));
+            return "<tr><td>" + esc(boxName(c[0])) + "</td><td>" + esc(x.dl || DASH) + "</td><td>" + stt + "</td></tr>";
+          }).join("");
+        }).join("") + "</tbody></table></div>";
+    } else h += '<div class="rg-dsub">สาขานี้ไม่อยู่ในกลุ่มเอกสารทะเบียน (ยังไม่ยื่น อ.1 หรือเปิดแล้ว)</div>';
+    if (u) h += '<div class="section-label" style="margin-top:14px">น้ำ-ไฟ</div><div class="table-wrap"><table class="data-table"><thead><tr><th>เรื่อง</th><th>ขั้น</th><th>เตรียม</th><th>ขอ</th><th>ได้</th></tr></thead><tbody>' +
+      UTRK.map(function (t) { var x = u.t[t[1]]; return "<tr><td>" + t[0] + "</td><td>" + (x ? USTEP[x.s] : DASH) + "</td><td>" + esc((x && x.prep) || DASH) + "</td><td>" + esc((x && x.req) || DASH) + "</td><td>" + esc((x && x.got) || DASH) + "</td></tr>"; }).join("") + "</tbody></table></div>";
+    drawer(code + " · " + ((r && r.name) || (u && u.name) || ""), h + '<div class="rg-dsub" style="margin-top:12px">ดูอย่างเดียว — การบันทึกจะเปิดหลังเคาะที่เก็บข้อมูล (Q1)</div>');
   }
 
   var VIEWS = {
@@ -7892,12 +7964,12 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var v = document.getElementById("rg-view");
     v.innerHTML = VIEWS[CURV][1]();
     [].forEach.call(document.querySelectorAll("#rg-seg button"), function (b) { b.classList.toggle("on", b.getAttribute("data-v") === CURV); });
-    [].forEach.call(v.querySelectorAll(".rg-box"), function (b) { b.onclick = function () { boxDrawer(b.getAttribute("data-box")); }; });
     [].forEach.call(v.querySelectorAll(".rg-row"), function (tr) { tr.onclick = function () { siteDrawer(tr.getAttribute("data-code")); }; });
+    if (CURV === "newstore") bindNewStore(v);
   }
   // ข้อมูล Overall/After มาทีหลัง (async) → วาดใหม่เมื่อพร้อม · กลับมาที่แท็บ = วาดใหม่ (ได้ตัวเลขล่าสุดหลังโหลดใหม่เบื้องหลัง)
   //   ใช้ "ลายเซ็น" = จำนวนในทุกกล่อง (ไม่ใช่แค่ ready) เพราะ After โหลดเสร็จทีหลัง Overall → กล่องทะเบียนเปลี่ยนจาก 0 เป็นตัวเลขจริง
-  function sig() { return REG_ROWS.concat(UTIL_ROWS).map(function (r) { return r[1].map(function (k) { var d = det(k), s = slaOf(k); return (d ? d.length : "x") + "/" + (s ? (s.n_exceed || 0) + "." + (s.n_within || 0) : "-"); }).join(","); }).join("|"); }
+  function sig() { var r = REG(); return (r ? r.rows.length + ":" + r.rows.map(function (x) { return x.code + rowState(x).pend; }).join(",") : "x") + "|" + UTRK.map(function (t) { return ["prep", "req", "wait", "got"].map(function (s2) { var d = det(t[1] + "_" + s2); return d ? d.length : "x"; }).join("."); }).join(","); }
   var lastSig = "", ri = 0, riv = setInterval(function () { var s = sig(); if (s !== lastSig) { lastSig = s; if (CURV === "newstore") render(); } if (++ri > 600) clearInterval(riv); }, 1000);
   var _st = window.showTab;
   window.showTab = function (id) { var r = _st.apply(this, arguments); if (id === "registration") render(); return r; };
