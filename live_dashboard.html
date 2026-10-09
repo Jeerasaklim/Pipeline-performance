@@ -1168,7 +1168,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=144844" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=151654" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -7786,6 +7786,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ".rg-det>summary::-webkit-details-marker{display:none}.rg-det>summary:hover{border-color:var(--blue)}.rg-det-t{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--blue)}.rg-det[open]>summary{margin-bottom:10px}.rg-det[open] .rg-det-t{font-size:0}.rg-det[open] .rg-det-t::after{content:'ซ่อนตารางวันที่ ▴';font-size:12.5px}",
     ".rg-tnote{font-size:12.5px;color:var(--t2);background:var(--s2);border-left:3px solid var(--border2);padding:8px 12px;margin:10px 0 0;border-radius:0 8px 8px 0;line-height:1.6}",
     ".rg-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}",
+    ".rg-qcl{display:block;width:100%;text-align:left;margin:0 0 10px;padding:8px 12px;border:1px solid #f59e0b;background:#fffbeb;color:#92400e;border-radius:10px;font:inherit;font-weight:600;cursor:pointer}.rg-qcl:hover{background:#fef3c7}",
+    ".rg-qc summary{font-weight:600}.rg-qc{margin-bottom:8px}.rg-qc[open] .rg-det-t{font-size:12.5px}.rg-qc[open] .rg-det-t::after{content:none}",
     "button.kpi-card.rg-wc{font:inherit;text-align:left;color:inherit;cursor:pointer;width:100%;display:flex;flex-direction:column;transition:border-color .15s,box-shadow .15s}",
     "button.rg-wc:hover{border-color:var(--blue);box-shadow:0 2px 10px rgba(13,20,33,.08)}button.rg-wc:active{transform:translateY(1px)}",
     ".rg-wc .kpi-label{text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);font-weight:700}.rg-wc-sub{font-size:11.5px;color:var(--t3);margin-top:2px}",
@@ -8048,7 +8050,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       if (seen[code]) return; seen[code] = 1;
       var a = acc[code] || null, oiso = dmy(lic && lic.open) || (a && a.open) || "";
       var r = { code: code, cjx: lic && lic.cjx || "", name: (lic && lic.name) || (a && a.name) || "", prov: (lic && lic.prov) || (a && a.prov) || "", org: lic && lic.org || "",
-        open_iso: oiso, opened: !!oiso && oiso <= t0, inReg: !!lic, inAcc: !!a, zone: a && a.zone || "", accLast: a && a.last || "", note: lic && lic.note || "", pp20: lic && lic.pp20 || "", lic: {} };
+        open_iso: oiso, openReg: dmy(lic && lic.open), openAcc: (a && a.open) || "", opened: !!oiso && oiso <= t0, inReg: !!lic, inAcc: !!a, zone: a && a.zone || "", accLast: a && a.last || "", note: lic && lic.note || "", pp20: lic && lic.pp20 || "", lic: {} };
       OLIC.forEach(function (l) { var c = licCell(lic && lic[l[0]], lead[l[0]], t0); c.acc = a ? (a[l[2]] || "") : null; c.cmp = cmp(c, c.acc); r.lic[l[0]] = c; });
       var s9 = sg9[code], s8 = sg8[code];
       r.sign = { y69: s9 ? { s1: s9.s1 || "", s3: s9.s3 || "", paid: s9.paid || "" } : null, y68: s8 ? { st: s8.st || "", s1: s8.s1 || "", s3: s8.s3 || "", paid: s8.paid || "" } : null };
@@ -8291,6 +8293,59 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if (OPEN.st === "loading") return stateBox("", "<b>กำลังโหลดข้อมูลร้านที่เปิดแล้ว…</b><br>จากชีตทีมทะเบียน + ไฟล์บัญชีตั้งต้น — ระหว่างนี้ยังไม่มีตัวเลข (ไม่ใช่ไม่มีงาน)");
     return stateBox("", allowed() ? "<b>กำลังเริ่มโหลดข้อมูลร้านที่เปิดแล้ว…</b>" : "<b>ยังไม่ได้โหลดข้อมูลร้านที่เปิดแล้ว</b><br>ต้องเข้าสู่ระบบเป็น Admin");
   }
+  /* ===== 9 ต.ค. ตัวตรวจคุณภาพข้อมูล (ร้านที่เปิดแล้ว) — ที่มา: research 9 ต.ค. (Registration_ความถูกต้องข้อมูล_research.md) =====
+   * นับจากข้อมูลชุดเดียวกับหน้าอื่น (rowsB = ร้านที่เปิดแล้ว + ตัวกรอง) · ไม่แก้ข้อมูลเอง แค่ชี้ให้เจ้าของแหล่งเคลียร์
+   * กติกากฎหมายเป็นร่างจาก research (ต้องให้ Legal ตรวจ) → ข้อที่อิงกฎหมายติดป้าย "ตามกฎหมาย (ร่าง)" */
+  function rawY(v) { var m = /^\d{1,2}\/\d{1,2}\/(\d{1,4})$/.exec(String(v || "").trim()); return m ? +m[1] : null; }
+  function qcList() {
+    var rows = rowsB(), t0 = todayIso(), far = addDays(t0, 455), Q = [];
+    function q(k, t, who, why, items) { Q.push({ k: k, t: t, who: who, why: why, items: items }); }
+    function each(fn) { var out = []; rows.forEach(function (r) { if (!r.inReg) return; OLIC.forEach(function (l) { var x = r.lic[l[0]], w = fn(r, x, l); if (w) out.push({ r: r, l: l[1], v: w }); }); }); return out; }
+    q("text", "ช่องวันหมดอายุมีข้อความแทนวันที่", "ทีมทะเบียน", "แอปอ่านเป็นวันหมดอายุไม่ได้ → ย้ายข้อความไปช่องหมายเหตุ แล้วใส่วันหมดอายุจริง",
+      each(function (r, x) { return x.s === "prog" ? x.raw : ""; }));
+    q("blank", "ร้านเปิดแล้ว แต่ช่องใบอนุญาตว่าง", "ทีมทะเบียน", "บอกไม่ได้ว่า 'ไม่ต้องมี' หรือ 'ยังไม่มี' → ใส่วันหมดอายุ หรือใส่ - ถ้าไม่ต้องมี",
+      each(function (r, x) { return x.s === "none" ? "ว่าง" : ""; }));
+    q("year", "ปีในวันหมดอายุผิดรูป", "ทีมทะเบียน", "ปีน้อยกว่า 2020 / เป็นปี พ.ศ. / ไกลเกินวันนี้ + 455 วัน (สุรา/ยาสูบอายุ 1 ปี ต่อล่วงหน้าได้ 90 วัน)",
+      each(function (r, x) { if (!x.exp) return ""; var y = rawY(x.raw); return (y != null && (y < 2020 || y > 2400)) || x.exp > far ? x.raw : ""; }));
+    q("over", "เลยวันหมดอายุแล้ว — ยังไม่ได้ลงวันหมดใหม่", "ทีมทะเบียน", "ถ้าต่ออายุแล้ว ให้ลงวันหมดใหม่ · ถ้ายังไม่ได้ยื่น = เสี่ยงจริง (ดูหมายเหตุในชีต)",
+      each(function (r, x) { return x.s === "over" ? x.raw + (/ยังไม่ได้ยื่น/.test(r.note) ? " · หมายเหตุ: ยังไม่ได้ยื่น ⚠️" : (/ยื่น/.test(r.note) ? " · หมายเหตุมีคำว่ายื่น" : "")) : ""; }));
+    q("feed", "ใบอาหารสัตว์ ที่วันหมดอายุไม่ใช่ 31 ธ.ค.", "ทีมทะเบียน", "ตามกฎหมาย (ร่าง): ใบอาหารสัตว์หมด 31 ธ.ค. ทุกใบ (กฎกระทรวง 2561)",
+      each(function (r, x, l) { return l[0] === "l5" && x.exp && x.exp.slice(5) !== "12-31" ? x.raw : ""; }));
+    var lq = []; rows.forEach(function (r) { if (!r.inReg) return; var d = ["l1", "l2", "l3"].map(function (k) { return r.lic[k].exp || ""; }).filter(Boolean); if (d.length > 1 && d.some(function (v) { return v !== d[0]; })) lq.push({ r: r, l: "สุรา ป.1 / ป.2 / ยาสูบ", v: ["l1", "l2", "l3"].map(function (k) { return r.lic[k].raw || "–"; }).join(" · ") }); });
+    q("liq", "สุรา ป.1 / ป.2 / ยาสูบ วันหมดไม่ตรงกัน", "ทีมทะเบียน", "ปกติ 3 ใบนี้ออกพร้อมกันและหมดวันเดียวกัน → ตรวจว่าพิมพ์ผิดหรือไม่", lq);
+    q("noPay", "ทะเบียนมีวันหมดอายุ แต่บัญชีไม่พบการจ่าย", "ทีมบัญชี", "ตรวจว่าจ่ายผ่านทางอื่นไหม (เงินสดย่อย/เงินทดรอง) · ค้าซากสัตว์พบบ่อยสุด",
+      each(function (r, x) { return x.exp && x.acc === "ไม่มี" ? x.raw + " · บัญชี: ไม่มี" : ""; }));
+    q("paidBlank", "บัญชีจ่ายแล้ว แต่ทะเบียนว่าง / ใส่ -", "ทีมทะเบียน", "ทะเบียนต้องลงวันหมดอายุ (หรือบัญชีจ่ายผิดประเภท)",
+      each(function (r, x) { return x.acc === "มี" && (x.s === "none" || x.s === "na") ? (x.s === "na" ? "ทะเบียน: -" : "ทะเบียน: ว่าง") + " · บัญชี: มี" : ""; }));
+    q("ban", "ทะเบียนมีวันหมดอายุ แต่บัญชีว่า 'ห้ามขาย'", "ทั้งสองทีม", "แหล่งหนึ่งผิด — ตรวจ zoning จริงกับสรรพสามิตพื้นที่",
+      each(function (r, x) { return x.exp && x.acc === "ห้ามขาย" ? x.raw + " · บัญชี: ห้ามขาย" : ""; }));
+    var od = []; rows.forEach(function (r) { if (r.openReg && r.openAcc && r.openReg !== r.openAcc) od.push({ r: r, l: "วันเปิด", v: "ทะเบียน " + fmtIso(r.openReg) + " · บัญชี " + fmtIso(r.openAcc) }); });
+    q("open", "วันเปิดร้าน ทะเบียน ≠ บัญชี", "ทั้งสองทีม", "ใช้วันเปิดจาก Pipeline (GO) เป็นหลัก แล้วแก้ให้ตรงกัน", od);
+    var one = []; rows.forEach(function (r) { if (r.inReg !== r.inAcc) one.push({ r: r, l: "แหล่งข้อมูล", v: r.inReg ? "มีแต่ในชีตทะเบียน (ไม่มีในไฟล์บัญชี)" : "มีแต่ในไฟล์บัญชี (ไม่มีในชีตทะเบียน)" }); });
+    q("one", "ร้านเปิดแล้วที่มีอยู่แหล่งเดียว", "ทั้งสองทีม", "ร้านต้องอยู่ทั้งชีตทะเบียนและข้อมูลบัญชี", one);
+    var sg = []; rows.forEach(function (r) { var y = (r.sign && r.sign.y69) || {}; if (r.taxS && r.taxS.s === "ok" && !y.s1) sg.push({ r: r, l: "ภาษีป้าย 2569", v: "บัญชีจ่าย " + fmtIso(r.taxS.paid) + " · ทะเบียนไม่มีวันยื่น ภป.1" }); });
+    q("sign", "ภาษีป้าย 2569: บัญชีจ่ายแล้ว แต่ทะเบียนไม่มีวันยื่น ภป.1", "ทีมทะเบียน", "ลงวันยื่น ภป.1 / วันรับ ภป.3 ในชีต (ใช้พิสูจน์ว่าจ่ายทันกำหนด)", sg);
+    return Q;
+  }
+  function qcView() {
+    freshen();
+    var g = bGate(); if (g) return filterBar() + '<div class="rg-coh">' + cohHead("b", null) + g + "</div>";
+    var Q = qcList(), bad = Q.filter(function (x) { return x.items.length; });
+    var shops = {}; bad.forEach(function (x) { x.items.forEach(function (i) { shops[i.r.code] = 1; }); });
+    var rowsH = Q.map(function (x) {
+      var n = x.items.length, ns = {}; x.items.forEach(function (i) { ns[i.r.code] = 1; });
+      var list = n ? '<div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>สาขา</th><th>จังหวัด</th><th>รายการ</th><th>ค่าในข้อมูล</th></tr></thead><tbody>' +
+        x.items.map(function (i) { return '<tr class="rg-orow" data-ocode="' + esc(i.r.code) + '" tabindex="0"><td class="rg-nw"><b>' + esc(i.r.code) + "</b> " + esc(i.r.name || "") + '</td><td class="rg-nw">' + esc(i.r.prov || DASH) + "</td><td>" + esc(i.l) + "</td><td>" + esc(i.v) + "</td></tr>"; }).join("") + "</tbody></table></div>" : "";
+      return '<details class="rg-det rg-qc"' + (DET["qc-" + x.k] ? " open" : "") + ' data-det="qc-' + x.k + '"><summary><span>' + (n ? '<b class="rg-lg rg-s-' + (x.k === "over" ? "over" : "pend") + '">' + (x.k === "over" ? "🔴" : "⚠️") + "</b> " : '<b class="rg-lg rg-s-done">✓</b> ') + esc(x.t) +
+        ' <span class="rg-muted">· ' + esc(x.who) + "</span></span><span class=\"rg-det-t\">" + (n ? n + " รายการ · " + Object.keys(ns).length + " ร้าน ▾" : "ไม่พบ") + "</span></summary>" +
+        '<div class="rg-tnote">' + esc(x.why) + "</div>" + list + "</details>";
+    }).join("");
+    return filterBar() + '<div class="rg-coh">' + cohHead("b", rowsB().length) + warnBox() +
+      '<div class="rg-strip"><span class="rg-chip rg-chip-' + (bad.length ? "pend" : "done") + '">' + (bad.length ? "⚠️ ต้องเคลียร์ " + bad.length + " เรื่อง · " + Object.keys(shops).length + " ร้าน" : "✓ ไม่พบจุดต้องเคลียร์") + "</span></div>" +
+      '<div class="rg-tnote">ตัวตรวจนับจากข้อมูลชุดเดียวกับหน้าอื่น (ร้านที่เปิดแล้ว + ตัวกรองด้านบน) · แอปไม่แก้ข้อมูลเอง — ส่งให้เจ้าของแหล่งเคลียร์ในชีต · กดแต่ละเรื่องเพื่อดูรายการ · กดแถวเพื่อดูรายละเอียดร้าน</div>' +
+      rowsH + '<div class="rg-src">' + esc(srcB()) + " · กติกาตามกฎหมายเป็นร่างจาก research 9 ต.ค. 2569 — ต้องให้ Legal ตรวจ</div></div>";
+  }
+  function qcCount() { if (!OM()) return null; var Q = qcList(), n = 0, sh = {}; Q.forEach(function (x) { if (x.items.length) n++; x.items.forEach(function (i) { sh[i.r.code] = 1; }); }); return { n: n, shops: Object.keys(sh).length }; }
   function warnBox() {
     var w = (OM() && OM().warn) || [];
     return w.length ? '<div class="rg-warn"><b>⚠️ ข้อมูลร้านที่เปิดแล้วมีจุดต้องระวัง ' + w.length + " ข้อ</b><ul>" + w.map(function (x) { return "<li>" + esc(typeof x === "string" ? x : JSON.stringify(x)) + "</li>"; }).join("") + "</ul></div>" : "";
@@ -8568,7 +8623,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       if (g) top += '<div class="rg-crow">' + cohHead("b", null) + g + "</div>";
       else {
         var rb = rowsB();
-        top += '<div class="rg-crow">' + cohHead("b", rb.length) + warnBox() + '<div class="rg-cards">' + B_WORKS.map(function (w) { return wcard("b", w, tally(rb, function (r) { return bStat(r, w); })); }).join("") +
+        var qn = qcCount();
+        top += '<div class="rg-crow">' + cohHead("b", rb.length) + warnBox() + (qn && qn.n ? '<button type="button" class="rg-qcl" data-go="qc">🔎 พบจุดต้องเคลียร์ในข้อมูล ' + qn.n + " เรื่อง · " + qn.shops + " ร้าน — ดูหน้า ตรวจข้อมูล →</button>" : "") + '<div class="rg-cards">' + B_WORKS.map(function (w) { return wcard("b", w, tally(rb, function (r) { return bStat(r, w); })); }).join("") +
           offCard("util", "ร้านที่เปิดแล้ว: ยังไม่ดึงแท็บ ไฟฟ้าและประปา") + "</div></div>";
         tabs += '<div class="rg-coh">' + ovTable("b", rb) + "</div>";
         src.push(srcB());
@@ -8617,6 +8673,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     [].forEach.call(v.querySelectorAll(".rg-chip"), function (k) { k.onclick = function () { var s = k.getAttribute("data-st"); F.st = F.st === s ? "all" : s; PG = {}; render(); }; });
     [].forEach.call(v.querySelectorAll("[data-pg]"), function (b) { b.onclick = function () { var k = b.getAttribute("data-pg"); PG[k] = (PG[k] || 0) + (+b.getAttribute("data-d")); render(); }; });
     [].forEach.call(v.querySelectorAll(".rg-det"), function (d) { d.ontoggle = function () { DET[d.getAttribute("data-det")] = d.open; }; });
+    [].forEach.call(v.querySelectorAll(".rg-qcl"), function (k) { k.onclick = function () { goWork("qc", "", "b"); }; });
     [].forEach.call(v.querySelectorAll(".rg-wc[data-go]"), function (k) { k.onclick = function () { goWork(k.getAttribute("data-go"), "", k.getAttribute("data-coh")); }; });
     [].forEach.call(v.querySelectorAll(".rg-cb"), function (k) { k.onclick = function () { goWork(k.getAttribute("data-go"), k.getAttribute("data-code"), k.getAttribute("data-coh")); }; });
     [].forEach.call(v.querySelectorAll("tr.rg-orow"), function (tr) { tr.onclick = function () { openDrawer(tr.getAttribute("data-ocode")); }; });
@@ -8626,6 +8683,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
 
   var VIEWS = {
     overview: ["📋 ภาพรวมรายสาขา", function () { return overviewView(); }],
+    qc: ["🔎 ตรวจข้อมูล", function () { return qcView(); }],
     house: [WORK.house.t, function () { return workView("house"); }],
     util: [WORK.util.t, function () { return workView("util"); }],
     license: [WORK.license.t, function () { return workView("license"); }],
@@ -8644,7 +8702,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         table(["Site Code", "ชื่อสาขา", "จังหวัด", "บริษัทประกัน", "เลขที่กรมธรรม์", "ความคุ้มครอง", "ทุนประกัน", "เบี้ยประกัน", "วันเริ่ม", "วันหมดอายุ", "สถานะ", "หมายเหตุ", "บันทึก"]);
     }]
   };
-  var ORDER = ["overview", "house", "util", "license", "renew", "trash", "signtax", "landtax", "insure"], CURV = "overview";
+  var ORDER = ["overview", "qc", "house", "util", "license", "renew", "trash", "signtax", "landtax", "insure"], CURV = "overview";
 
   var sec = document.createElement("section"); sec.id = "tab-registration"; sec.className = "tab-panel";
   sec.innerHTML =
