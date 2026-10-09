@@ -1168,7 +1168,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=114628" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=123030" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8015,6 +8015,25 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if (c.s === "prog") return { k: "prog", t: "ทะเบียนกำลังดำเนินการ" };
     return paid ? { k: "ok", t: "ตรงกัน" } : { k: "warn", t: "ทะเบียนมีวันหมดอายุ · บัญชีไม่พบการจ่าย" };
   }
+  /* 9 ต.ค. ภาษีปี 2569 ฝั่งบัญชี (ACC_tax_sign / ACC_tax_land · ไฟล์บัญชีภาษี 30 ก.ย.) — ✓ = บัญชีจ่ายแล้ว
+   * กำหนด (จากไฟล์บัญชี "วิเคราะห์ความเสี่ยง"): ภาษีป้าย ยื่น ภป.1 ภายใน 31 มี.ค. (ร้านเปิดหลังจากนั้น = วันเปิด + 15 วัน) · ภาษีที่ดิน ชำระภายใน 30 มิ.ย.
+   * ยังไม่จ่าย + เลยกำหนด = 🔴 · ยังไม่ถึงกำหนด = ⏳ · ร้านเปิดตั้งแต่ 1 ม.ค. 2569 = ⏳ (ภาษีที่ดินคิดจากสภาพ ณ 1 ม.ค.) · Remark ของบัญชีแสดงตามคำเดิม */
+  var TAX_SIGN_DL = "2026-03-31", TAX_LAND_DL = "2026-06-30", TAX_YEAR0 = "2026-01-01";
+  function addDays(iso, n) { var d = new Date(iso); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+  function taxSign(a, oiso, t0) {
+    if (!a) return null;
+    var dl = oiso && addDays(oiso, 15) > TAX_SIGN_DL ? addDays(oiso, 15) : TAX_SIGN_DL;
+    var paid = !!a.paid || a.rem === "จ่ายแล้ว";
+    return { mail: a.mail || "", paid: a.paid || "", rem: a.rem || "", dl: dl, s: paid ? "ok" : (t0 > dl ? "over" : "prog") };
+  }
+  function taxLand(a, oiso, t0) {
+    if (!a) return null;
+    var parts = [["c", "ประเมินรวม"], ["l", "ภาษีที่ดิน"], ["b", "สิ่งปลูกสร้าง"]].map(function (p) { return { k: p[0], n: p[1], has: a[p[0] + "h"] === "Y", mail: a[p[0] + "m"] || "", paid: a[p[0] + "p"] || "" }; });
+    var on = parts.filter(function (p) { return p.has || p.paid; }), allPaid = on.length > 0 && on.every(function (p) { return p.paid; });
+    // Remark บัญชี "ยังไม่ได้…" (เช่น ยังไม่ได้ภาษีที่ดิน) = ยังมีส่วนที่ยังไม่ได้ใบประเมิน/ยังไม่จ่าย → ไม่ ✓ แม้ส่วนที่มีใบจะจ่ายครบแล้ว
+    var paid = a.rem === "จ่ายเงินแล้ว" || (allPaid && !/^ยังไม่ได้/.test(a.rem || "")), fresh = !!oiso && oiso >= TAX_YEAR0;
+    return { parts: parts, rem: a.rem || "", dl: TAX_LAND_DL, fresh: fresh, s: paid ? "ok" : (!fresh && t0 > TAX_LAND_DL ? "over" : "prog") };
+  }
   function openModel() {
     var d = OPEN.d; if (!d || !d.lic) return null;
     var t0 = todayIso(), acc = {}, sg9 = {}, sg8 = {}, tr = {}, H = (d.heads && d.heads.lic) || {};
@@ -8022,6 +8041,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     (d.sign69 || []).forEach(function (a) { sg9[a.code] = a; });
     (d.sign68 || []).forEach(function (a) { sg8[a.code] = a; });
     (d.trash || []).forEach(function (a) { tr[a.code] = a; });
+    var tS = {}, tL = {}; (d.taxS || []).forEach(function (a) { tS[a.code] = a; }); (d.taxL || []).forEach(function (a) { tL[a.code] = a; });
     var lead = {}; OLIC.forEach(function (l) { var m = /D-\s*(\d+)/.exec(H[l[0]] || ""); lead[l[0]] = m ? +m[1] : null; });
     var seen = {}, rows = [];
     function add(code, lic) {
@@ -8034,11 +8054,13 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       r.sign = { y69: s9 ? { s1: s9.s1 || "", s3: s9.s3 || "", paid: s9.paid || "" } : null, y68: s8 ? { st: s8.st || "", s1: s8.s1 || "", s3: s8.s3 || "", paid: s8.paid || "" } : null };
       r.sign.s = r.sign.y69 ? (r.sign.y69.paid ? "ok" : (r.sign.y69.s3 || r.sign.y69.s1 ? "prog" : "none")) : "none";
       r.land = s8 ? { y68: { st: s8.lst || "", paid: s8.lpaid || "" }, bst: s8.bst || "", bpaid: s8.bpaid || "" } : null;
+      r.taxS = taxSign(tS[code], oiso, t0); r.taxL = taxLand(tL[code], oiso, t0);
       var t = tr[code]; r.trash = t ? { by: t.by || "", bin: t.bin || "", freq: t.freq || "", rate: t.rate || "", band: t.band || "", s: /รอประเมิน/.test((t.rate || "") + (t.band || "")) ? "prog" : (t.rate ? "ok" : "none") } : null;
       rows.push(r);
     }
     d.lic.forEach(function (l) { add(l.code, l); });
     (d.acc || []).forEach(function (a) { add(a.code, null); });
+    Object.keys(tS).concat(Object.keys(tL)).forEach(function (c) { add(c, null); });
     rows.sort(function (x, y) { return x.code < y.code ? -1 : 1; });
     return { rows: rows, lic: OLIC, lead: lead, stamp: d.stamp || "", warn: d.warn || [] };
   }
@@ -8068,12 +8090,12 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     util: { t: "💧 น้ำ-ไฟ", subA: "ชั่วคราว · น้ำถาวร · ไฟถาวร" },
     license: { t: "📄 ใบอนุญาต", g: ["สุรา+อาหารสัตว์", "ค้าซากสัตว์", "สะสม+จำหน่าย", "ยาฆ่าแมลง", "แก็ซ", "ใช้เสียง"], subA: "ยื่น/ได้ 6 กลุ่มใบ", subB: "ต่ออายุ 9 ใบ" },
     trash: { t: "🗑️ เก็บขยะ", g: ["ถังขยะ"], subA: "ถังเทศบาล / สั่งถัง SCM", subB: "ค่าขยะ" },
-    signtax: { t: "🪧 ภาษีป้าย", g: ["ภาษีป้าย"], subA: "ยื่นภาษีป้าย", subB: "ปี 2569" },
-    landtax: { t: "🏞️ ภาษีที่ดิน", subB: "ปี 2568" }
+    signtax: { t: "🪧 ภาษีป้าย", g: ["ภาษีป้าย"], subA: "ยื่นภาษีป้าย", subB: "ปี 2569 · บัญชีจ่าย" },
+    landtax: { t: "🏞️ ภาษีที่ดิน", subB: "ปี 2569 · บัญชีจ่าย" }
   };
   var A_WORKS = ["house", "util", "license", "trash", "signtax"], B_WORKS = ["house", "license", "trash", "signtax", "landtax"];
   var SRC_A = "ที่มา: ชีต Template_งานทะเบียน (ผ่าน Tank G) · กติกาเดียวกับ After อ.1";
-  function srcB() { var m = OM(); return "ที่มา: ชีตทีมทะเบียน 0. CJx Store Document_New (ผ่าน Tank G) · บัญชี = ไฟล์ Reconcile ตั้งต้น ณ 9 ต.ค. 2569 · ข้อมูล ณ " + ((m && m.stamp) || "ไม่ทราบเวลาข้อมูล"); }
+  function srcB() { var m = OM(); return "ที่มา: ชีตทีมทะเบียน 0. CJx Store Document_New (ผ่าน Tank G) · บัญชี = ไฟล์ Reconcile ใบอนุญาต (9 ต.ค. 2569) + ไฟล์ภาษีป้าย/ภาษีที่ดิน (30 ก.ย. 2569) ตั้งต้น · ข้อมูล ณ " + ((m && m.stamp) || "ไม่ทราบเวลาข้อมูล"); }
   function keysOf(groups) { var out = []; RCOLS.forEach(function (g) { if (!groups || groups.indexOf(g[0]) >= 0) g[1].forEach(function (c) { out.push(c[0]); }); }); return out; }
   function rowState(r, keys) {
     var over = 0, pend = 0, n = 0, done = 0, overN = 0;
@@ -8099,7 +8121,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var RANK = { over: 0, pend: 1, none: 2, done: 3, na: 4 };
   function symTd(k, tip) { return '<td class="rg-c rg-s-' + k + '" title="' + esc(tip || SYMW[k]) + '">' + SYM[k] + "</td>"; }
   function stWord(s) { return '<span class="rg-st rg-st-' + s.st + '" title="' + esc((s.miss && s.miss.length ? "ยังไม่ครบ: " + s.miss.join(" · ") : "")) + '">' + SYM[s.st] + " " + esc(s.word) + "</span>"; }
-  function redWord(coh, w) { return coh === "a" ? "หลุด SLA" : (w === "license" ? "หมดอายุ" : null); }   // ร้านเปิดแล้ว: มีสถานะแดงเฉพาะใบอนุญาต
+  function redWord(coh, w) { return coh === "a" ? "หลุด SLA" : (w === "license" ? "หมดอายุ" : (w === "signtax" || w === "landtax" ? "เลยกำหนด" : null)); }   // ร้านเปิดแล้ว: แดง = ใบอนุญาตหมดอายุ / ภาษีเลยกำหนดยังไม่จ่าย (9 ต.ค.)
   function fmtIso(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || "")); return m ? m[3] + "/" + m[2] + "/" + m[1] : ""; }
   function cellHtml(c) {
     if (!c || c.na) return symTd("na", c && c.skip ? "ไม่ต้องทำ (ทีมทะเบียนใส่ - ในชีต)" : "ไม่ต้องทำ (ตามจังหวัด: ถังเทศบาล = ต่างจังหวัด · สั่งถัง SCM = กทม.)");
@@ -8158,15 +8180,19 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       var t = r.trash; if (!t || t.s === "none") return { st: "none", word: "ยังไม่มีบันทึก", miss: ["ค่าขยะ"] };
       return t.s === "ok" ? { st: "done", word: "มีค่าขยะแล้ว" } : { st: "pend", word: "รอประเมิน", miss: ["ค่าขยะ"] };
     }
+    // 9 ต.ค. (จี "ภาษีต้องใช้ข้อมูลบัญชี"): สถานะภาษี = ฝั่งบัญชี (จ่ายแล้วหรือยัง) · ข้อมูลทะเบียนดูในตารางวันที่
     if (w === "signtax") {
-      var g = r.sign && r.sign.s;
-      return g === "ok" ? { st: "done", word: "ชำระ 2569 แล้ว" } : (g === "prog" ? { st: "pend", word: "ยื่น/ประเมินแล้ว รอชำระ", miss: ["ชำระ 2569"] } : { st: "none", word: "ยังไม่มีบันทึก 2569", miss: ["ภป.1 / ภป.3 / ชำระ 2569"] });
+      var g = r.taxS;
+      if (!g) return { st: "none", word: "ไม่อยู่ในไฟล์บัญชีภาษีป้าย", miss: ["ภาษีป้าย 2569"] };
+      if (g.s === "ok") return { st: "done", word: "บัญชีจ่ายแล้ว" + (g.paid ? " " + fmtIso(g.paid) : "") };
+      return { st: g.s === "over" ? "over" : "pend", word: (g.s === "over" ? "เลยกำหนด · " : "ยังไม่ถึงกำหนด · ") + (g.rem || "ยังไม่จ่าย"), miss: ["ภาษีป้าย 2569 (กำหนด " + fmtIso(g.dl) + ")"] };
     }
-    if (w === "landtax") {   // ไม่มีกติกาจากต้นทาง: สถานะมีคำว่า "เรียบร้อย" หรือมีแต่วันชำระ = ✓ · มีสถานะอื่น = ⏳ · ว่าง = ☐
-      var y = r.land && r.land.y68, st = y ? String(y.st || "").trim() : "", pd = y ? String(y.paid || "").trim() : "";
-      if (/เรียบร้อย/.test(st) || (!st && pd)) return { st: "done", word: st || "มีวันชำระ" };
-      if (st) return { st: "pend", word: st, miss: ["ภาษีที่ดิน 2568"] };
-      return { st: "none", word: "ยังไม่มีบันทึก", miss: ["ภาษีที่ดิน 2568"] };
+    if (w === "landtax") {
+      var y = r.taxL;
+      if (!y) return { st: "none", word: "ไม่อยู่ในไฟล์บัญชีภาษีที่ดิน", miss: ["ภาษีที่ดิน 2569"] };
+      if (y.s === "ok") return { st: "done", word: "บัญชีจ่ายแล้ว" };
+      var left = y.parts.filter(function (p) { return (p.has || p.paid) && !p.paid; }).map(function (p) { return p.n; });
+      return { st: y.s === "over" ? "over" : "pend", word: (y.s === "over" ? "เลยกำหนด 30 มิ.ย. · " : (y.fresh ? "เปิดปี 2569 · " : "ยังไม่ถึงกำหนด · ")) + (y.rem || "ยังไม่จ่าย"), miss: left.length ? left : ["ภาษีที่ดิน 2569"] };
     }
     return { st: "na", word: "" };
   }
@@ -8355,21 +8381,52 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       { th: "<th>จัดเก็บขยะโดย</th><th>จัดหาถังขยะ</th><th>รอบการจัดเก็บ</th><th>ค่าขยะ</th><th>เรทค่าขยะ</th>", n: 5,
         row: function (r) { var t = r.trash || {}; return ["by", "bin", "freq", "rate", "band"].map(function (f) { return '<td class="rg-nw">' + txt(t[f]) + "</td>"; }).join(""); } });
   }
+  // 9 ต.ค.: ภาษี = บัญชีเป็นหลัก (✓ จ่ายแล้ว) · ตารางวันที่วางทะเบียน (ภป.1/ภป.3) คู่บัญชี (ส่ง E-mail/จ่าย)
+  function payTd(paid, mail, s, n) {
+    if (paid) return symTd("done", n + " · บัญชีจ่าย " + fmtIso(paid));
+    if (s === "over") return symTd("over", n + " · ยังไม่จ่าย (เลยกำหนด)" + (mail ? " · ส่ง E-mail " + fmtIso(mail) : ""));
+    return symTd("pend", n + " · ยังไม่จ่าย" + (mail ? " · ส่ง E-mail " + fmtIso(mail) : ""));
+  }
+  function dTd(v) { return '<td class="rg-nw">' + (v ? esc(fmtIso(v) || v) : '<span class="rg-muted">' + DASH + "</span>") + "</td>"; }
+  var LPARTS = [["c", "ประเมินรวม"], ["l", "ภาษีที่ดิน"], ["b", "สิ่งปลูกสร้าง"]];
   function bLand() {
-    return bOne("landtax", "ภาษีที่ดิน 2568", function (r) { var y = r.land && r.land.y68; return y ? "สถานะ: " + (y.st || DASH) + " · วันชำระ: " + (y.paid || DASH) : "ยังไม่มีบันทึกในชีต"; },
-      { th: "<th>สถานะ (2568)</th><th>วันชำระ</th>", n: 2, note: "แท็บปี 2569 ในชีตยังไม่มีคอลัมน์ข้อมูล · ✓ = สถานะในชีตเขียนว่าเรียบร้อย · ช่อง ☐ = ยังไม่มีบันทึกในชีต",
-        row: function (r) { var y = (r.land && r.land.y68) || {}; return "<td>" + txt(y.st) + '</td><td class="rg-nw">' + txt(y.paid) + "</td>"; } });
+    return twoTables({ coh: "b", w: "landtax", rows: rowsB(), stat: function (r) { return bStat(r, "landtax"); },
+      th1: "<tr>" + infoTh("b", 2) + '<th colspan="3" class="rg-gh">ปี 2569 · บัญชีจ่ายแล้วหรือยัง</th><th rowspan="2">สถานะ</th></tr><tr>' +
+        LPARTS.map(function (p) { return '<th class="rg-sh">' + p[1] + "<span>30 มิ.ย.</span></th>"; }).join("") + "</tr>", n1: 6,
+      row1: function (r) {
+        var y = r.taxL;
+        return LPARTS.map(function (p) {
+          if (!y) return symTd("none", p[1] + " · ไม่อยู่ในไฟล์บัญชี");
+          var x = y.parts.filter(function (q) { return q.k === p[0]; })[0];
+          return (x.has || x.paid) ? payTd(x.paid, x.mail, y.s, p[1]) : symTd("na", p[1] + " · ไม่มีใบประเมินส่วนนี้");
+        }).join("");
+      },
+      th2: "<tr>" + infoTh("b", 2) + LPARTS.map(function (p) { return '<th colspan="2" class="rg-gh">' + p[1] + "</th>"; }).join("") + '<th rowspan="2">Remark (บัญชี)</th><th rowspan="2">ทะเบียน · สถานะปี 2568</th></tr><tr>' +
+        LPARTS.map(function () { return "<th>ส่ง E-mail</th><th>วันจ่าย</th>"; }).join("") + "</tr>", n2: 10,
+      row2: function (r) {
+        var y = r.taxL, ld = (r.land && r.land.y68) || {};
+        return LPARTS.map(function (p) { var x = y && y.parts.filter(function (q) { return q.k === p[0]; })[0]; return x && (x.has || x.paid) ? dTd(x.mail) + dTd(x.paid) : '<td class="rg-muted">–</td><td class="rg-muted">–</td>'; }).join("") +
+          "<td>" + txt(y && y.rem) + "</td><td>" + txt(ld.st) + "</td>";
+      },
+      note: "ที่มา ✓/🔴: ไฟล์บัญชีภาษี (30 ก.ย. 2569) · กำหนดชำระ 30 มิ.ย. · ร้านเปิดตั้งแต่ 1 ม.ค. 2569 ยังไม่นับเลยกำหนด · – = ไม่มีใบประเมินส่วนนี้" });
   }
   function bSign() {
-    var F3 = [["s1", "ภป.1", "วันที่ ภป.1"], ["s3", "ภป.3", "วันที่ ภป.3"], ["paid", "ชำระ", "วันที่ชำระเงิน"]];
     return twoTables({ coh: "b", w: "signtax", rows: rowsB(), stat: function (r) { return bStat(r, "signtax"); },
-      th1: "<tr>" + infoTh("b", 2) + '<th colspan="3" class="rg-gh">ปี 2569</th><th rowspan="2">สถานะ</th><th rowspan="2">สถานะปี 2568</th></tr><tr>' +
-        F3.map(function (f) { return '<th class="rg-sh">' + f[1] + "<span>&nbsp;</span></th>"; }).join("") + "</tr>", n1: 7,
-      row1: function (r) { var y = r.sign && r.sign.y69; return F3.map(function (f) { var v = y && y[f[0]]; return v ? symTd("done", f[2] + " " + v) : symTd("none", f[2] + " · ยังไม่มีบันทึกในชีต"); }).join(""); },
-      th2: "<tr>" + infoTh("b", 2) + '<th colspan="3" class="rg-gh">ปี 2569</th><th rowspan="2">สถานะปี 2568</th></tr><tr>' + F3.map(function (f) { return "<th>" + f[2] + "</th>"; }).join("") + "</tr>", n2: 6,
-      tail: y68Td,
-      row2: function (r) { var y = (r.sign && r.sign.y69) || {}; return F3.map(function (f) { return '<td class="rg-nw">' + txt(y[f[0]]) + "</td>"; }).join("") + y68Td(r); },
-      note: "ปี 2569 ทีมทะเบียนบันทึกไว้น้อย — ช่อง ☐ = ยังไม่มีบันทึกในชีต ไม่ใช่ยืนยันว่ายังไม่จ่าย" });
+      th1: "<tr>" + infoTh("b", 2) + '<th colspan="2" class="rg-gh">ทะเบียน · ปี 2569</th><th class="rg-gh">บัญชี · ปี 2569</th><th rowspan="2">สถานะ</th></tr><tr>' +
+        '<th class="rg-sh">ยื่น ภป.1<span>31 มี.ค.</span></th><th class="rg-sh">ได้ ภป.3<span>&nbsp;</span></th><th class="rg-sh">จ่ายแล้ว<span>&nbsp;</span></th></tr>', n1: 6,
+      row1: function (r) {
+        var y = (r.sign && r.sign.y69) || {}, g = r.taxS;
+        return (y.s1 ? symTd("done", "ยื่น ภป.1 " + y.s1) : symTd("none", "ยื่น ภป.1 · ยังไม่มีบันทึกในชีตทะเบียน")) +
+          (y.s3 ? symTd("done", "ได้ ภป.3 " + y.s3) : symTd("none", "ได้ ภป.3 · ยังไม่มีบันทึกในชีตทะเบียน")) +
+          (g ? payTd(g.paid, g.mail, g.s, "ภาษีป้าย 2569") : symTd("none", "ไม่อยู่ในไฟล์บัญชีภาษีป้าย"));
+      },
+      th2: "<tr>" + infoTh("b", 2) + '<th colspan="3" class="rg-gh">ทะเบียน · ปี 2569</th><th colspan="3" class="rg-gh">บัญชี · ปี 2569</th><th rowspan="2">กำหนด</th><th rowspan="2">ทะเบียน · สถานะปี 2568</th></tr><tr>' +
+        "<th>ภป.1</th><th>ภป.3</th><th>ชำระ</th><th>ส่ง E-mail</th><th>วันจ่าย</th><th>Remark</th></tr>", n2: 10,
+      row2: function (r) {
+        var y = (r.sign && r.sign.y69) || {}, g = r.taxS || {};
+        return '<td class="rg-nw">' + txt(y.s1) + '</td><td class="rg-nw">' + txt(y.s3) + '</td><td class="rg-nw">' + txt(y.paid) + "</td>" + dTd(g.mail) + dTd(g.paid) + "<td>" + txt(g.rem) + "</td>" + dTd(g.dl) + y68Td(r);
+      },
+      note: "สถานะ = ฝั่งบัญชี (ไฟล์บัญชีภาษี 30 ก.ย. 2569) · กำหนดยื่น ภป.1 = 31 มี.ค. (ร้านเปิดหลังจากนั้น = วันเปิด + 15 วัน) · ช่องทะเบียน ☐ = ทีมทะเบียนยังไม่ได้ลงในชีต" });
   }
   // คอลัมน์ "สถานะปี 2568" อยู่ท้ายตาราง 1 ของภาษีป้าย → ต่อท้ายแถวหลังคอลัมน์สถานะ (twoTables วางสถานะไว้ท้ายเสมอ)
   function y68Td(r) { var y = r.sign && r.sign.y68; return "<td>" + txt(y && y.st) + "</td>"; }
@@ -8480,8 +8537,10 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       (r.inReg ? "" : '<br><span class="rg-badt">ร้านนี้ไม่อยู่ในชีตทะเบียน (มีแต่ในไฟล์บัญชี)</span>') + "</div>" +
       '<div class="section-label">📄 ใบอนุญาต · ทะเบียน × บัญชี × Oper</div><div class="table-wrap"><table class="data-table rg-dt"><thead>' + LIC_TH2 + "</thead><tbody>" + licRows(r) + "</tbody></table></div>" +
       '<div class="section-label">🏠 ภ.พ.20</div>' + kv([["ข้อความในชีต", r.inReg ? txt(r.pp20) : '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>']]) +
-      '<div class="section-label">🪧 ภาษีป้าย</div>' + kv([["วันที่ ภป.1 (2569)", txt(y9.s1)], ["วันที่ ภป.3 (2569)", txt(y9.s3)], ["วันที่ชำระเงิน (2569)", txt(y9.paid)], ["สถานะปี 2568", txt(y8.st)]]) +
-      '<div class="section-label">🏞️ ภาษีที่ดิน 2568</div>' + kv([["สถานะ", txt(ld.st)], ["วันชำระ", txt(ld.paid)]]) +
+      '<div class="section-label">🪧 ภาษีป้าย</div>' + kv([["ทะเบียน · ภป.1 (2569)", txt(y9.s1)], ["ทะเบียน · ภป.3 (2569)", txt(y9.s3)], ["ทะเบียน · ชำระ (2569)", txt(y9.paid)],
+        ["บัญชี · ส่ง E-mail (2569)", txt(r.taxS && fmtIso(r.taxS.mail))], ["บัญชี · วันจ่าย (2569)", txt(r.taxS && fmtIso(r.taxS.paid))], ["บัญชี · Remark", txt(r.taxS && r.taxS.rem)], ["ทะเบียน · สถานะปี 2568", txt(y8.st)]]) +
+      '<div class="section-label">🏞️ ภาษีที่ดิน</div>' + kv((r.taxL ? r.taxL.parts.filter(function (p) { return p.has || p.paid; }).map(function (p) { return ["บัญชี · " + p.n + " (2569)", "ส่ง E-mail " + txt(fmtIso(p.mail)) + " · จ่าย " + txt(fmtIso(p.paid))]; }) : [["บัญชี (2569)", '<span class="rg-muted">ไม่อยู่ในไฟล์บัญชี</span>']])
+        .concat([["บัญชี · Remark", txt(r.taxL && r.taxL.rem)], ["ทะเบียน · สถานะปี 2568", txt(ld.st)], ["ทะเบียน · วันชำระ 2568", txt(ld.paid)]])) +
       '<div class="section-label">🗑️ เก็บขยะ</div>' + kv([["จัดเก็บขยะโดย", txt(t.by)], ["จัดหาถังขยะ", txt(t.bin)], ["รอบการจัดเก็บ", txt(t.freq)], ["ค่าขยะ", txt(t.rate)], ["เรทค่าขยะ", txt(t.band)]]) +
       '<div class="rg-dsub rg-dfoot">ดูอย่างเดียว — ร้านที่เปิดแล้วยังบันทึกจากหน้านี้ไม่ได้ (แก้ที่ชีตทีมทะเบียน) · ' + esc(srcB()) + "</div>";
     drawer(code + " · " + (r.name || ""), h);
