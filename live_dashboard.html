@@ -1168,7 +1168,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=123030" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=132012" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8088,12 +8088,15 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var WORK = {
     house: { t: "🏠 ทะเบียนบ้าน + สรรพากร", g: ["ทะเบียนบ้าน", "ภ.พ.09", "ภพ.06"], subA: "ทะเบียนบ้าน · ภ.พ.09 · ภพ.06", subB: "ภ.พ.20" },
     util: { t: "💧 น้ำ-ไฟ", subA: "ชั่วคราว · น้ำถาวร · ไฟถาวร" },
-    license: { t: "📄 ใบอนุญาต", g: ["สุรา+อาหารสัตว์", "ค้าซากสัตว์", "สะสม+จำหน่าย", "ยาฆ่าแมลง", "แก็ซ", "ใช้เสียง"], subA: "ยื่น/ได้ 6 กลุ่มใบ", subB: "ต่ออายุ 9 ใบ" },
+    license: { t: "📄 ใบอนุญาต", g: ["สุรา+อาหารสัตว์", "ค้าซากสัตว์", "สะสม+จำหน่าย", "ยาฆ่าแมลง", "แก็ซ", "ใช้เสียง"], subA: "ยื่น/ได้ 6 กลุ่มใบ", subB: "มีใบครบไหม · 9 ใบ", labB: { done: "มีครบ", pend: "กำลังขอ", none: "ยังขาดใบ" } },
+    // 9 ต.ค. (จี "แยกเรื่องมีใบหรือยังไม่มีกับเรื่องต่ออายุ"): ต่ออายุ = นับเฉพาะใบที่มีแล้ว (ร้านที่เปิดแล้ว)
+    renew: { t: "🔄 ต่ออายุใบอนุญาต", subB: "เฉพาะใบที่มีแล้ว", labB: { done: "ยังไม่ถึงรอบ", pend: "ถึงรอบต่อ", none: "ยังไม่มีบันทึก" } },
     trash: { t: "🗑️ เก็บขยะ", g: ["ถังขยะ"], subA: "ถังเทศบาล / สั่งถัง SCM", subB: "ค่าขยะ" },
     signtax: { t: "🪧 ภาษีป้าย", g: ["ภาษีป้าย"], subA: "ยื่นภาษีป้าย", subB: "ปี 2569 · บัญชีจ่าย" },
     landtax: { t: "🏞️ ภาษีที่ดิน", subB: "ปี 2569 · บัญชีจ่าย" }
   };
-  var A_WORKS = ["house", "util", "license", "trash", "signtax"], B_WORKS = ["house", "license", "trash", "signtax", "landtax"];
+  var A_WORKS = ["house", "util", "license", "trash", "signtax"], B_WORKS = ["house", "license", "renew", "trash", "signtax", "landtax"];
+  function labOf(coh, w) { var d = { done: "ครบ", pend: "ค้าง", none: "ยังไม่มีบันทึก" }, o = coh === "b" && WORK[w] && WORK[w].labB; return o ? { done: o.done, pend: o.pend, none: o.none } : d; }
   var SRC_A = "ที่มา: ชีต Template_งานทะเบียน (ผ่าน Tank G) · กติกาเดียวกับ After อ.1";
   function srcB() { var m = OM(); return "ที่มา: ชีตทีมทะเบียน 0. CJx Store Document_New (ผ่าน Tank G) · บัญชี = ไฟล์ Reconcile ใบอนุญาต (9 ต.ค. 2569) + ไฟล์ภาษีป้าย/ภาษีที่ดิน (30 ก.ย. 2569) ตั้งต้น · ข้อมูล ณ " + ((m && m.stamp) || "ไม่ทราบเวลาข้อมูล"); }
   function keysOf(groups) { var out = []; RCOLS.forEach(function (g) { if (!groups || groups.indexOf(g[0]) >= 0) g[1].forEach(function (c) { out.push(c[0]); }); }); return out; }
@@ -8121,7 +8124,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var RANK = { over: 0, pend: 1, none: 2, done: 3, na: 4 };
   function symTd(k, tip) { return '<td class="rg-c rg-s-' + k + '" title="' + esc(tip || SYMW[k]) + '">' + SYM[k] + "</td>"; }
   function stWord(s) { return '<span class="rg-st rg-st-' + s.st + '" title="' + esc((s.miss && s.miss.length ? "ยังไม่ครบ: " + s.miss.join(" · ") : "")) + '">' + SYM[s.st] + " " + esc(s.word) + "</span>"; }
-  function redWord(coh, w) { return coh === "a" ? "หลุด SLA" : (w === "license" ? "หมดอายุ" : (w === "signtax" || w === "landtax" ? "เลยกำหนด" : null)); }   // ร้านเปิดแล้ว: แดง = ใบอนุญาตหมดอายุ / ภาษีเลยกำหนดยังไม่จ่าย (9 ต.ค.)
+  function redWord(coh, w) { return coh === "a" ? "หลุด SLA" : (w === "renew" ? "หมดอายุ" : (w === "signtax" || w === "landtax" ? "เลยกำหนด" : null)); }   // ร้านเปิดแล้ว: แดง = ใบอนุญาตหมดอายุ / ภาษีเลยกำหนดยังไม่จ่าย (9 ต.ค.)
   function fmtIso(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || "")); return m ? m[3] + "/" + m[2] + "/" + m[1] : ""; }
   function cellHtml(c) {
     if (!c || c.na) return symTd("na", c && c.skip ? "ไม่ต้องทำ (ทีมทะเบียนใส่ - ในชีต)" : "ไม่ต้องทำ (ตามจังหวัด: ถังเทศบาล = ต่างจังหวัด · สั่งถัง SCM = กทม.)");
@@ -8153,21 +8156,33 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
   var NOT_IN_REG = { st: "none", word: "ไม่อยู่ในชีตทะเบียน", miss: ["ร้านนี้มีแต่ในไฟล์บัญชี"] };
   function bStat(r, w) {
-    if (w === "license") {
+    if (w === "license") {   // มีใบหรือยัง (หมดอายุ/ถึงรอบต่อ = ยังนับว่ามีใบ — สถานะอายุดูหน้า ต่ออายุ)
       if (!r.inReg) return NOT_IN_REG;
-      var c = { over: 0, pend: 0, none: 0, ok: 0 }, miss = [];
+      var c = { has: 0, prog: 0, none: 0 }, miss = [];
       OLIC.forEach(function (l) {
         var s = r.lic[l[0]].s;
-        if (s === "ok") c.ok++;
-        else if (s === "over") { c.over++; miss.push(l[1] + " (หมดอายุ)"); }
-        else if (s === "due" || s === "prog") { c.pend++; miss.push(l[1] + (s === "due" ? " (ถึงรอบต่อ)" : " (กำลังดำเนินการ)")); }
+        if (s === "ok" || s === "due" || s === "over") c.has++;
+        else if (s === "prog") { c.prog++; miss.push(l[1] + " (" + r.lic[l[0]].raw + ")"); }
         else if (s === "none") { c.none++; miss.push(l[1] + " (ยังไม่มีบันทึก)"); }
       });
-      if (c.over) return { st: "over", word: "หมดอายุ " + c.over + " ใบ" + (c.pend ? " · ค้าง " + c.pend + " ใบ" : ""), miss: miss };
-      if (c.pend) return { st: "pend", word: "ค้าง " + c.pend + " ใบ", miss: miss };
-      if (c.none) return { st: "none", word: "ยังไม่มีบันทึก " + c.none + " ใบ", miss: miss };
-      if (!c.ok) return { st: "na", word: "ไม่ต้องมีใบใดเลย" };
-      return { st: "done", word: "ครบ", miss: [] };
+      if (c.none) return { st: "none", word: "ยังขาด/ไม่มีบันทึก " + c.none + " ใบ" + (c.prog ? " · กำลังขอ " + c.prog + " ใบ" : ""), miss: miss };
+      if (c.prog) return { st: "pend", word: "กำลังขอ " + c.prog + " ใบ", miss: miss };
+      if (!c.has) return { st: "na", word: "ไม่ต้องมีใบใดเลย" };
+      return { st: "done", word: "มีครบ " + c.has + " ใบ", miss: [] };
+    }
+    if (w === "renew") {     // ต่ออายุ: เฉพาะใบที่มีวันหมดอายุ
+      if (!r.inReg) return NOT_IN_REG;
+      var e = { over: 0, due: 0, ok: 0 }, mm = [];
+      OLIC.forEach(function (l) {
+        var x = r.lic[l[0]];
+        if (x.s === "over") { e.over++; mm.push(l[1] + " (หมด " + x.raw + ")"); }
+        else if (x.s === "due") { e.due++; mm.push(l[1] + " (หมด " + x.raw + " · ต่อล่วงหน้า D-" + OM().lead[l[0]] + ")"); }
+        else if (x.s === "ok") e.ok++;
+      });
+      if (e.over) return { st: "over", word: "หมดอายุ " + e.over + " ใบ" + (e.due ? " · ถึงรอบต่อ " + e.due + " ใบ" : ""), miss: mm };
+      if (e.due) return { st: "pend", word: "ถึงรอบต่อ " + e.due + " ใบ", miss: mm };
+      if (!e.ok) return { st: "na", word: "ยังไม่มีใบให้ต่ออายุ" };
+      return { st: "done", word: "ยังไม่ถึงรอบ (" + e.ok + " ใบ)", miss: [] };
     }
     if (w === "house") {
       if (!r.inReg) return NOT_IN_REG;
@@ -8243,8 +8258,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var red = redWord(coh, w);
     function chip(k, sym, word, v) { return '<button type="button" class="rg-chip rg-chip-' + k + (F.st === k ? " on" : "") + '" data-st="' + k + '">' + sym + " " + word + " <b>" + v + "</b> สาขา</button>"; }
     if (!T.n) return '<div class="rg-strip"><span class="rg-muted">ไม่มีสาขาที่มีงานนี้ในกลุ่ม/ตัวกรองนี้</span></div>';
-    return '<div class="rg-strip">' + chip("done", "✓", "ครบ", T.done + " / " + T.n) + (red ? chip("over", "🔴", red, T.over) : "") + chip("pend", "⏳", "ค้าง", T.pend) +
-      (T.none ? chip("none", SYM.none, "ยังไม่มีบันทึก", T.none) : "") + "</div>";
+    var L = labOf(coh, w);
+    return '<div class="rg-strip">' + chip("done", "✓", L.done, T.done + " / " + T.n) + (red ? chip("over", "🔴", red, T.over) : "") + chip("pend", "⏳", L.pend, T.pend) +
+      (T.none ? chip("none", SYM.none, L.none, T.none) : "") + "</div>";
   }
   function legend() {
     var sh = grpShow(), red = sh.a && sh.b ? "เลยกำหนด (สาขาใหม่ = หลุด SLA · ร้านเปิดแล้ว = ใบหมดอายุ)" : (sh.a ? "เลยกำหนด (หลุด SLA)" : "เลยกำหนด (ใบหมดอายุ)");
@@ -8355,7 +8371,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var sh = OLIC.map(function (l) { return '<th class="rg-sh" title="เตือนล่วงหน้า ' + (m.lead[l[0]] != null ? m.lead[l[0]] + " วันก่อนหมดอายุ" : "ไม่ระบุ") + '">' + esc(l[1]) + "<span>" + (m.lead[l[0]] != null ? "D-" + m.lead[l[0]] : "&nbsp;") + "</span></th>"; }).join("");
     return twoTables({ coh: "b", w: "license", rows: rowsB(), stat: function (r) { return bStat(r, "license"); },
       th1: "<tr>" + infoTh("b") + sh + "<th>สถานะ</th></tr>", n1: 3 + OLIC.length,
-      row1: function (r) { return OLIC.map(function (l) { return r.inReg ? licTd(r.lic[l[0]], l) : symTd("none", l[1] + " · ร้านนี้ไม่อยู่ในชีตทะเบียน"); }).join(""); },
+      row1: function (r) { return OLIC.map(function (l) { return r.inReg ? hasTd(r.lic[l[0]], l) : symTd("none", l[1] + " · ร้านนี้ไม่อยู่ในชีตทะเบียน"); }).join(""); },
       th2: LIC_TH2, n2: 5,
       body2: function (items) {
         return items.map(function (r) {
@@ -8363,6 +8379,33 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
             " · บัญชีจ่ายล่าสุด (ใบใดก็ได้) " + esc(fmtIso(r.accLast) || DASH) + "</span></td></tr>" + licRows(r);
         }).join("");
       } });
+  }
+  // 9 ต.ค.: หน้า ใบอนุญาต = มีใบหรือยัง · หน้า ต่ออายุ = เฉพาะใบที่มีวันหมดอายุ
+  function hasTd(x, l) {
+    var n = l[1];
+    if (x.s === "ok" || x.s === "due" || x.s === "over") return symTd("done", n + " · มีใบ (หมดอายุ " + x.raw + ")");
+    if (x.s === "prog") return symTd("pend", n + " · " + x.raw);
+    if (x.s === "na") return symTd("na", n + " · ไม่ต้องมี (ทีมทะเบียนใส่ - ในชีต)");
+    return symTd("none", n + " · ยังไม่มีบันทึกในชีตทะเบียน");
+  }
+  function renTd(x, l) {
+    if (x.s === "ok" || x.s === "due" || x.s === "over") return licTd(x, l);
+    return symTd("na", l[1] + " · ไม่มีใบให้ต่อ (" + (x.s === "na" ? "ไม่ต้องมี" : (x.s === "prog" ? x.raw : "ยังไม่มีบันทึก")) + ")");
+  }
+  function bRenew() {
+    var m = OM();
+    var sh = OLIC.map(function (l) { return '<th class="rg-sh" title="ต่อล่วงหน้า ' + (m.lead[l[0]] != null ? m.lead[l[0]] + " วันก่อนหมดอายุ" : "ไม่ระบุ") + '">' + esc(l[1]) + "<span>" + (m.lead[l[0]] != null ? "D-" + m.lead[l[0]] : "&nbsp;") + "</span></th>"; }).join("");
+    function dcl(x) {
+      if (!(x.s === "ok" || x.s === "due" || x.s === "over")) return '<td class="rg-dc rg-muted">–</td>';
+      return '<td class="rg-dc">' + (x.s === "over" ? '<b class="rg-badt">' + esc(x.raw) + "</b>" : (x.s === "due" ? "<b>" + esc(x.raw) + "</b>" : esc(x.raw))) +
+        '<div class="rg-d">' + (x.left < 0 ? "หมดแล้ว " + (-x.left) + " วัน" : "เหลือ " + x.left + " วัน") + "</div></td>";
+    }
+    return twoTables({ coh: "b", w: "renew", rows: rowsB(), stat: function (r) { return bStat(r, "renew"); },
+      th1: "<tr>" + infoTh("b") + sh + "<th>สถานะ</th></tr>", n1: 3 + OLIC.length,
+      row1: function (r) { return OLIC.map(function (l) { return r.inReg ? renTd(r.lic[l[0]], l) : symTd("none", l[1] + " · ร้านนี้ไม่อยู่ในชีตทะเบียน"); }).join(""); },
+      th2: "<tr>" + infoTh("b") + OLIC.map(function (l) { return "<th>" + esc(l[1]) + "</th>"; }).join("") + "</tr>", n2: 2 + OLIC.length,
+      row2: function (r) { return OLIC.map(function (l) { return r.inReg ? dcl(r.lic[l[0]]) : '<td class="rg-dc rg-muted">–</td>'; }).join(""); },
+      note: "นับเฉพาะใบที่มีวันหมดอายุในชีตทะเบียน · ⏳ ถึงรอบต่อ = วันนี้เข้าช่วงต่อล่วงหน้า (D ตามหัวชีต) แล้ว · – = ไม่มีใบให้ต่อ (ไม่ต้องมี / ยังไม่มีบันทึก / กำลังขอ — ดูหน้า ใบอนุญาต)" });
   }
   function bOne(w, label, tip, extra) {
     // งานที่มีช่องเดียวต่อร้าน (ภ.พ.20 / ค่าขยะ / ภาษีที่ดิน): ตาราง 1 = สัญลักษณ์ 1 ช่อง · ตาราง 2 = ข้อความ/วันที่ในชีต
@@ -8442,12 +8485,13 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     freshen();
     var sh = grpShow(), h = filterBar() + legend();
     if (sh.a) {
-      if (w === "landtax") h += '<div class="rg-coh">' + cohHead("a", null) + stateBox("", "ภาษีที่ดิน มีเฉพาะร้านที่เปิดแล้ว — เลือกกลุ่ม “ร้านที่เปิดแล้ว” เพื่อดู") + "</div>";
+      if (w === "renew") h += '<div class="rg-coh">' + cohHead("a", null) + stateBox("", "ต่ออายุใบอนุญาต มีเฉพาะร้านที่เปิดแล้ว — เลือกกลุ่ม “ร้านที่เปิดแล้ว” เพื่อดู") + "</div>";
+      else if (w === "landtax") h += '<div class="rg-coh">' + cohHead("a", null) + stateBox("", "ภาษีที่ดิน มีเฉพาะร้านที่เปิดแล้ว — เลือกกลุ่ม “ร้านที่เปิดแล้ว” เพื่อดู") + "</div>";
       else h += aBlock(function () { return w === "util" ? aUtil() : aDoc(w); });
     }
     if (sh.b) {
       if (w === "util") h += bNote("<b>ร้านที่เปิดแล้ว: ยังไม่ดึงแท็บ ไฟฟ้าและประปา</b><br>ยังไม่มีข้อมูลน้ำ-ไฟของร้านที่เปิดแล้วในแอปนี้");
-      else h += bBlock({ house: bHouse, license: bLic, trash: bTrash, signtax: bSign, landtax: bLand }[w]);
+      else h += bBlock({ house: bHouse, license: bLic, renew: bRenew, trash: bTrash, signtax: bSign, landtax: bLand }[w]);
     }
     return h;
   }
@@ -8475,13 +8519,13 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
 
   /* ---- หน้า ภาพรวมรายสาขา (MD: เข้าใจใน 5 วินาที) ---- */
   function wcard(coh, w, T) {
-    var red = redWord(coh, w), pct = T.n ? Math.round(T.done / T.n * 100) : 0;
+    var red = redWord(coh, w), L = labOf(coh, w), pct = T.n ? Math.round(T.done / T.n * 100) : 0;
     function line(k, label, v) { return '<div class="rg-wc-l rg-wc-' + k + '"><span>' + label + "</span><b>" + v + " สาขา</b></div>"; }
     return '<button type="button" class="kpi-card rg-wc" data-go="' + w + '" data-coh="' + coh + '"><div class="kpi-label">' + WORK[w].t + '</div><div class="rg-wc-sub">' + esc(coh === "a" ? WORK[w].subA : WORK[w].subB) + "</div>" +
-      (T.n ? '<div class="rg-wc-main"><span class="rg-wc-ok">✓ ครบ</span><span class="rg-big">' + T.done + '</span><span class="rg-of">/ ' + T.n + " สาขา</span></div>"
+      (T.n ? '<div class="rg-wc-main"><span class="rg-wc-ok">✓ ' + L.done + '</span><span class="rg-big">' + T.done + '</span><span class="rg-of">/ ' + T.n + " สาขา</span></div>"
         : '<div class="rg-wc-main"><span class="rg-big rg-muted">' + DASH + '</span><span class="rg-of">ไม่มีสาขาที่มีงานนี้</span></div>') +
       '<div class="rg-pbar" role="img" aria-label="ครบ ' + T.done + " จาก " + T.n + ' สาขา"><span style="width:' + pct + '%"></span></div>' +
-      (red ? line("over", "🔴 " + red, T.over) : "") + line("pend", "⏳ ค้าง", T.pend) + (T.none ? line("none", SYM.none + " ยังไม่มีบันทึก", T.none) : "") +
+      (red ? line("over", "🔴 " + red, T.over) : "") + line("pend", "⏳ " + L.pend, T.pend) + (T.none ? line("none", SYM.none + " " + L.none, T.none) : "") +
       '<div class="rg-wc-go">ดูหน้างาน →</div></button>';
   }
   function offCard(w, msg) { return '<div class="kpi-card rg-wc rg-wc-off"><div class="kpi-label">' + WORK[w].t + '</div><div class="rg-wc-sub">' + msg + "</div></div>"; }
@@ -8578,6 +8622,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     house: [WORK.house.t, function () { return workView("house"); }],
     util: [WORK.util.t, function () { return workView("util"); }],
     license: [WORK.license.t, function () { return workView("license"); }],
+    renew: [WORK.renew.t, function () { return workView("renew"); }],
     trash: [WORK.trash.t, function () { return workView("trash"); }],
     signtax: [WORK.signtax.t, function () { return workView("signtax"); }],
     landtax: [WORK.landtax.t, function () { return workView("landtax"); }],
@@ -8592,7 +8637,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         table(["Site Code", "ชื่อสาขา", "จังหวัด", "บริษัทประกัน", "เลขที่กรมธรรม์", "ความคุ้มครอง", "ทุนประกัน", "เบี้ยประกัน", "วันเริ่ม", "วันหมดอายุ", "สถานะ", "หมายเหตุ", "บันทึก"]);
     }]
   };
-  var ORDER = ["overview", "house", "util", "license", "trash", "signtax", "landtax", "insure"], CURV = "overview";
+  var ORDER = ["overview", "house", "util", "license", "renew", "trash", "signtax", "landtax", "insure"], CURV = "overview";
 
   var sec = document.createElement("section"); sec.id = "tab-registration"; sec.className = "tab-panel";
   sec.innerHTML =
