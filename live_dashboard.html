@@ -1168,7 +1168,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=195524" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=091552" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -7749,7 +7749,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ".rg-kf{cursor:pointer}.rg-kf.on{border-color:var(--blue,#2563eb);box-shadow:0 0 0 2px rgba(37,99,235,.15)}",
     ".rg-legend{font-size:12px;color:var(--t3,#8a93a8);margin:-2px 0 10px}.rg-legend span{display:inline-block;min-width:18px;text-align:center;border-radius:5px;padding:0 4px;font-weight:700}",
     "table.rg-mx th,table.rg-mx td{white-space:nowrap}table.rg-mx th.rg-gh{text-align:center;border-left:1px solid var(--border,#e3e6ed)}table.rg-mx th.rg-sh{text-align:center;font-size:11px}table.rg-mx th.rg-sh span{font-weight:400;color:var(--t3,#8a93a8)}",
-    "td.rg-c{text-align:center;font-weight:700;font-size:12.5px;min-width:34px}.rg-done{color:#047857;background:#ecfdf5}.rg-late{color:#fff;background:#dc2626}.rg-wait2{color:#92400e;background:#fffbeb}.rg-nosla{color:#94a3b8}.rg-na{color:#cbd5e1}",
+    "td.rg-c{text-align:center;font-weight:700;font-size:12px;min-width:38px}td.rg-c.rg-done{font-weight:600}td.rg-c.rg-today{color:#b45309;background:#fde68a}.rg-done{color:#047857;background:#ecfdf5}.rg-late{color:#fff;background:#dc2626}.rg-wait2{color:#92400e;background:#fffbeb}.rg-nosla{color:#94a3b8}.rg-na{color:#cbd5e1}",
     ".rg-u-got{color:#047857}.rg-u-wait{color:#92400e}.rg-u-prep{color:#94a3b8}.rg-d{font-size:11px;color:var(--t3,#8a93a8)}",
     ".rg-uf,.rg-ujump{cursor:pointer}.rg-uf.on{border-color:var(--blue,#2563eb);box-shadow:0 0 0 2px rgba(37,99,235,.15)}.kpi-value.rg-bad{color:#dc2626}.kpi-value.rg-ok{color:#047857}",
     "#rg-drawer{width:620px}#rg-drawer input.rg-in{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--border2,#cbd5e1);border-radius:7px;width:132px}#rg-drawer input.rg-in.dirty{border-color:#f59e0b;background:#fffbeb}#rg-drawer input.rg-in.saved{border-color:#10b981;background:#ecfdf5}#rg-drawer input.rg-in.err{border-color:#dc2626;background:#fef2f2}",
@@ -7817,10 +7817,13 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       return true;
     }).sort(function (a, b) { var x = rowState(a), y = rowState(b); return (y.over - x.over) || String(a.open_iso).localeCompare(String(b.open_iso)) || (a.code < b.code ? -1 : 1); });
   }
+  // 9 ต.ค. (จี "แก้ยังว่ะตัวเลข"): ทำแล้ว = วันที่ทำ (วัน/เดือน) · เลยเดดไลน์ = +วัน · ครบกำหนดวันนี้ = "วันนี้" · ยังไม่ถึง = เหลือกี่วัน
+  function shortDate(v) { var i = toIso(v); return i ? (+i.slice(8, 10)) + "/" + (+i.slice(5, 7)) : "✓"; }
   function cellHtml(c) {
     if (!c || c.na) return '<td class="rg-c rg-na">–</td>';
-    if (c.v) return '<td class="rg-c rg-done" title="ทำแล้ว ' + esc(c.v) + '">✓</td>';
-    if (c.left != null && c.left < 0) return '<td class="rg-c rg-late" title="เดดไลน์ ' + esc(c.dl) + " · เลยมา " + (-c.left) + ' วัน">' + (-c.left) + "</td>";
+    if (c.v) return '<td class="rg-c rg-done" title="ทำแล้ว ' + esc(c.v) + '">' + esc(shortDate(c.v)) + "</td>";
+    if (c.left != null && c.left < 0) return '<td class="rg-c rg-late" title="เดดไลน์ ' + esc(c.dl) + " · เลยมา " + (-c.left) + ' วัน">+' + (-c.left) + "</td>";
+    if (c.left === 0) return '<td class="rg-c rg-wait2 rg-today" title="เดดไลน์วันนี้ ' + esc(c.dl) + '">วันนี้</td>';
     if (c.left != null) return '<td class="rg-c rg-wait2" title="เดดไลน์ ' + esc(c.dl) + " · เหลือ " + c.left + ' วัน">' + c.left + "</td>";
     return '<td class="rg-c rg-nosla" title="ยังไม่ทำ (ไม่มี SLA)">·</td>';
   }
@@ -7884,7 +7887,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       kv("✓ เอกสารครบ", st.done, "ทำครบทุกใบแล้ว", "done") +
       '<div class="kpi-card rg-ujump"><div class="kpi-label">💧 น้ำ-ไฟ เลยวันเปิดยังไม่ได้</div><div class="kpi-value rg-bad">' + us.over + '</div><div class="kpi-sub">ได้ครบ ' + us.done + " · ขอแล้วรอ " + us.wait + " · กดดูรายชื่อ ↓</div></div></div>" +
       '<div class="section-label">เอกสารทะเบียน รายสาขา · ' + rows.length + " สาขา</div>" +
-      '<div class="rg-legend"><span class="rg-done">✓</span> ทำแล้ว · <span class="rg-late">5</span> เลยเดดไลน์มา 5 วัน · <span class="rg-wait2">3</span> เหลืออีก 3 วัน · <span class="rg-nosla">·</span> ยังไม่ทำ (ไม่มี SLA) · <span class="rg-na">–</span> ไม่ต้องทำ · <b>กดแถวเพื่อเปิดเช็กลิสต์และบันทึกวันที่</b></div>' +
+      '<div class="rg-legend"><span class="rg-done">12/9</span> ทำแล้ว (วันที่ทำ) · <span class="rg-late">+5</span> เลยเดดไลน์มา 5 วัน · <span class="rg-wait2">วันนี้</span> ครบกำหนดวันนี้ · <span class="rg-wait2">3</span> เหลืออีก 3 วัน · <span class="rg-nosla">·</span> ยังไม่ทำ (ไม่มี SLA) · <span class="rg-na">–</span> ไม่ต้องทำ · <b>กดแถวเพื่อเปิดเช็กลิสต์และบันทึกวันที่</b></div>' +
       '<div class="card"><div class="table-wrap"><table class="data-table rg-mx"><thead>' + head1 + head2 + "</thead><tbody>" +
       (body || '<tr><td colspan="' + ncol + '" class="rg-wait">' + (all.length ? "ไม่มีสาขาตรงตัวกรอง" : "ไม่มีสาขาในช่วงนี้") + "</td></tr>") + "</tbody></table></div></div>" +
       '<div class="rg-src">ที่มา: กติกาเดียวกับกล่องทะเบียนในแท็บ After อ.1 (เดดไลน์ = วันเปิดในชีตทะเบียน − D ตามหัวชีต)</div>' +
