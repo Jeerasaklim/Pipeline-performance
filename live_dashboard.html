@@ -1168,7 +1168,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=092303" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=092605" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -3741,6 +3741,7 @@ setTimeout(applyBoard,300);
       for (const [key, ci] of AF_EXTRA) {
         if ((key === "rg_trash_p" && prov.indexOf(BKK) >= 0) || (key === "rg_trash_b" && prov.indexOf(BKK) < 0)) { cells[key] = { na: 1 }; continue; }
         const val = cell(r, ci), filled = !!val && val.indexOf("1899") < 0 && val.indexOf("1900") < 0;
+        if (val.trim() === "-") { cells[key] = { na: 1, skip: 1 }; continue; }   // 9 ต.ค.: "-" ในชีต = ทีมทะเบียนระบุว่าสาขานี้ไม่ต้องทำ (กติกาเดียวกับ X-Check: "-" ≠ ว่าง)
         const dd = (key in AF_REG_SLA) ? AF_REG_SLA[key] : null;
         const dl = (dd != null && op) ? addDays(op, -dd) : null;
         cells[key] = { v: filled ? val : "", dl: dl ? fmtDMY2(dl) : "", left: (!filled && dl) ? daysBetween(today, dl) : null };
@@ -7752,9 +7753,10 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     "td.rg-c{text-align:center;font-weight:700;font-size:12px;min-width:38px}td.rg-c.rg-done{font-weight:600}td.rg-c.rg-today{color:#b45309;background:#fde68a}.rg-done{color:#047857;background:#ecfdf5}.rg-late{color:#fff;background:#dc2626}.rg-wait2{color:#92400e;background:#fffbeb}.rg-nosla{color:#94a3b8}.rg-na{color:#cbd5e1}",
     ".rg-u-got{color:#047857}.rg-u-wait{color:#92400e}.rg-u-prep{color:#94a3b8}.rg-d{font-size:11px;color:var(--t3,#8a93a8)}",
     ".rg-uf,.rg-ujump{cursor:pointer}.rg-uf.on{border-color:var(--blue,#2563eb);box-shadow:0 0 0 2px rgba(37,99,235,.15)}.kpi-value.rg-bad{color:#dc2626}.kpi-value.rg-ok{color:#047857}",
-    "#rg-drawer{width:620px}#rg-drawer input.rg-in{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--border2,#cbd5e1);border-radius:7px;width:132px}#rg-drawer input.rg-in.dirty{border-color:#f59e0b;background:#fffbeb}#rg-drawer input.rg-in.saved{border-color:#10b981;background:#ecfdf5}#rg-drawer input.rg-in.err{border-color:#dc2626;background:#fef2f2}",
+    "#rg-drawer{width:620px}#rg-drawer input.rg-in{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--border2,#cbd5e1);border-radius:7px;width:132px}#rg-drawer .rg-w{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;padding:2px;border-radius:8px}#rg-drawer .rg-w.dirty{background:#fef3c7}#rg-drawer .rg-w.saved{background:#d1fae5}#rg-drawer .rg-w.err{background:#fee2e2}#rg-drawer .rg-skipl{font-size:12px;color:var(--t2,#475569);white-space:nowrap;cursor:pointer}",
     ".rg-savebar{position:sticky;bottom:-16px;background:var(--surface,#fff);padding:12px 0 4px;margin-top:12px;display:flex;gap:10px;align-items:center;border-top:1px solid var(--border,#e3e6ed)}.rg-savebar .rg-dsub{margin:0}#rg-save{white-space:nowrap;flex:0 0 auto}",
     "#rg-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:100005;max-width:min(680px,92vw);padding:11px 18px;border-radius:10px;font:600 13px inherit;color:#fff;opacity:0;transition:opacity .25s;pointer-events:none}#rg-toast.ok{background:#065f46}#rg-toast.bad{background:#991b1b}",
+    ".rg-hint{font-size:12.5px;font-weight:600;color:var(--blue,#2563eb);margin:-4px 0 10px}",
     ".rg-segwrap{margin:0 0 16px}.rg-empty{text-align:center;color:var(--t3,#8a93a8);padding:28px 16px;line-height:1.8;font-size:13px}.rg-empty b{color:var(--text,#0d1421);font-size:14px}"
   ].join("");
   document.head.appendChild(css);
@@ -7821,8 +7823,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   // 9 ต.ค. (จี "แก้ยังว่ะตัวเลข"): ทำแล้ว = วันที่ทำ (วัน/เดือน) · เลยเดดไลน์ = +วัน · ครบกำหนดวันนี้ = "วันนี้" · ยังไม่ถึง = เหลือกี่วัน
   function shortDate(v) { var i = toIso(v); return i ? (+i.slice(8, 10)) + "/" + (+i.slice(5, 7)) : "✓"; }
   function cellHtml(c) {
-    if (!c || c.na) return '<td class="rg-c rg-na">–</td>';
-    if (c.v) return '<td class="rg-c rg-done" title="ทำแล้ว ' + esc(c.v) + '">' + esc(shortDate(c.v)) + "</td>";
+    if (!c || c.na) return '<td class="rg-c rg-na" title="' + (c && c.skip ? "ไม่ต้องทำ (ทีมทะเบียนติ๊กไว้ · ในชีต = -)" : "ไม่ต้องทำ (ตามจังหวัด: ถังเทศบาล = ต่างจังหวัด · สั่งถัง SCM = กทม.)") + '">–</td>';
+    if (c.v) return '<td class="rg-c rg-done" title="ยื่น/ได้แล้ว ' + esc(c.v) + '">✓</td>';   // 9 ต.ค. (จี): ทำแล้ว = ✓ (วันที่อยู่ใน tooltip + เช็กลิสต์)
     if (c.left != null && c.left < 0) return '<td class="rg-c rg-late" title="เดดไลน์ ' + esc(c.dl) + " · เลยมา " + (-c.left) + ' วัน">+' + (-c.left) + "</td>";
     if (c.left === 0) return '<td class="rg-c rg-wait2 rg-today" title="เดดไลน์วันนี้ ' + esc(c.dl) + '">วันนี้</td>';
     if (c.left != null) return '<td class="rg-c rg-wait2" title="เดดไลน์ ' + esc(c.dl) + " · เหลือ " + c.left + ' วัน">' + c.left + "</td>";
@@ -7888,7 +7890,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       kv("✓ เอกสารครบ", st.done, "ทำครบทุกใบแล้ว", "done") +
       '<div class="kpi-card rg-ujump"><div class="kpi-label">💧 น้ำ-ไฟ เลยวันเปิดยังไม่ได้</div><div class="kpi-value rg-bad">' + us.over + '</div><div class="kpi-sub">ได้ครบ ' + us.done + " · ขอแล้วรอ " + us.wait + " · กดดูรายชื่อ ↓</div></div></div>" +
       '<div class="section-label">เอกสารทะเบียน รายสาขา · ' + rows.length + " สาขา</div>" +
-      '<div class="rg-legend"><span class="rg-done">12/9</span> ทำแล้ว (วันที่ทำ) · <span class="rg-late">+5</span> เลยเดดไลน์มา 5 วัน · <span class="rg-wait2">วันนี้</span> ครบกำหนดวันนี้ · <span class="rg-wait2">3</span> เหลืออีก 3 วัน · <span class="rg-nosla">·</span> ยังไม่ทำ (ไม่มี SLA) · <span class="rg-na">–</span> ไม่ต้องทำ · <b>กดแถวเพื่อเปิดเช็กลิสต์และบันทึกวันที่</b></div>' +
+      '<div class="rg-legend"><span class="rg-done">✓</span> ยื่น/ได้รับแล้ว (ชี้ดูวันที่) · <span class="rg-late">+5</span> เลยเดดไลน์มา 5 วัน · <span class="rg-wait2">วันนี้</span> ครบกำหนดวันนี้ · <span class="rg-wait2">3</span> เหลืออีก 3 วัน · <span class="rg-nosla">·</span> ยังไม่ทำ (ไม่มี SLA) · <span class="rg-na">–</span> ไม่ต้องทำ</div><div class="rg-hint">👆 กดแถวสาขา เพื่อเปิดเช็กลิสต์ · ลงวันที่ หรือติ๊ก "ไม่ต้องทำ" แล้วกดบันทึก</div>' +
       '<div class="card"><div class="table-wrap"><table class="data-table rg-mx"><thead>' + head1 + head2 + "</thead><tbody>" +
       (body || '<tr><td colspan="' + ncol + '" class="rg-wait">' + (all.length ? "ไม่มีสาขาตรงตัวกรอง" : "ไม่มีสาขาในช่วงนี้") + "</td></tr>") + "</tbody></table></div></div>" +
       '<div class="rg-src">ที่มา: กติกาเดียวกับกล่องทะเบียนในแท็บ After อ.1 (เดดไลน์ = วันเปิดในชีตทะเบียน − D ตามหัวชีต)</div>' +
@@ -7942,11 +7944,15 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     return "";
   }
   function canEdit() { return window.DPT_ROLE === "admin"; }
-  function dateIn(col, raw) {
-    var iso = toIso(raw), bad = raw && !iso;
-    return '<input type="date" class="rg-in" data-col="' + col + '" data-orig="' + esc(iso) + '" value="' + esc(iso) + '"' + (canEdit() ? "" : " disabled") + ">" +
-      (bad ? '<div class="rg-d">ค่าในชีต: ' + esc(raw) + "</div>" : "");
+  // 9 ต.ค.: ช่องกรอก 1 ช่อง = wrapper เก็บค่าเดิมในชีต (data-orig: วันที่ ISO / "-" ไม่ต้องทำ / "" ว่าง) · allowSkip = มีช่องติ๊ก "ไม่ต้องทำ"
+  function dateIn(col, raw, allowSkip) {
+    var skip = String(raw || "").trim() === "-", iso = skip ? "" : toIso(raw), bad = raw && !skip && !iso, dis = canEdit() ? "" : " disabled";
+    return '<span class="rg-w" data-col="' + col + '" data-orig="' + (skip ? "-" : esc(iso)) + '">' +
+      '<input type="date" class="rg-in" value="' + esc(iso) + '"' + (skip || !canEdit() ? " disabled" : "") + ">" +
+      (allowSkip ? '<label class="rg-skipl"><input type="checkbox" class="rg-skip"' + (skip ? " checked" : "") + dis + "> ไม่ต้องทำ</label>" : "") +
+      (bad ? '<div class="rg-d">ค่าในชีต: ' + esc(raw) + "</div>" : "") + "</span>";
   }
+  function wval(w) { var sk = w.querySelector(".rg-skip"); return (sk && sk.checked) ? "-" : w.querySelector(".rg-in").value; }
   function toast(msg, ok) {
     var el = document.getElementById("rg-toast");
     if (!el) { el = document.createElement("div"); el.id = "rg-toast"; document.body.appendChild(el); }
@@ -7971,11 +7977,16 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
   function applyLocal(code, col, iso) {
     var r = REG() && REG().rows.filter(function (x) { return x.code === code; })[0], cols = (REG() && REG().cols) || {};
-    if (r) Object.keys(cols).forEach(function (k) { if (cols[k] === col && r.cells[k] && !r.cells[k].na) { r.cells[k].v = iso; if (iso) r.cells[k].left = null; } });
+    if (r) Object.keys(cols).forEach(function (k) {
+      var c = r.cells[k]; if (cols[k] !== col || !c || (c.na && !c.skip)) return;
+      if (iso === "-") r.cells[k] = { na: 1, skip: 1 };
+      else if (c.skip) r.cells[k] = { v: iso, dl: "", left: null };              // เคย "ไม่ต้องทำ" → กลับมาเป็นงาน (เดดไลน์คำนวณใหม่รอบโหลดถัดไป)
+      else { c.v = iso; if (iso) c.left = null; }
+    });
     Object.keys(UCOLS).forEach(function (tk) { var i = UCOLS[tk].indexOf(col); if (i < 0) return; var f = ["prep", "req", "got"][i]; UOV[code] = UOV[code] || {}; UOV[code][tk] = UOV[code][tk] || {}; UOV[code][tk][f] = iso; });
   }
   function saveDrawer(code) {
-    var ins = [].filter.call(document.querySelectorAll("#rg-drawer input.rg-in"), function (i) { return i.value !== i.getAttribute("data-orig"); });
+    var ins = [].filter.call(document.querySelectorAll("#rg-drawer .rg-w"), function (w) { return wval(w) !== w.getAttribute("data-orig"); });
     var btn = document.getElementById("rg-save");
     if (!ins.length) { toast("ยังไม่มีช่องที่แก้", false); return; }
     btn.disabled = true; btn.textContent = "กำลังบันทึก… (0/" + ins.length + ")";
@@ -7983,7 +7994,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var chain = Promise.resolve();
     ins.forEach(function (i, n) {
       chain = chain.then(function () {
-        var col = +i.getAttribute("data-col"), val = i.value;
+        var col = +i.getAttribute("data-col"), val = wval(i);
         return regPost({ code: code, col: col, value: val }).then(function () {
           okN++; i.setAttribute("data-orig", val); i.classList.add("saved"); applyLocal(code, col, val);
         }, function (e) { fail.push((e && e.message) || String(e)); i.classList.add("err"); })
@@ -8009,8 +8020,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         RCOLS.map(function (g) {
           return g[1].map(function (c) {
             var x = r.cells[c[0]] || {};
-            var stt = x.na ? '<span class="rg-na">ไม่ต้องทำ</span>' : (x.v ? '<span class="rg-ok">✓ ทำแล้ว</span>' : (x.left != null && x.left < 0 ? '<span class="rg-bad">เลยมา ' + (-x.left) + " วัน</span>" : (x.left != null ? "เหลือ " + x.left + " วัน" : "ยังไม่ทำ")));
-            return "<tr><td>" + esc(boxName(c[0])) + "</td><td>" + esc(x.dl || DASH) + "</td><td>" + stt + "</td><td>" + (x.na ? DASH : dateIn(cols[c[0]], x.v)) + "</td></tr>";
+            var stt = x.na ? '<span class="rg-na">ไม่ต้องทำ' + (x.skip ? "" : " (ตามจังหวัด)") + "</span>" : (x.v ? '<span class="rg-ok">✓ ทำแล้ว</span>' : (x.left != null && x.left < 0 ? '<span class="rg-bad">เลยมา ' + (-x.left) + " วัน</span>" : (x.left != null ? "เหลือ " + x.left + " วัน" : "ยังไม่ทำ")));
+            return "<tr><td>" + esc(boxName(c[0])) + "</td><td>" + esc(x.dl || DASH) + "</td><td>" + stt + "</td><td>" + ((x.na && !x.skip) ? DASH : dateIn(cols[c[0]], x.skip ? "-" : x.v, true)) + "</td></tr>";
           }).join("");
         }).join("") + "</tbody></table></div>";
     } else h += '<div class="rg-dsub">สาขานี้ไม่อยู่ในกลุ่มเอกสารทะเบียน (ยังไม่ยื่น อ.1 หรือเปิดแล้ว)</div>';
@@ -8020,7 +8031,12 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       : '<div class="rg-dsub" style="margin-top:12px">ดูอย่างเดียว — บันทึกได้เฉพาะ Admin</div>';
     drawer(code + " · " + ((r && r.name) || (u && u.name) || ""), h);
     var sb = document.getElementById("rg-save"); if (sb) sb.onclick = function () { saveDrawer(code); };
-    [].forEach.call(document.querySelectorAll("#rg-drawer input.rg-in"), function (i) { i.onchange = function () { i.classList.toggle("dirty", i.value !== i.getAttribute("data-orig")); i.classList.remove("saved", "err"); }; });
+    [].forEach.call(document.querySelectorAll("#rg-drawer .rg-w"), function (w) {
+      var di = w.querySelector(".rg-in"), sk = w.querySelector(".rg-skip");
+      function mark() { w.classList.toggle("dirty", wval(w) !== w.getAttribute("data-orig")); w.classList.remove("saved", "err"); }
+      di.onchange = mark;
+      if (sk) sk.onchange = function () { di.disabled = sk.checked || !canEdit(); if (sk.checked) di.value = ""; mark(); };
+    });
   }
 
   var VIEWS = {
