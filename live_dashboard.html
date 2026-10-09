@@ -1168,7 +1168,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=094558" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=095748" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -7765,6 +7765,13 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ".rg-stack{display:flex;gap:2px;height:18px;border-radius:5px;overflow:hidden;background:var(--s3,#f1f5f9)}.rg-stack-empty{font-size:11.5px;color:var(--t3,#8a93a8);background:none;height:auto}",
     ".rg-seg{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;min-width:4px}.s-done{background:#16a34a}.s-over{background:#dc2626}.s-pend{background:#f5c46b;color:#78350f}",
     ".rg-rd{display:grid;grid-template-columns:minmax(150px,1.1fr) minmax(0,2fr) 92px;gap:12px;align-items:center;padding:8px 6px;border-top:1px solid var(--border,#e3e6ed);cursor:pointer}.rg-rd:hover{background:#f8fafc}",
+    "table.rg-grid td,table.rg-grid th{white-space:nowrap;vertical-align:middle}table.rg-grid th{font-size:11.5px}td.rg-g{text-align:center;font-size:12px;font-weight:700;border-left:2px solid var(--surface,#fff)}td.rg-g-done{background:#dcfce7;color:#166534}td.rg-g-over{background:#fee2e2;color:#991b1b}td.rg-g-pend{background:#fef3c7;color:#92400e}td.rg-g-na{color:#cbd5e1}td.rg-g-site{font-size:12.5px;white-space:normal;min-width:190px}td.rg-g-st{text-align:right}",
+    ".rg-pns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}@media (max-width:1300px){.rg-pns{grid-template-columns:repeat(2,minmax(0,1fr))}}",
+    ".rg-pn{padding:14px 16px}.rg-pn-h{display:flex;align-items:center;gap:8px;font-size:14px}.rg-go{margin-left:auto;font:inherit;font-size:12px;border:1px solid var(--border2,#cbd5e1);background:var(--surface,#fff);border-radius:8px;padding:4px 10px;cursor:pointer;color:var(--blue,#2563eb)}",
+    ".rg-pn-n{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px}.rg-pn-x{border-radius:10px;padding:8px 10px}.rg-pn-x b{display:block;font-size:24px;line-height:1.1}.rg-pn-x span{font-size:11.5px;font-weight:600}.x-over{background:#fee2e2;color:#991b1b}.x-pend{background:#fef3c7;color:#92400e}.x-done{background:#dcfce7;color:#166534}",
+    ".rg-pn-sub{font-size:11.5px;color:var(--t3,#8a93a8);margin-bottom:6px}.rg-pn-l{border-top:1px solid var(--border,#e3e6ed)}.rg-pn-i{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid var(--border,#e3e6ed);font-size:12.5px;cursor:pointer}.rg-pn-i:hover{background:#f8fafc}.rg-pn-i .rg-pill{white-space:nowrap}",
+    ".rg-pn-more{font-size:12px;color:var(--t3,#8a93a8);padding:6px 2px}.rg-pn-ok{font-size:12.5px;color:#166534;padding:10px 2px}",
+    ".rg-rd-head{cursor:default;font-size:11.5px;font-weight:600;color:var(--t3,#8a93a8);border-top:0;padding-top:0}.rg-rd-head:hover{background:none}.rg-rd-w{font-size:11.5px;color:#b91c1c;font-weight:600;margin-top:2px}",
     ".rg-rd-l{font-size:12.5px;line-height:1.35}.rg-rd-s{font-size:11.5px;color:var(--t3,#8a93a8);margin-top:2px}.rg-rd-r{text-align:right}",
     ".rg-pill{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px}.p-over{background:#fee2e2;color:#991b1b}.p-done{background:#dcfce7;color:#166534}.p-pend{background:#fef3c7;color:#92400e}",
     ".rg-wk{display:grid;grid-template-columns:150px minmax(0,1fr) 78px;gap:10px;align-items:center;padding:6px 4px;cursor:pointer;border-radius:8px}.rg-wk:hover{background:#f8fafc}.rg-wk-l{font-size:12.5px}.rg-wk-r{font-size:12px;text-align:right}",
@@ -8058,62 +8065,66 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       '<div class="rg-src">ที่มา: กล่องน้ำ-ไฟ ชั่วคราว / น้ำถาวร / ไฟถาวร ในแท็บ Overall (ชุดสาขาเดียวกัน) · วันเปิด = ชีตทะเบียน (มีเฉพาะสาขาที่ยื่น อ.1 แล้ว — สาขาอื่น = ไม่ทราบวันเปิด ยังไม่นับ SLA)</div>';
   }
   /* ---- หน้า ภาพรวมรายสาขา (MD) ---- */
-  function seg(n, cls, tip) { return n ? '<span class="rg-seg ' + cls + '" style="flex:' + n + '" title="' + esc(tip) + '">' + (n >= 2 ? n : "") + "</span>" : ""; }
+  // 9 ต.ค. (จี "12 6 คืออะไร ดูไม่รู้เรื่อง"): ในแท่งเขียนคำ + หน่วยเสมอ (แท่งแคบ = ตัวเลข+หน่วยสั้น · แคบมาก = ดูจาก tooltip)
+  function seg(n, cls, word, tot, tip) {
+    if (!n) return "";
+    var share = n / tot, txt = share >= 0.28 ? word + " " + n + " ใบ" : (share >= 0.12 ? n + " ใบ" : "");
+    return '<span class="rg-seg ' + cls + '" style="flex:' + n + '" title="' + esc(tip + word + " " + n + " ใบ") + '">' + txt + "</span>";
+  }
   function stackBar(d, o, p, tipPre) {
     var tot = d + o + p;
     if (!tot) return '<div class="rg-stack rg-stack-empty">ไม่มีงาน</div>';
-    return '<div class="rg-stack">' + seg(d, "s-done", tipPre + "ทำแล้ว " + d) + seg(o, "s-over", tipPre + "หลุด SLA " + o) + seg(p, "s-pend", tipPre + "ยังไม่ถึงเดดไลน์ " + p) + "</div>";
+    return '<div class="rg-stack">' + seg(d, "s-done", "ทำแล้ว", tot, tipPre) + seg(o, "s-over", "หลุด SLA", tot, tipPre) + seg(p, "s-pend", "ยังไม่ถึงเดดไลน์", tot, tipPre) + "</div>";
   }
   var BAR_LEGEND = '<div class="rg-blegend"><span><i class="s-done"></i>✓ ทำแล้ว</span><span><i class="s-over"></i>🔴 หลุด SLA</span><span><i class="s-pend"></i>⏳ ยังไม่ถึงเดดไลน์</span></div>';
+  /* 9 ต.ค. (จี "มึงควรจะแยกแต่ละประเภทแสดง"): ภาพรวม = กล่องละ 1 ประเภทงาน · ไม่มีสถานะรวมข้ามงาน
+   *   แต่ละกล่อง: ตัวเลขของงานนั้น (หลุด SLA / ค้าง / ครบ — นับเป็นสาขา) + รายชื่อสาขาที่ต้องตาม (หลุดนานสุดก่อน) + ปุ่มไปหน้างาน */
   function overviewView() {
     if (!ready()) return waitMsg();
-    var keys = keysOf(null), rows = filtered(null);
+    var rows = filtered(null), t0 = todayIso();
     var ust = {}; utilRows().forEach(function (u) { ust[u.code] = u; });
-    var st = { over: 0, pend: 0, done: 0 }, itemsOver = 0;
-    rows.forEach(function (r) { var s = rowState(r, keys); st[s.st]++; itemsOver += s.overN; });
-    var t0 = todayIso();
-    // 1) ความพร้อมรายสาขา เรียงตามวันเปิด
-    var byOpen = rows.slice().sort(function (a, b) { return String(a.open_iso || "9").localeCompare(String(b.open_iso || "9")) || (a.code < b.code ? -1 : 1); });
-    var readiness = byOpen.map(function (r) {
-      var s = rowState(r, keys), u = ust[r.code];
-      var days = r.open_iso ? Math.round((new Date(r.open_iso) - new Date(t0)) / 86400000) : null;
-      var util = u ? (u.done ? '<span class="rg-ok">💧 ครบ</span>' : (u.over ? '<span class="rg-bad">💧 ยังไม่ครบ</span>' : '<span class="rg-muted">💧 ยังไม่ครบ</span>')) : '<span class="rg-muted">💧 —</span>';
-      var badge = s.st === "over" ? '<span class="rg-pill p-over">🔴 เสี่ยง</span>' : (s.st === "done" ? '<span class="rg-pill p-done">✓ พร้อม</span>' : '<span class="rg-pill p-pend">⏳ กำลังทำ</span>');
-      return '<div class="rg-rd rg-row" data-code="' + esc(r.code) + '"><div class="rg-rd-l"><b>' + esc(r.code) + "</b> " + esc(r.name) +
-        '<div class="rg-rd-s">เปิด ' + esc(r.open || DASH) + (days != null ? " · " + (days > 0 ? "อีก " + days + " วัน" : (days === 0 ? "วันนี้" : "เลยมา " + (-days) + " วัน")) : "") + " · " + util + "</div></div>" +
-        '<div class="rg-rd-b">' + stackBar(s.done, s.overN, s.pend - s.overN, r.code + " · ") + '</div><div class="rg-rd-r">' + badge + '<div class="rg-rd-s">' + s.done + "/" + s.n + " ใบ</div></div></div>";
-    }).join("");
-    // 2) งานไหนติด (ต่อประเภทงาน) + น้ำ-ไฟ
-    var wk = ["house", "license", "trash", "signtax"].map(function (k) {
-      var ks = keysOf(WORK[k].g), d = 0, o = 0, p = 0;
-      rows.forEach(function (r) { ks.forEach(function (x) { var c = r.cells[x]; if (!c || c.na) return; if (c.v) d++; else if (c.left != null && c.left < 0) o++; else p++; }); });
-      return { k: k, t: WORK[k].t, d: d, o: o, p: p };
-    });
-    var codes = {}; rows.forEach(function (r) { codes[r.code] = 1; });
-    var ud = 0, uo = 0, up = 0; Object.keys(codes).forEach(function (c) { var u = ust[c]; if (!u) return; UTRK.forEach(function (t) { var x = u.t[t[1]]; if (!x) return; if (x.s === "got") ud++; else if (u.over) uo++; else up++; }); });
-    wk.splice(1, 0, { k: "util", t: "💧 น้ำ-ไฟ", d: ud, o: uo, p: up });
-    var work = wk.map(function (w) {
-      return '<div class="rg-wk" data-go="' + w.k + '"><div class="rg-wk-l">' + esc(w.t) + '</div><div class="rg-wk-b">' + stackBar(w.d, w.o, w.p, w.t + " · ") +
-        '</div><div class="rg-wk-r">' + (w.o ? '<span class="rg-bad">หลุด ' + w.o + "</span>" : '<span class="rg-ok">ไม่มีหลุด</span>') + "</div></div>";
-    }).join("");
-    // 3) เอกสารที่หลุด SLA มากที่สุด
-    var docs = keys.map(function (k) { var o = 0; rows.forEach(function (r) { var c = r.cells[k]; if (c && !c.na && !c.v && c.left != null && c.left < 0) o++; }); return { k: k, o: o }; })
-      .filter(function (x) { return x.o; }).sort(function (a, b) { return b.o - a.o; }).slice(0, 6);
-    var mx = docs.length ? docs[0].o : 1;
-    var top = docs.map(function (x) { return '<div class="rg-top"><div class="rg-top-l">' + esc(boxName(x.k)) + '</div><div class="rg-top-b"><span style="width:' + Math.max(6, Math.round(x.o / mx * 100)) + '%" title="' + esc(boxName(x.k)) + " · หลุด SLA " + x.o + ' สาขา"></span></div><div class="rg-top-r">' + x.o + " สาขา</div></div>"; }).join("") ||
-      '<div class="rg-muted" style="padding:10px 0">ไม่มีเอกสารหลุด SLA ✓</div>';
-    var head = st.over ? "🔴 <b>" + st.over + " จาก " + rows.length + " สาขา</b> มีงานทะเบียนหลุด SLA (" + itemsOver + " รายการ)" : (rows.length ? "✓ ไม่มีสาขาที่งานทะเบียนหลุด SLA" : "ไม่มีสาขาในช่วงนี้");
-    function k4(lbl, v, sub, cls) { return '<div class="kpi-card"><div class="kpi-label">' + lbl + '</div><div class="kpi-value' + (cls ? " " + cls : "") + '">' + v + '</div><div class="kpi-sub">' + sub + "</div></div>"; }
+    function daysTo(r) { return r.open_iso ? Math.round((new Date(r.open_iso) - new Date(t0)) / 86400000) : null; }
+    function openTxt(r) { var d = daysTo(r); return "เปิด " + esc(r.open || DASH) + (d != null ? " · " + (d > 0 ? "อีก " + d + " วัน" : (d === 0 ? "วันนี้" : "เลยมา " + (-d) + " วัน")) : ""); }
+    function panel(k, title, items, n, note) {
+      // items: [{r, st:"over"|"pend"|"done"|"na", chip, sub, rank}]
+      var c = { over: 0, pend: 0, done: 0 }; items.forEach(function (x) { if (c[x.st] != null) c[x.st]++; });
+      var todo = items.filter(function (x) { return x.st === "over" || x.st === "pend"; }).sort(function (a, b) { return (b.rank - a.rank) || String(a.r.open_iso || "9").localeCompare(String(b.r.open_iso || "9")); });
+      var show = todo.slice(0, 6);
+      return '<div class="card rg-pn"><div class="rg-pn-h"><b>' + title + '</b><button type="button" class="rg-go" data-go="' + k + '">ดูทั้งหมด →</button></div>' +
+        '<div class="rg-pn-n"><div class="rg-pn-x x-over"><b>' + c.over + '</b><span>🔴 หลุด SLA</span></div><div class="rg-pn-x x-pend"><b>' + c.pend + '</b><span>⏳ ค้าง ยังไม่หลุด</span></div><div class="rg-pn-x x-done"><b>' + c.done + '</b><span>✓ ครบ</span></div></div>' +
+        '<div class="rg-pn-sub">จาก ' + n + " สาขา" + (note ? " · " + note : "") + "</div>" +
+        (show.length ? '<div class="rg-pn-l">' + show.map(function (x) {
+          return '<div class="rg-pn-i rg-row" data-code="' + esc(x.r.code) + '"><div><b>' + esc(x.r.code) + "</b> " + esc(x.r.name) + '<div class="rg-rd-s">' + openTxt(x.r) + (x.sub ? " · " + x.sub : "") + "</div></div>" + x.chip + "</div>";
+        }).join("") + (todo.length > show.length ? '<div class="rg-pn-more">และอีก ' + (todo.length - show.length) + " สาขา — กด \"ดูทั้งหมด\"</div>" : "") + "</div>"
+          : '<div class="rg-pn-ok">' + (n ? "✓ ไม่มีสาขาที่ต้องตามในงานนี้" : "ไม่มีสาขาในช่วงนี้") + "</div>") + "</div>";
+    }
+    function docPanel(k) {
+      var ks = keysOf(WORK[k].g), withWork = 0;
+      var items = rows.map(function (r) {
+        var s = rowState(r, ks); if (!s.n) return { r: r, st: "na" }; withWork++;
+        var worst = null; ks.forEach(function (kk) { var c = r.cells[kk]; if (c && !c.na && !c.v && c.left != null && c.left < 0 && (!worst || c.left < worst.left)) worst = { k: kk, left: c.left }; });
+        var chip = s.st === "over" ? '<span class="rg-pill p-over">🔴 หลุด ' + s.overN + "/" + s.n + " ใบ</span>" : (s.st === "pend" ? '<span class="rg-pill p-pend">⏳ ค้าง ' + s.pend + "/" + s.n + " ใบ</span>" : "");
+        return { r: r, st: s.st, chip: chip, rank: worst ? -worst.left : -1000 + s.pend, sub: worst ? '<span class="rg-bad">' + esc(boxName(worst.k)) + " +" + (-worst.left) + " วัน</span>" : "" };
+      });
+      return panel(k, WORK[k].t, items, withWork, WORK[k].note ? "ร้านเปิดแล้ว: รอเชื่อมชีต" : "");
+    }
+    function utilPanel() {
+      var n = 0;
+      var items = rows.map(function (r) {
+        var u = ust[r.code]; if (!u) return { r: r, st: "na" }; n++;
+        var got = UTRK.filter(function (t) { return u.t[t[1]] && u.t[t[1]].s === "got"; }).length;
+        if (u.done) return { r: r, st: "done" };
+        var waiting = UTRK.filter(function (t) { return u.t[t[1]] && u.t[t[1]].s === "wait"; }).map(function (t) { return t[0]; });
+        return { r: r, st: u.over ? "over" : "pend", rank: u.over ? 1000 : 0,
+          chip: u.over ? '<span class="rg-pill p-over">🔴 เลยวันเปิด · ได้ ' + got + "/3</span>" : '<span class="rg-pill p-pend">⏳ ได้ ' + got + "/3</span>",
+          sub: waiting.length ? "รอ: " + esc(waiting.join(", ")) : "" };
+      });
+      return panel("util", "💧 น้ำ-ไฟ", items, n, "SLA = ให้ทันวันเปิด");
+    }
     return filterBar(false) +
-      '<div class="rg-headline">' + head + "</div>" +
-      '<div class="rg-kpis rg-k4">' + k4("📋 สาขาที่จะเปิด", rows.length, F.range === "d25" ? "เหลือ ≤25 วันถึงวันเปิด" : "ยื่น อ.1 แล้ว · ยังไม่เปิด") +
-      k4("✓ พร้อม", st.done, "งานทะเบียนครบทุกใบ", "rg-ok") + k4("🔴 เสี่ยง", st.over, "มีอย่างน้อย 1 ใบเลยเดดไลน์", "rg-bad") + k4("⏳ กำลังทำ", st.pend, "ค้างแต่ยังไม่ถึงเดดไลน์") + "</div>" +
-      '<div class="rg-ov2"><div class="card rg-ovc"><div class="rg-ovh">ความพร้อมรายสาขา <span>เรียงตามวันเปิด · แท่ง = เอกสารทะเบียนทุกใบของสาขา · กดดูเช็กลิสต์</span></div>' + BAR_LEGEND +
-      (readiness || '<div class="rg-muted" style="padding:12px 0">ไม่มีสาขาในช่วงนี้</div>') + "</div>" +
-      '<div class="rg-ovside"><div class="card rg-ovc"><div class="rg-ovh">งานไหนติด <span>ทุกสาขาในรายการ · กดเพื่อไปหน้างานนั้น</span></div>' + work + "</div>" +
-      '<div class="card rg-ovc"><div class="rg-ovh">เอกสารที่หลุด SLA มากที่สุด</div>' + top + "</div>" +
-      '<div class="card rg-ovc"><div class="rg-ovh">ร้านที่เปิดแล้ว <span>ใบอนุญาต · ต่ออายุ · ภาษี</span></div><div class="rg-muted" style="padding:6px 0 4px;line-height:1.6">รอเชื่อมชีต 0. CJx Store Document_New + ข้อมูลบัญชี (ตั้งต้น) — ยังไม่มีตัวเลข</div></div></div></div>' +
-      '<div class="rg-src">ที่มา: กติกาเดียวกับกล่องทะเบียนในแท็บ After อ.1 + กล่องน้ำ-ไฟในแท็บ Overall · 💧 ครบ = ได้น้ำ-ไฟ ชั่วคราว/น้ำถาวร/ไฟถาวร ครบ</div>';
+      '<div class="rg-pns">' + docPanel("house") + utilPanel() + docPanel("license") + docPanel("trash") + docPanel("signtax") +
+      '<div class="card rg-pn"><div class="rg-pn-h"><b>🏪 ร้านที่เปิดแล้ว</b></div><div class="rg-pn-sub" style="line-height:1.7">ใบอนุญาต · ต่ออายุ · ภาษีป้าย/ที่ดิน · ค่าขยะ<br>รอเชื่อมชีต 0. CJx Store Document_New + ข้อมูลบัญชีตั้งต้น — ยังไม่มีตัวเลข</div></div></div>' +
+      '<div class="rg-src">ที่มา: กติกาเดียวกับกล่องทะเบียนในแท็บ After อ.1 + กล่องน้ำ-ไฟในแท็บ Overall · ตัวเลขในกล่อง = จำนวนสาขา · กดสาขาเพื่อดูเช็กลิสต์</div>';
   }
   function bindAll(v) {
     var q = v.querySelector("#rg-q");
@@ -8126,7 +8137,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var cl = v.querySelector("#rg-clear"); if (cl) cl.onclick = function () { F.q = ""; F.st = "all"; F.month = ""; F.prov = ""; F.u = ""; render(); };
     [].forEach.call(v.querySelectorAll(".rg-kf"), function (k) { k.onclick = function () { var s = k.getAttribute("data-st"); F.st = (F.st === s || s === "all") ? "all" : s; render(); }; });
     [].forEach.call(v.querySelectorAll(".rg-uf"), function (k) { k.onclick = function () { var s = k.getAttribute("data-u"); F.u = F.u === s ? "" : s; render(); }; });
-    [].forEach.call(v.querySelectorAll(".rg-wk"), function (k) { k.onclick = function () { CURV = k.getAttribute("data-go"); F.st = "all"; render(); window.scrollTo({ top: (document.getElementById("tab-registration").offsetTop || 0), behavior: "smooth" }); }; });
+    [].forEach.call(v.querySelectorAll(".rg-wk,.rg-go"), function (k) { k.onclick = function () { CURV = k.getAttribute("data-go"); F.st = "all"; render(); window.scrollTo({ top: (document.getElementById("tab-registration").offsetTop || 0), behavior: "smooth" }); }; });
   }
 
   var VIEWS = {
