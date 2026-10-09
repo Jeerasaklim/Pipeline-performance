@@ -1168,7 +1168,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=132012" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=135227" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8224,6 +8224,11 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if (F.prov && r.prov !== F.prov) return false;
     return true;
   }
+  // น้ำ-ไฟ: ฐาน = ทุกสาขาในกล่องน้ำ-ไฟของ Overall (STEP_DETAILS util_*) · ไม่ใช้ช่วง D-25 ของงานทะเบียน (ตัวกรองอื่นยังใช้)
+  function rowsU() {
+    var reg = {}; (REG() ? REG().rows : []).forEach(function (r) { reg[r.code] = r; });
+    return utilRows().map(function (u) { return reg[u.code] || { code: u.code, name: u.name || "", open: "", open_iso: u.open || "", prov: "", cells: {} }; }).filter(passCommon);
+  }
   function rowsA() { return REG() ? REG().rows.filter(function (r) { return inRange(r) && passCommon(r); }) : []; }
   function rowsB() { var m = OM(); return m ? m.rows.filter(passCommon) : []; }
   function byStatus(rows, fn) { return F.st === "all" ? rows.slice() : rows.filter(function (r) { return fn(r).st === F.st; }); }
@@ -8271,7 +8276,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
   function cohHead(coh, n) {
     var t = coh === "a" ? "สาขาใหม่ (ยังไม่เปิด)" : "ร้านที่เปิดแล้ว";
-    var s = coh === "a" ? (F.range === "all" ? "ทุกสาขาที่ยื่น อ.1 แล้ว ยังไม่เปิด" : "D-25 ตาม After อ.1") : "รหัส T###";
+    var s = coh === "a" ? (CURV === "util" ? "ชุดเดียวกับกล่องน้ำ-ไฟใน Overall" : F.range === "all" ? "ทุกสาขาที่ยื่น อ.1 แล้ว ยังไม่เปิด" : "D-25 ตาม After อ.1") : "รหัส T###";
     return '<div class="rg-coh-h"><span class="rg-coh-t rg-coh-' + coh + '">' + t + '</span><span class="rg-coh-s">' + s + (n != null ? " · " + n + " สาขา" : "") + "</span></div>";
   }
   function stateBox(cls, html) { return '<div class="card"><div class="rg-empty ' + cls + '">' + html + "</div></div>"; }
@@ -8336,13 +8341,13 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       var left = dayDiff(r.open_iso, t0);
       return left <= 0 ? symTd("over", "ยังไม่ทำ · ถึง/เลยวันเปิด " + r.open + " แล้ว") : symTd("pend", "ยังไม่ทำ · ต้องได้ก่อนวันเปิด " + r.open + " · เหลือ " + left + " วัน");
     }
-    var base = rowsA(), um = umap(), outside = Object.keys(um).filter(function (k) { return !REG().rows.some(function (r) { return r.code === k; }); }).length;
+    var base = rowsU(), um = umap();
     return twoTables({ coh: "a", w: "util", rows: base, stat: function (r) { return aStat(r, "util"); },
       th1: "<tr>" + infoTh("a", 2) + gh + '<th rowspan="2">สถานะ</th></tr><tr>' + sh + "</tr>", n1: 12,
       row1: function (r) { var u = um[r.code]; if (!u) return '<td colspan="9" class="rg-dc rg-muted">ไม่มีข้อมูลน้ำ-ไฟ</td>'; return UTRK.map(function (t) { return USUB.map(function (s) { return ucell(r, u, t[1], s[0]); }).join(""); }).join(""); },
       th2: "<tr>" + infoTh("a", 2) + gh + "</tr><tr>" + sh + "</tr>", n2: 11,
       row2: function (r) { var u = um[r.code]; if (!u) return '<td colspan="9" class="rg-dc rg-muted">ไม่มีข้อมูลน้ำ-ไฟ</td>'; return UTRK.map(function (t) { var x = u.t[t[1]] || {}; return USUB.map(function (s) { return '<td class="rg-dc">' + (x[s[0]] ? '<b class="rg-okt">' + esc(x[s[0]]) + "</b>" : '<span class="rg-muted">' + DASH + "</span>") + "</td>"; }).join(""); }).join(""); },
-      note: "SLA น้ำ-ไฟ = ต้องได้ครบภายในวันเปิด (D-0) · ถึงวันเปิดแล้วยังได้ไม่ครบ = 🔴" + (outside ? " · กล่องน้ำ-ไฟใน Overall มีอีก " + outside + " สาขาที่ไม่อยู่ในกลุ่มนี้ (ยังไม่ยื่น อ.1 / เปิดแล้ว) — ไม่นับที่นี่" : "") });
+      note: "รายชื่อ = ชุดเดียวกับกล่องน้ำ-ไฟในแท็บ Overall (ทุกสาขา ไม่ใช่เฉพาะ D-25) · SLA น้ำ-ไฟ = ต้องได้ครบภายในวันเปิด (D-0) · ถึงวันเปิดแล้วยังได้ไม่ครบ = 🔴 · ไม่ทราบวันเปิด = ยังไม่นับ SLA" });
   }
 
   /* ---- กลุ่ม B: ร้านที่เปิดแล้ว ---- */
@@ -8475,7 +8480,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function y68Td(r) { var y = r.sign && r.sign.y68; return "<td>" + txt(y && y.st) + "</td>"; }
 
   /* ---- ประกอบหน้างาน ---- */
-  function aBlock(body) { return '<div class="rg-coh">' + cohHead("a", ready() ? rowsA().length : null) + (ready() ? body() : waitMsg()) + '<div class="rg-src">' + SRC_A + "</div></div>"; }
+  function aBlock(body, n) { return '<div class="rg-coh">' + cohHead("a", ready() ? (n ? n() : rowsA().length) : null) + (ready() ? body() : waitMsg()) + '<div class="rg-src">' + SRC_A + "</div></div>"; }
   function bBlock(body) {
     var g = bGate();
     return '<div class="rg-coh">' + cohHead("b", g ? null : rowsB().length) + (g || warnBox() + body()) + '<div class="rg-src">' + (g ? "ที่มา: ชีตทีมทะเบียน 0. CJx Store Document_New (ผ่าน Tank G) · บัญชี = ไฟล์ Reconcile ตั้งต้น ณ 9 ต.ค. 2569" : srcB()) + "</div></div>";
@@ -8487,7 +8492,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if (sh.a) {
       if (w === "renew") h += '<div class="rg-coh">' + cohHead("a", null) + stateBox("", "ต่ออายุใบอนุญาต มีเฉพาะร้านที่เปิดแล้ว — เลือกกลุ่ม “ร้านที่เปิดแล้ว” เพื่อดู") + "</div>";
       else if (w === "landtax") h += '<div class="rg-coh">' + cohHead("a", null) + stateBox("", "ภาษีที่ดิน มีเฉพาะร้านที่เปิดแล้ว — เลือกกลุ่ม “ร้านที่เปิดแล้ว” เพื่อดู") + "</div>";
-      else h += aBlock(function () { return w === "util" ? aUtil() : aDoc(w); });
+      else h += aBlock(function () { return w === "util" ? aUtil() : aDoc(w); }, w === "util" ? function () { return rowsU().length; } : null);
     }
     if (sh.b) {
       if (w === "util") h += bNote("<b>ร้านที่เปิดแล้ว: ยังไม่ดึงแท็บ ไฟฟ้าและประปา</b><br>ยังไม่มีข้อมูลน้ำ-ไฟของร้านที่เปิดแล้วในแอปนี้");
@@ -8551,7 +8556,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       if (!ready()) { top += '<div class="rg-coh">' + cohHead("a", null) + waitMsg() + "</div>"; }
       else {
         var ra = rowsA();
-        top += '<div class="rg-crow">' + cohHead("a", ra.length) + '<div class="rg-cards">' + A_WORKS.map(function (w) { return wcard("a", w, tally(ra, function (r) { return aStat(r, w); })); }).join("") + "</div></div>";
+        top += '<div class="rg-crow">' + cohHead("a", ra.length) + '<div class="rg-cards">' + A_WORKS.map(function (w) { return wcard("a", w, tally(w === "util" ? rowsU() : ra, function (r) { return aStat(r, w); })); }).join("") + "</div></div>";
         tabs += '<div class="rg-coh">' + ovTable("a", ra) + "</div>";
       }
       src.push(SRC_A);
