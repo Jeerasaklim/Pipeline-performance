@@ -1168,7 +1168,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=135227" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=144844" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8230,7 +8230,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     return utilRows().map(function (u) { return reg[u.code] || { code: u.code, name: u.name || "", open: "", open_iso: u.open || "", prov: "", cells: {} }; }).filter(passCommon);
   }
   function rowsA() { return REG() ? REG().rows.filter(function (r) { return inRange(r) && passCommon(r); }) : []; }
-  function rowsB() { var m = OM(); return m ? m.rows.filter(passCommon) : []; }
+  // วันเปิด = ชีตทะเบียน (คอลัมน์ E) ก่อน แล้วค่อยบัญชี · ร้านที่ยังไม่เปิด/ไม่มีวันเปิด ไม่นับที่นี่ (งานก่อนเปิด = กลุ่มสาขาใหม่)
+  function rowsB() { var m = OM(); return m ? m.rows.filter(function (r) { return r.opened && passCommon(r); }) : []; }
+  function notOpenedB() { var m = OM(); return m ? m.rows.filter(function (r) { return !r.opened; }).length : 0; }
   function byStatus(rows, fn) { return F.st === "all" ? rows.slice() : rows.filter(function (r) { return fn(r).st === F.st; }); }
   function sortRows(rows, fn, coh) {
     return rows.sort(function (x, y) {
@@ -8276,7 +8278,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
   function cohHead(coh, n) {
     var t = coh === "a" ? "สาขาใหม่ (ยังไม่เปิด)" : "ร้านที่เปิดแล้ว";
-    var s = coh === "a" ? (CURV === "util" ? "ชุดเดียวกับกล่องน้ำ-ไฟใน Overall" : F.range === "all" ? "ทุกสาขาที่ยื่น อ.1 แล้ว ยังไม่เปิด" : "D-25 ตาม After อ.1") : "รหัส T###";
+    var s = coh === "a" ? (CURV === "util" ? "ชุดเดียวกับกล่องน้ำ-ไฟใน Overall" : F.range === "all" ? "ทุกสาขาที่ยื่น อ.1 แล้ว ยังไม่เปิด" : "D-25 ตาม After อ.1") : "รหัส T### · เฉพาะร้านที่เปิดแล้ว" + (OM() && notOpenedB() ? " (ไม่นับ " + notOpenedB() + " ร้านที่ยังไม่เปิด/ไม่มีวันเปิด)" : "");
     return '<div class="rg-coh-h"><span class="rg-coh-t rg-coh-' + coh + '">' + t + '</span><span class="rg-coh-s">' + s + (n != null ? " · " + n + " สาขา" : "") + "</span></div>";
   }
   function stateBox(cls, html) { return '<div class="card"><div class="rg-empty ' + cls + '">' + html + "</div></div>"; }
