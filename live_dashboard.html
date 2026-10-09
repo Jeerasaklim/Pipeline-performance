@@ -1168,7 +1168,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=151654" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=174504" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -7679,8 +7679,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
  * ========================================================================== */
 (function () {
   "use strict";
-  var VISIBLE_ROLES = ["admin"];
-  function allowed() { return VISIBLE_ROLES.indexOf(window.DPT_ROLE) >= 0; }
+  // 9 ต.ค. (จี): เปิดให้ทุก role ที่อยู่ในชีต Roles เห็น (ดูอย่างเดียว · บันทึก = Admin ผ่าน canEdit) · หน้า ตรวจข้อมูล = Admin เท่านั้น (isAdminUser)
+  function allowed() { return !!window.DPT_ROLE; }
+  function isAdminUser() { return window.DPT_ROLE === "admin"; }
 
   /* ขั้นตอนงานทะเบียน = Portal REG_STEPS */
   var STEPS = [
@@ -8329,6 +8330,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
   function qcView() {
     freshen();
+    if (!isAdminUser()) return stateBox("", "<b>หน้านี้สำหรับ Admin เท่านั้น</b>");
     var g = bGate(); if (g) return filterBar() + '<div class="rg-coh">' + cohHead("b", null) + g + "</div>";
     var Q = qcList(), bad = Q.filter(function (x) { return x.items.length; });
     var shops = {}; bad.forEach(function (x) { x.items.forEach(function (i) { shops[i.r.code] = 1; }); });
@@ -8623,7 +8625,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       if (g) top += '<div class="rg-crow">' + cohHead("b", null) + g + "</div>";
       else {
         var rb = rowsB();
-        var qn = qcCount();
+        var qn = isAdminUser() ? qcCount() : null;
         top += '<div class="rg-crow">' + cohHead("b", rb.length) + warnBox() + (qn && qn.n ? '<button type="button" class="rg-qcl" data-go="qc">🔎 พบจุดต้องเคลียร์ในข้อมูล ' + qn.n + " เรื่อง · " + qn.shops + " ร้าน — ดูหน้า ตรวจข้อมูล →</button>" : "") + '<div class="rg-cards">' + B_WORKS.map(function (w) { return wcard("b", w, tally(rb, function (r) { return bStat(r, w); })); }).join("") +
           offCard("util", "ร้านที่เปิดแล้ว: ยังไม่ดึงแท็บ ไฟฟ้าและประปา") + "</div></div>";
         tabs += '<div class="rg-coh">' + ovTable("b", rb) + "</div>";
@@ -8707,12 +8709,14 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var sec = document.createElement("section"); sec.id = "tab-registration"; sec.className = "tab-panel";
   sec.innerHTML =
     '<div class="page-head"><h1>📋 Registration and License <span class="page-th">งานทะเบียน · ใบอนุญาต</span></h1></div>' +
-    '<div class="rg-note">เห็นเฉพาะ Admin · สาขาใหม่ = ชุดเดียวกับ Overall / After อ.1 · ร้านที่เปิดแล้ว = ชีตทีมทะเบียน 0. CJx Store Document_New + บัญชีตั้งต้น (ดูอย่างเดียว)</div>' +
+    '<div class="rg-note">เห็นได้ทุก role (ดูอย่างเดียว · บันทึก = Admin) · หน้า ตรวจข้อมูล = Admin เท่านั้น · สาขาใหม่ = ชุดเดียวกับ Overall / After อ.1 · ร้านที่เปิดแล้ว = ชีตทะเบียน 0. CJx Store Document_New + บัญชีตั้งต้น (ดูอย่างเดียว)</div>' +
     '<div class="rg-segwrap"><div class="sp-seg" id="rg-seg">' + ORDER.map(function (k) { return '<button type="button" data-v="' + k + '"' + (k === CURV ? ' class="on"' : "") + ">" + VIEWS[k][0] + "</button>"; }).join("") + "</div></div>" +
     '<div id="rg-view"></div>';
   main.appendChild(sec);
   function render() {
     var v = document.getElementById("rg-view");
+    if (CURV === "qc" && !isAdminUser()) CURV = "overview";
+    [].forEach.call(document.querySelectorAll('#rg-seg button[data-v="qc"]'), function (b) { b.style.display = isAdminUser() ? "" : "none"; });
     v.innerHTML = VIEWS[CURV][1]();
     [].forEach.call(document.querySelectorAll("#rg-seg button"), function (b) { b.classList.toggle("on", b.getAttribute("data-v") === CURV); });
     [].forEach.call(v.querySelectorAll(".rg-row"), function (tr) { tr.onclick = function () { siteDrawer(tr.getAttribute("data-code")); }; });
