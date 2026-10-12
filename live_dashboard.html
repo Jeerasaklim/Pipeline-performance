@@ -1163,13 +1163,13 @@ tr.go-nd-hide{display:none!important}
       <div id="go-vanish" class="go-vanish" style="display:none"></div>
       <div id="go-diverge" class="go-vanish" style="display:none"></div>
       <div id="go-summary" class="go-summary"></div>
-      <div id="go-opened" class="go-opened"></div><style>.go-op-bar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:8px 0 6px;padding:8px 14px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px}.go-op-t{font-weight:600;color:#5b21b6}.go-op-t b{font-size:16px}.go-op-m{font-size:12px;color:#7c6aa8}.go-op-btn{margin-left:auto;font:inherit;font-size:13px;font-weight:600;color:#6d28d9;background:#fff;border:1px solid #c4b5fd;border-radius:999px;padding:3px 14px;cursor:pointer}.go-op-btn:hover{background:#ede9fe}.go-op-row{margin-bottom:6px}.go-op-card{border-top:3px solid #7c3aed!important}.go-op-card .go-mcount{color:#6d28d9}.go-op-chip{background:#f3e8ff!important;color:#5b21b6!important;border-color:#ddd6fe!important;cursor:default}</style>
+      <div id="go-opened" class="go-opened"></div><style>.go-op-bar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:8px 0 6px;padding:8px 14px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px}.go-op-t{font-weight:600;color:#5b21b6}.go-op-t b{font-size:16px}.go-op-m{font-size:12px;color:#7c6aa8}.go-op-btn{margin-left:auto;font:inherit;font-size:13px;font-weight:600;color:#6d28d9;background:#fff;border:1px solid #c4b5fd;border-radius:999px;padding:3px 14px;cursor:pointer}.go-op-btn:hover{background:#ede9fe}.go-op-row{margin-bottom:6px}.go-op-chip{background:#f3e8ff!important;color:#5b21b6!important;border-color:#ddd6fe!important;cursor:default}</style>
       <div id="go-controls" class="go-controls"></div>
       <div id="go-cal" class="go-cal"></div>
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=085822" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=090512" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -2827,13 +2827,13 @@ function opToggle(){OPSHOW=!(OPSHOW===null?opPref():OPSHOW);try{localStorage.set
 function rOpened(){var el=document.getElementById("go-opened");if(!el)return;if(OPSHOW===null)OPSHOW=opPref();var L=OPENED_LIST||[],n=L.length||(OPENED_NOW||0);
 var head='<div class="go-op-bar"><span class="go-op-t">🏪 ร้านเปิดแล้ว <b>'+n+'</b> ร้าน</span>'+(L.length?'<span class="go-op-m">แยกตามเดือนที่เปิด · กดกล่องเพื่อดูในปฏิทิน</span>':'<span class="go-op-m">รายชื่อรอโหลดข้อมูลสด</span>')+'<button type="button" class="go-op-btn" onclick="GO.opToggle()">'+(OPSHOW?'▴ ซ่อน':'▾ แสดง')+'</button></div>';
 if(!OPSHOW||!L.length){el.innerHTML=head;return;}
-var pre=0,by={};L.forEach(function(s){if(s.open<"2026-01-01")pre++;else{var k=s.open.slice(0,7);by[k]=(by[k]||0)+1;}});
+var pre=0,y26=0,by={};L.forEach(function(s){if(s.open<"2026-01-01")pre++;else{var k=s.open.slice(0,7);by[k]=(by[k]||0)+1;if(k.slice(0,4)==="2026")y26++;}});
 function card(key,title,v){return '<div class="go-mcard go-op-card'+(curYM==="op:"+key?" active":"")+'" onclick="GO.goMonth(\'op:'+key+'\')"><div class="go-mname">'+title+'</div><div class="go-mcount">'+v+'</div><div class="go-munit">ร้าน · เปิดแล้ว</div></div>';}
-el.innerHTML=head+'<div class="go-summary go-op-row">'+card("pre","ก่อนปี 2026",pre)+Object.keys(by).sort().map(function(k){return card(k,thYM(k),by[k]);}).join("")+'</div>';}
+el.innerHTML=head+'<div class="go-summary go-op-row">'+card("pre","ก่อนปี 2026",pre)+card("y2026","รวมปี 2026",y26)+Object.keys(by).sort().map(function(k){return card(k,thYM(k),by[k]);}).join("")+'</div>';}
 function opChip(s){return '<span class="go-chip go-op-chip" title="'+esc(s.name)+' · เปิดแล้ว '+esc(s.open)+'">✓ '+esc(s.code)+' '+esc(s.name)+'</span>';}
 function rOpenedCal(){var k=String(curYM).slice(3),L=OPENED_LIST||[];
-if(k==="pre"){var A=L.filter(function(s){return s.open<"2026-01-01";}),bm={};A.forEach(function(s){var m=s.open.slice(0,7);(bm[m]=bm[m]||[]).push(s);});
-return '<div class="go-cal-title">🏪 ร้านเปิดแล้ว · ก่อนปี 2026 — '+A.length+' ร้าน</div>'+(A.length?Object.keys(bm).sort().map(function(m){return '<div class="go-nosub-row"><div class="go-nosub-head"><b>'+thYM(m)+'</b> <span class="go-nosub-meta">'+bm[m].length+' ร้าน</span></div><div class="go-nosub-blk">'+bm[m].map(opChip).join(" ")+'</div></div>';}).join(""):'<div class="go-empty-msg">ไม่มีร้านที่เปิดก่อนปี 2026</div>');}
+if(k==="pre"||k==="y2026"){var A=L.filter(function(s){return k==="pre"?s.open<"2026-01-01":s.open.slice(0,4)==="2026";}),bm={};A.forEach(function(s){var m=s.open.slice(0,7);(bm[m]=bm[m]||[]).push(s);});
+return '<div class="go-cal-title">🏪 ร้านเปิดแล้ว · '+(k==="pre"?"ก่อนปี 2026":"รวมปี 2026")+' — '+A.length+' ร้าน</div>'+(A.length?Object.keys(bm).sort().map(function(m){return '<div class="go-nosub-row"><div class="go-nosub-head"><b>'+thYM(m)+'</b> <span class="go-nosub-meta">'+bm[m].length+' ร้าน</span></div><div class="go-nosub-blk">'+bm[m].map(opChip).join(" ")+'</div></div>';}).join(""):'<div class="go-empty-msg">ไม่มีร้านในช่วงนี้</div>');}
 var y=+k.slice(0,4),mo=+k.slice(5,7),first=new Date(y,mo-1,1).getDay(),dim=new Date(y,mo,0).getDate(),byDay={},tot=0;
 L.forEach(function(s){if(s.open.slice(0,7)===k){var d=+s.open.slice(8,10);(byDay[d]=byDay[d]||[]).push(s);tot++;}});
 var head='<div class="go-cal-head">'+DOW.map(function(d){return '<div class="go-dow">'+d+'</div>';}).join("")+'</div>',cells="";
