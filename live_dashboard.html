@@ -1169,7 +1169,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=170413" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=193155" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -4756,15 +4756,31 @@ setTimeout(applyBoard,300);
       const c = cell(constr[i], AC_CODE);
       if (c && !(c in lut)) lut[c] = constr[i];
     }
-    // prmlist = every clean ผรม. name on the Construction sheet + any override (:1676-1684).
+    // 16 ต.ค. (จี): รายชื่อ ผรม. กลาง = overlay key PRM:__LIST__ (ไม่ใช่สาขา) → {add:[ชื่อที่เพิ่มเอง], hide:[ชื่อที่ซ่อน]}
+    let prmMeta = { add: [], hide: [] };
+    try { const j = JSON.parse(prmOver.__LIST__ || "{}");
+      prmMeta = { add: Array.isArray(j.add) ? j.add : [], hide: Array.isArray(j.hide) ? j.hide : [] }; } catch (e) {}
+    // prmlist = every clean ผรม. name on the Construction sheet + any override (:1676-1684) + เพิ่มเอง − ซ่อน
     const prmSet = {};
     for (let i = AF_CONSTR_DATA_ROW; i < constr.length; i++) {
       const p = smCleanPrm(cell(constr[i], AC_PRM));
       if (p) prmSet[p] = 1;
     }
-    Object.keys(prmOver).forEach(k => { const p = smCleanPrm(prmOver[k]); if (p) prmSet[p] = 1; });
+    Object.keys(prmOver).forEach(k => { if (k === "__LIST__") return; const p = smCleanPrm(prmOver[k]); if (p) prmSet[p] = 1; });
+    prmMeta.add.forEach(n => { const p = smCleanPrm(n); if (p) prmSet[p] = 1; });
+    prmMeta.hide.forEach(n => { delete prmSet[smCleanPrm(n)]; });
     const prmlist = Object.keys(prmSet).sort();
 
+    // 16 ต.ค. (จี "อยากเพิ่มขนาดร้าน 200 300"): Construction col9 "รูปแบบร้าน" = "แบบ 300 ตร.ม." / "แบบ 200 ตร.ม." / "สวมอาคาร"
+    //   มีเฉพาะสาขาที่เข้าท่อนก่อสร้างแล้ว · ไม่มีแถว/ว่าง/ค่าอื่น = "" (แสดง "ไม่ระบุ" — ไม่เดา)
+    const AC_SIZE = 9;
+    function smSize(r) {
+      const v = r ? cell(r, AC_SIZE) : "";
+      if (v.indexOf("สวมอาคาร") >= 0) return "สวมอาคาร";
+      if (/300/.test(v)) return "300";
+      if (/200/.test(v)) return "200";
+      return "";
+    }
     function mk(code, name, openv, pak, isPinned) {    // port of _mk() :1686-1694
       const r = lut[code] || null;
       let prm = smCleanPrm(r ? cell(r, AC_PRM) : "");
@@ -4772,7 +4788,7 @@ setTimeout(applyBoard,300);
       const prov = (r ? cell(r, AC_PROV) : "").trim();
       return { code: code, name: name || "", prm: prm, pak: pak, open: openv || "",
         prov: prov, region: (prov ? (SM_PROV_REGION[prov] || "กลาง") : ""),
-        ll: coord[(code || "").toUpperCase()] || null, pinned: isPinned ? 1 : 0 };
+        ll: coord[(code || "").toUpperCase()] || null, pinned: isPinned ? 1 : 0, size: smSize(r) };
     }
 
     const sites = [];
@@ -4803,7 +4819,7 @@ setTimeout(applyBoard,300);
     const nopen = sites.reduce((n, s) => n + (s.pak === 4 ? 1 : 0), 0);
     const npin = sites.reduce((n, s) => n + (s.pinned && s.pak !== 4 ? 1 : 0), 0);
     const npool = sites.reduce((n, s) => n + (s.pinned ? 0 : 1), 0);
-    return { sites: sites, prmlist: prmlist, npin: npin, npool: npool, nopen: nopen,
+    return { sites: sites, prmlist: prmlist, prmmeta: prmMeta, npin: npin, npool: npool, nopen: nopen,
       nll: sites.reduce((n, s) => n + (s.ll ? 1 : 0), 0) };
   }
 
@@ -5927,7 +5943,17 @@ setTimeout(applyBoard,300);
   if (!frame) { console.warn("[map] #sm-frame not found — Site Management tab stripped?"); return; }
   var CE = window.CalcEngine;
   function post(msg) { try { if (frame.contentWindow) frame.contentWindow.postMessage(msg, "*"); } catch (e) {} }
-  function pushModel(m) { window.__smModel = m; post({ t: "sm-model", sites: m.sites, prmlist: m.prmlist }); try { renderPrmSummary(m.sites); } catch (e) { console.warn("[prm] summary skip:", e); } }
+  function pushModel(m) { window.__smModel = m; post({ t: "sm-model", sites: m.sites, prmlist: m.prmlist, prmmeta: m.prmmeta, role: window.DPT_ROLE || "" }); if (window.__smPrmLog) post(window.__smPrmLog); try { renderPrmSummary(m.sites); } catch (e) { console.warn("[prm] summary skip:", e); } }
+  // 16 ต.ค. (จี): ประวัติปัก ผรม. — GAS getPrmLog (อ่านแท็บ Audit) → ส่งให้แผนที่ {t:'sm-prmlog'} · GAS ยังไม่ deploy = ส่ง err ให้แผนที่บอกตรง ๆ
+  function loadPrmLog() {
+    var u = window.DPT_GAS_URL, tk = window.DPT_ID_TOKEN || "";
+    if (window.USE_GAS_BACKEND !== true || !u || !tk) { window.__smPrmLog = { t: "sm-prmlog", err: "ยังไม่ได้ต่อ backend (โหมดทดสอบ)" }; post(window.__smPrmLog); return; }
+    var url = u + (u.indexOf("?") < 0 ? "?" : "&") + "action=getPrmLog&token=" + encodeURIComponent(tk);
+    (typeof window.DPT_hedgedGet === "function" ? window.DPT_hedgedGet(url) : fetch(url, { redirect: "follow" }).then(function (r) { return r.json(); }))
+      .then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || "โหลดไม่สำเร็จ"); window.__smPrmLog = { t: "sm-prmlog", log: j.log || {}, listLog: j.listLog || [] }; post(window.__smPrmLog); })
+      .catch(function (e) { window.__smPrmLog = { t: "sm-prmlog", err: String((e && e.message) || e) }; post(window.__smPrmLog); });
+  }
+  window.addEventListener("message", function (e) { var d = e && e.data; if (d && d.t === "sm-prmlog-reload") loadPrmLog(); });
   function pushStale() { post({ t: "sm-stale" }); }
 
   // ===== สรุปผลงานราย ผรม. (คำขอผู้ใช้ 23 ก.ย.): เปิดแล้ว/กำลังทำ/รวม + active + ช่วงเวลา =====
@@ -6079,6 +6105,7 @@ setTimeout(applyBoard,300);
     };
     var model = CE.buildSiteMgmtModel(go, tabs, ar, smOpts);
     pushModel(model);
+    loadPrmLog();
     // preflight C: re-feed the stripped สวมอาคาร list live (GAS mode — raw AR rows from the bundle).
     // CSV/dev has no getArRows source -> filter stays dark (like PIC/notes), documented degrade.
     if (window.USE_GAS_BACKEND === true && typeof window.__setSvm === "function") {

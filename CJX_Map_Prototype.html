@@ -78,7 +78,7 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
 </style>
 </head><body><div class="wrap">
 <h1>🏢 Site Management<span class="beta">v7 · แผนที่จริง + directions</span></h1>
-<div class="sub">ข้อมูลจริง ณ 23 Sep 2026 09:22 · 458 สาขา (เปิดแล้ว 163 + ปักวันแล้ว 129 + ยังไม่ปักวัน 166) · คลิกหมุด=รายละเอียด+ใกล้เคียง · 📏 วัดระยะ · 🚗 เส้นทาง A→B</div>
+<div class="sub">ข้อมูลจริง ณ 30 Sep 2026 10:41 · 463 สาขา (เปิดแล้ว 169 + ปักวันแล้ว 129 + ยังไม่ปักวัน 165) · คลิกหมุด=รายละเอียด+ใกล้เคียง · 📏 วัดระยะ · 🚗 เส้นทาง A→B</div>
 <div class="kpis">
   <div class="kpi" data-k=""><div class="n" id="k-all" style="color:#4f46e5">0</div><div class="l">ตามตัวกรอง</div></div>
   <div class="kpi" data-k="1"><div class="n" id="k-1" style="color:#dc2626">0</div><div class="l">🔴 ปัก1</div></div>
@@ -90,7 +90,8 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
 </div>
 <div class="filters">
   <select id="f-pak"><option value="">สถานะ — ทั้งหมด</option><option value="4">🟣 เปิดแล้ว</option><option value="pinned">✅ ปักวันแล้ว (รวม)</option><option value="0">⚪ ยังไม่ปักวัน</option><option value="1">🔴 ปัก1</option><option value="2">🔵 ปัก2</option><option value="3">🟢 ปัก3</option></select>
-  <select id="f-prm"><option value="">ผรม. — ทั้งหมด</option><option value="__HAS__">✅ มี ผรม.แล้ว</option><option value="__NONE__">⚠️ ยังไม่มี ผรม.</option></select>
+  <select id="f-prm"><option value="">ผรม. — ทั้งหมด</option><option value="__HAS__">✅ มี ผรม.แล้ว</option><option value="__NONE__">⚠️ ยังไม่มี ผรม.</option></select><button class="btn" id="prm-mgr-btn" type="button" style="display:none" title="เพิ่ม/แก้ชื่อ/ซ่อน รายชื่อ ผรม.">⚙️ รายชื่อ ผรม.</button>
+  <select id="f-size"><option value="">ขนาด — ทั้งหมด</option><option value="300">แบบ 300 ตร.ม.</option><option value="200">แบบ 200 ตร.ม.</option><option value="สวมอาคาร">สวมอาคาร</option><option value="__NONE__">ไม่ระบุ</option></select>
   <select id="f-region"><option value="">ภาค — ทั้งหมด</option></select>
   <select id="f-prov"><option value="">จังหวัด — ทั้งหมด</option></select><div class="pdsel" onclick="event.stopPropagation()"><button type="button" class="pdbtn" id="pd-btn" onclick="pdToggle(event)">🗓 วันปัก: <span id="pd-btn-lb">ทั้งหมด</span> <span class="pdcnt" id="pd-btn-n"></span><span class="pdcar">&#9662;</span></button><div class="pdpanel" id="pd-panel"><div class="pdpanel-hd"><input class="pdsearch" id="pd-search" type="text" placeholder="ค้นหาวันที่ / เดือน" oninput="pdRender()"><button type="button" class="pdlink" onclick="pdAll(true)">เลือกทั้งหมด</button><button type="button" class="pdlink" onclick="pdAll(false)">ล้างทั้งหมด</button></div><div class="pdpanel-bd" id="pd-list"></div><div class="pdfoot">กดชื่อปี/เดือน = กางดูรายวัน · ติ๊กช่อง = เลือก · เฉพาะสาขา ปัก1–3 ที่มีวันเปิด (เลือกบางวัน = ซ่อนสาขาที่ยังไม่ปักวัน/เปิดแล้ว)</div></div></div><span class="pdnote" id="pd-note"></span>
   <input type="text" id="f-q" placeholder="ค้นหา code / ชื่อสาขา...">
@@ -156,7 +157,7 @@ function drawMarkers(){markerLayer.clearLayers();markers={};filtered().forEach(f
   var col=colorOf(s),on=s.code===selCode;
   var m=L.circleMarker([s.ll[0],s.ll[1]],{radius:mradius(s.pinned,on),fillColor:s.pinned?col:"#ffffff",color:on?"#0f172a":(s.pinned?"#ffffff":col),weight:on?3:(s.pinned?1.8:2.2),fillOpacity:1});
   m.on('click',function(e){L.DomEvent.stopPropagation(e);if(toolMode){setPoint([s.ll[0],s.ll[1]],s.name);}else{onMarkerClick(s);}});
-  m.bindTooltip(s.name+" · "+(s.prm||"ยังไม่มี ผรม.")+(s.pak===4?" · 🟣 เปิดแล้ว":(s.pinned?(" · ปัก"+s.pak):" · ยังไม่ปักวัน"))+(s.ll?(" · 📍 "+s.ll[0].toFixed(5)+", "+s.ll[1].toFixed(5)):""),{direction:'top'});
+  m.bindTooltip(s.name+" · "+(s.prm||"ยังไม่มี ผรม.")+" · "+smSizeTxt(s)+(s.pak===4?" · 🟣 เปิดแล้ว":(s.pinned?(" · ปัก"+s.pak):" · ยังไม่ปักวัน"))+(s.ll?(" · 📍 "+s.ll[0].toFixed(5)+", "+s.ll[1].toFixed(5)):""),{direction:'top'});
   m.addTo(markerLayer);markers[s.code]=m;});}
 map.on('zoomend',function(){for(var c in markers){var s=BYC[c];if(s)markers[c].setRadius(mradius(s.pinned,c===selCode));}});
 // choropleth province layer
@@ -185,7 +186,7 @@ function renderDetail(){var box=$("detailbox");if(!box)return;
   if(!selProv){box.innerHTML='<div class="gempty">👆 คลิกหมุด/จังหวัดบนแผนที่<br>เพื่อดู &amp; ปัก ผรม. + สาขาใกล้เคียง</div>';return;}
   var me=selCode&&BYC[selCode];
   var h='';
-  if(me){h+='<div style="font-weight:700;font-size:15px;margin-bottom:1px">'+esc(me.name)+'</div><div class="mt" style="margin-bottom:8px">'+esc(me.code)+' · '+esc(me.prov)+' · '+(me.pak===4?("🟣 เปิดแล้ว · เปิด "+esc(me.open||"—")):(me.pinned?("ปัก"+me.pak+" · เปิด "+esc(me.open||"—")):"ยังไม่ปักวัน"))+'</div>';
+  if(me){h+='<div style="font-weight:700;font-size:15px;margin-bottom:1px">'+esc(me.name)+'</div><div class="mt" style="margin-bottom:8px">'+esc(me.code)+' · '+esc(me.prov)+' · '+smSizeTxt(me)+' · '+(me.pak===4?("🟣 เปิดแล้ว · เปิด "+esc(me.open||"—")):(me.pinned?("ปัก"+me.pak+" · เปิด "+esc(me.open||"—")):"ยังไม่ปักวัน"))+'</div>';
     h+='<div style="display:flex;gap:6px;margin-bottom:10px;align-items:center">ผรม.: '+prmCtl(me)+' <button class="btn" style="padding:3px 8px;font-size:11px;margin-left:auto" data-setab="A">ตั้ง A</button><button class="btn" style="padding:3px 8px;font-size:11px" data-setab="B">ตั้ง B</button></div>';
     if(me.ll){var near=SITES.filter(function(s){return s.ll&&s.code!==me.code;}).map(function(s){return {s:s,d:hav(me.ll,s.ll)};}).sort(function(a,b){return a.d-b.d;}).slice(0,6);
       h+='<div style="font-weight:700;font-size:13px;margin:6px 0 2px">🏪 สาขาใกล้เคียง</div>';
@@ -254,7 +255,7 @@ Array.prototype.forEach.call(document.querySelectorAll(".kpi[data-k]"),function(
 Array.prototype.forEach.call(document.querySelectorAll("th[data-k]"),function(th){var base=th.textContent;th.setAttribute("data-base",base);th.addEventListener("click",function(){var kk=th.getAttribute("data-k");if(sortK===kk)sortAsc=!sortAsc;else{sortK=kk;sortAsc=true;}Array.prototype.forEach.call(document.querySelectorAll("th[data-k]"),function(t){t.textContent=t.getAttribute("data-base");});th.textContent=base+(sortAsc?" ▲":" ▼");renderTable();});});
 Array.prototype.forEach.call(document.querySelectorAll("#mode button"),function(b){b.addEventListener("click",function(){Array.prototype.forEach.call(document.querySelectorAll("#mode button"),function(x){x.classList.remove("on");});b.classList.add("on");mode=b.getAttribute("data-m");drawMarkers();refreshChoro();legendBox();});});
 $("f-choro").addEventListener("click",function(){choroOn=!choroOn;this.classList.toggle("on",choroOn);if(choroOn){provLayer.addTo(map);refreshChoro();}else{map.removeLayer(provLayer);}});
-$("f-csv").addEventListener("click",function(){var rows=filtered();var L2=[["ปัก","วันเปิด","ผรม.","Code","สาขา","จังหวัด","ภาค","Lat","Long"]];rows.forEach(function(r){L2.push([r.pak===4?"เปิดแล้ว":(r.pinned?("ปัก"+r.pak):"ยังไม่ปักวัน"),r.open,r.prm||"(ยังไม่มี)",r.code,r.name,r.prov,r.region,(r.ll?r.ll[0]:""),(r.ll?r.ll[1]:"")]);});var csv="\ufeff"+L2.map(function(x){return x.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(",");}).join("\r\n");var b=new Blob([csv],{type:"text/csv;charset=utf-8"});var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="site_mgmt.csv";a.click();});
+$("f-csv").addEventListener("click",function(){var rows=filtered();var L2=[["ปัก","วันเปิด","ผรม.","Code","สาขา","จังหวัด","ภาค","Lat","Long","ขนาด"]];rows.forEach(function(r){L2.push([r.pak===4?"เปิดแล้ว":(r.pinned?("ปัก"+r.pak):"ยังไม่ปักวัน"),r.open,r.prm||"(ยังไม่มี)",r.code,r.name,r.prov,r.region,(r.ll?r.ll[0]:""),(r.ll?r.ll[1]:""),smSizeTxt(r)]);});var csv="\ufeff"+L2.map(function(x){return x.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(",");}).join("\r\n");var b=new Blob([csv],{type:"text/csv;charset=utf-8"});var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="site_mgmt.csv";a.click();});
 apply();renderDetail();
 // รายงานความสูงให้หน้า dashboard (iframe) ปรับขนาด — postMessage ข้าม origin ได้ (รองรับ file://)
 var _lastH=0;
@@ -334,4 +335,51 @@ filtered=function(){if(PD_SRC!==SITES){pdInit();pdRender();pdLabel();}var rows=_
   return rows.filter(function(r){if(!pdIsPak(r))return false;var k=pdKey(r.open);return !!(k&&PD_SEL[k]);});};
 $("f-clear").addEventListener("click",function(){pdAll(true);});
 pdInit();pdRender();pdLabel();
-</script></body></html>
+</script><script>/*SM-SIZE-PRM*/
+function smSizeTxt(s){return !s||!s.size?"ขนาดไม่ระบุ":(s.size==="สวมอาคาร"?"สวมอาคาร":("แบบ "+s.size+" ตร.ม."));}
+(function(){var _f=filtered;filtered=function(){var a=_f(),el=$("f-size"),v=el?el.value:"";if(!v)return a;return a.filter(function(s){return v==="__NONE__"?!s.size:s.size===v;});};})();
+$("f-size").addEventListener("input",apply);
+$("f-clear").addEventListener("click",function(){$("f-size").value="";apply();});
+var PRMMETA={add:[],hide:[]},SMROLE="",PLOG={st:"wait"};
+function smNow(){var d=new Date();function p(n){return ("0"+n).slice(-2);}return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes());}
+window.addEventListener("message",function(e){var d=e&&e.data;if(!d||typeof d!=="object")return;
+  if(d.t==="sm-model"){if(d.prmmeta)PRMMETA={add:(d.prmmeta.add||[]).slice(),hide:(d.prmmeta.hide||[]).slice()};SMROLE=d.role||"";var b=$("prm-mgr-btn");if(b)b.style.display=(SMROLE&&SMROLE!=="member")?"":"none";}
+  else if(d.t==="sm-prmlog"){PLOG=d.err?{st:"err",err:d.err}:{st:"ok",log:d.log||{},listLog:d.listLog||[]};renderDetail();}});
+(function(){var _sp=savePrm;savePrm=function(code,v){if(PLOG.st==="ok"){(PLOG.log[code]=PLOG.log[code]||[]).push({at:smNow(),by:"คุณ",value:(v||"").trim()});}return _sp(code,v);};})();
+(function(){var _rd=renderDetail;renderDetail=function(){_rd();var box=$("detailbox"),me=selCode&&BYC[selCode];if(!box||!me)return;
+  var h='<div style="font-weight:700;font-size:13px;margin:10px 0 4px">🕘 ประวัติ ผรม.</div>';
+  if(PLOG.st==="wait")h+='<div class="mt">กำลังโหลด…</div>';
+  else if(PLOG.st==="err")h+='<div class="mt" style="color:#b91c1c">โหลดประวัติไม่ได้ ('+esc(PLOG.err)+')</div>';
+  else{var L=(PLOG.log[me.code]||[]).slice().reverse();
+    if(!L.length)h+='<div class="mt">ยังไม่เคยปัก/เปลี่ยน ผรม. ผ่านแอป'+(me.prm?(' · ผรม. ปัจจุบันมาจากชีต Construction'):'')+'</div>';
+    else h+=L.map(function(x){return '<div class="mt" style="padding:2px 0;border-bottom:1px dashed #e2e8f0">'+esc(x.at)+' · '+(x.value?('ปัก <b>'+esc(x.value)+'</b>'):'<b>ถอน ผรม.</b>')+' · โดย '+esc(x.by)+'</div>';}).join("");}
+  box.insertAdjacentHTML("beforeend",h);};})();
+function prmNames(){var o={};PRMLIST.concat(PRMMETA.add,PRMMETA.hide,uniq("prm")).forEach(function(n){if(n)o[n]=1;});return Object.keys(o).sort();}
+function prmUse(n){return SITES.filter(function(s){return s.prm===n;}).length;}
+function prmSaveMeta(){PRMMETA.add=PRMMETA.add.filter(function(n,i,a){return n&&a.indexOf(n)===i;});PRMMETA.hide=PRMMETA.hide.filter(function(n,i,a){return n&&a.indexOf(n)===i;});
+  post("PRM:__LIST__",JSON.stringify(PRMMETA));PRMLIST=prmNames().filter(function(n){return PRMMETA.hide.indexOf(n)<0;});
+  PRMLIST.forEach(function(n,i){if(!PRMCOL[n])PRMCOL[n]=PAL[i%PAL.length];});refreshPrmOpt();apply();renderDetail();prmMgrRender();}
+function prmAdd(){var el=$("prm-new"),n=String(el&&el.value||"").split(/\s+/).filter(Boolean).join(" ");if(!n){toast("พิมพ์ชื่อ ผรม. ก่อน");return;}
+  if(prmNames().indexOf(n)>=0&&PRMMETA.hide.indexOf(n)<0){toast("มีชื่อ “"+n+"” อยู่แล้ว");return;}
+  PRMMETA.add.push(n);PRMMETA.hide=PRMMETA.hide.filter(function(x){return x!==n;});prmSaveMeta();toast("➕ เพิ่ม ผรม. “"+n+"” แล้ว");}
+function prmHide(n,hide){if(hide){PRMMETA.hide.push(n);}else{PRMMETA.hide=PRMMETA.hide.filter(function(x){return x!==n;});if(PRMLIST.indexOf(n)<0)PRMMETA.add.push(n);}prmSaveMeta();toast((hide?"🙈 ซ่อน ":"👁 แสดง ")+"“"+n+"”");}
+function prmRename(old){var nn=prompt("แก้ชื่อ ผรม. “"+old+"” เป็น:",old);if(nn==null)return;nn=String(nn).split(/\s+/).filter(Boolean).join(" ");if(!nn||nn===old)return;
+  var use=SITES.filter(function(s){return s.prm===old;});
+  if(!confirm("เปลี่ยน “"+old+"” → “"+nn+"”"+(use.length?(" ในทุกสาขาที่ใช้อยู่ "+use.length+" สาขา"):"")+" ?"))return;
+  use.forEach(function(s){s.prm=nn;post("PRM:"+s.code,nn);if(PLOG.st==="ok")(PLOG.log[s.code]=PLOG.log[s.code]||[]).push({at:smNow(),by:"คุณ",value:nn});});
+  PRMCOL[nn]=PRMCOL[old]||PRMCOL[nn];PRMMETA.add.push(nn);PRMMETA.hide.push(old);PRMMETA.hide=PRMMETA.hide.filter(function(x){return x!==nn;});prmSaveMeta();toast("✏️ เปลี่ยนชื่อแล้ว "+use.length+" สาขา");}
+function prmMgrRender(){var w=$("prm-mgr");if(!w||w.style.display==="none")return;var names=prmNames();
+  var rows=names.map(function(n){var hid=PRMMETA.hide.indexOf(n)>=0,u=prmUse(n);
+    return '<tr style="'+(hid?'opacity:.5':'')+'"><td style="padding:4px 6px"><i class="sw" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(PRMCOL[n]||"#cbd5e1")+';margin-right:6px"></i>'+esc(n)+(hid?' <span class="mt">(ซ่อน)</span>':'')+'</td><td style="padding:4px 6px;text-align:right" class="mt">'+u+' สาขา</td>'+
+    '<td style="padding:4px 6px;white-space:nowrap"><button class="btn" style="padding:2px 8px;font-size:11px" data-pact="ren" data-n="'+esc(n)+'">✏️ แก้ชื่อ</button> <button class="btn" style="padding:2px 8px;font-size:11px" data-pact="'+(hid?'show':'hide')+'" data-n="'+esc(n)+'">'+(hid?'👁 แสดง':'🙈 ซ่อน')+'</button></td></tr>';}).join("");
+  w.querySelector(".pm-body").innerHTML='<div style="display:flex;gap:6px;margin-bottom:10px"><input id="prm-new" type="text" placeholder="ชื่อ ผรม. ใหม่" style="flex:1;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;font:inherit"><button class="btn" id="prm-add" type="button">➕ เพิ่ม</button></div>'+
+    '<div style="max-height:52vh;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'+rows+'</table></div>'+
+    '<div class="mt" style="margin-top:8px;line-height:1.5">ซ่อน = ไม่ขึ้นในตัวเลือกตอนปัก (สาขาที่ปักไว้แล้วยังเหมือนเดิม) · แก้ชื่อ = เปลี่ยนให้ทุกสาขาที่ใช้ชื่อนั้น และลงประวัติ ผรม. ทุกสาขา</div>';
+  $("prm-add").onclick=prmAdd;$("prm-new").onkeydown=function(e){if(e.key==="Enter")prmAdd();};}
+(function(){var w=document.createElement("div");w.id="prm-mgr";w.style.cssText="display:none;position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.35)";
+  w.innerHTML='<div style="background:#fff;max-width:520px;margin:6vh auto;border-radius:12px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.2)"><div style="display:flex;align-items:center;margin-bottom:10px"><b style="font-size:15px">⚙️ รายชื่อ ผรม.</b><button class="btn" id="prm-mgr-x" type="button" style="margin-left:auto">✕ ปิด</button></div><div class="pm-body"></div></div>';
+  document.body.appendChild(w);w.addEventListener("click",function(e){if(e.target===w){w.style.display="none";return;}var b=e.target.closest&&e.target.closest("[data-pact]");if(!b)return;var n=b.getAttribute("data-n"),a=b.getAttribute("data-pact");if(a==="ren")prmRename(n);else prmHide(n,a==="hide");});
+  $("prm-mgr-x").onclick=function(){w.style.display="none";};
+  $("prm-mgr-btn").onclick=function(){if(!SMROLE||SMROLE==="member"){toast("ไม่มีสิทธิ์แก้รายชื่อ ผรม.");return;}w.style.display="block";prmMgrRender();};})();
+</script>
+</body></html>
