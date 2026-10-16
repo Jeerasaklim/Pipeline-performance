@@ -114,7 +114,7 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
 </div>
 <div class="cnt" id="cnt"></div>
 <div class="tablewrap"><table><thead><tr>
-  <th data-k="pak">ปัก</th><th data-k="open">วันเปิด</th><th data-k="prm">ผรม.</th><th data-k="code">Code</th><th data-k="name">สาขา</th><th data-k="prov">จังหวัด</th><th data-k="region">ภาค</th><th>พิกัด (Lat, Long)</th>
+  <th data-k="pak">ปัก</th><th data-k="open">วันเปิด</th><th data-k="prm">ผรม.</th><th data-k="code">Code</th><th data-k="name">สาขา</th><th data-k="prov">จังหวัด</th><th data-k="region">ภาค</th><th data-k="size">รูปแบบร้าน</th><th>พิกัด (Lat, Long)</th>
 </tr></thead><tbody id="tb"></tbody></table></div>
 </div>
 <div class="toast" id="toast"></div>
@@ -241,7 +241,7 @@ function tprmCtl(s){return prmCtl(s);}
 function renderTable(){var tw=document.querySelector('.tablewrap');var sc=tw?tw.scrollTop:0;
   var rows=filtered().slice();rows.sort(function(a,b){var x=a[sortK],y=b[sortK];if(x==null)x="";if(y==null)y="";return (x<y?-1:x>y?1:0)*(sortAsc?1:-1);});
   $("tb").innerHTML=rows.map(function(r){var tag=r.pak===4?'<span class="tag p4">เปิดแล้ว</span>':(r.pinned?('<span class="tag p'+r.pak+'">ปัก'+r.pak+'</span>'):'<span class="tag p0">ยังไม่ปักวัน</span>');var dt=r.pinned?esc(r.open||"—"):'<span style="color:#94a3b8">—</span>';
-    return '<tr data-code="'+esc(r.code)+'"'+(r.code===selCode?' class="hl"':'')+'><td>'+tag+'</td><td>'+dt+'</td><td>'+prmCtl(r)+'</td><td class="mono">'+esc(r.code)+'</td><td class="nm">'+esc(r.name)+'</td><td>'+esc(r.prov)+'</td><td>'+(r.region?'<span class="tag '+(RC[r.region]||"")+'">'+esc(r.region)+'</span>':'')+'</td><td>'+(r.ll?('<a href="https://www.google.com/maps?q='+r.ll[0]+','+r.ll[1]+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#2563eb;text-decoration:none;white-space:nowrap">'+r.ll[0].toFixed(5)+', '+r.ll[1].toFixed(5)+'</a>'):'<span style="color:#94a3b8">—</span>')+'</td></tr>';}).join("");
+    return '<tr data-code="'+esc(r.code)+'"'+(r.code===selCode?' class="hl"':'')+'><td>'+tag+'</td><td>'+dt+'</td><td>'+prmCtl(r)+'</td><td class="mono">'+esc(r.code)+'</td><td class="nm">'+esc(r.name)+'</td><td>'+esc(r.prov)+'</td><td>'+(r.region?'<span class="tag '+(RC[r.region]||"")+'">'+esc(r.region)+'</span>':'')+'</td><td style="white-space:nowrap">'+(r.size?esc(smSizeTxt(r)):'<span style="color:#94a3b8">ว่าง</span>')+'</td><td>'+(r.ll?('<a href="https://www.google.com/maps?q='+r.ll[0]+','+r.ll[1]+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#2563eb;text-decoration:none;white-space:nowrap">'+r.ll[0].toFixed(5)+', '+r.ll[1].toFixed(5)+'</a>'):'<span style="color:#94a3b8">—</span>')+'</td></tr>';}).join("");
   $("cnt").textContent=rows.length+" สาขา (จาก "+SITES.length+")";
   if(tw)tw.scrollTop=sc;}
 function renderKPI(){var rows=filtered();$("k-all").textContent=rows.length;[0,1,2,3,4].forEach(function(p){$("k-"+p).textContent=rows.filter(function(r){return r.pak===p;}).length;});$("k-np").textContent=rows.filter(function(r){return !r.prm;}).length;}
