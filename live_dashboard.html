@@ -1169,7 +1169,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=195344" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=163625" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8600,8 +8600,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     freshen();
     var sh = grpShow(), h = filterBar() + legend();
     if (sh.a) {
-      if (w === "renew") h += '<div class="rg-coh">' + cohHead("a", null) + stateBox("", "ต่ออายุใบอนุญาต มีเฉพาะร้านที่เปิดแล้ว — เลือกกลุ่ม “ร้านที่เปิดแล้ว” เพื่อดู") + "</div>";
-      else if (w === "landtax") h += '<div class="rg-coh">' + cohHead("a", null) + stateBox("", "ภาษีที่ดิน มีเฉพาะร้านที่เปิดแล้ว — เลือกกลุ่ม “ร้านที่เปิดแล้ว” เพื่อดู") + "</div>";
+      // ต่ออายุ/ภาษีที่ดิน ไม่มีสาขาใหม่ → ไม่วาดกล่องสาขาใหม่ (21 ต.ค. จี: กล่องว่างไม่มีประโยชน์) · ขึ้นข้อความเฉพาะตอนเลือกกลุ่มสาขาใหม่อย่างเดียว
+      if (w === "renew") { if (!sh.b) h += '<div class="rg-coh">' + cohHead("a", null) + stateBox("", "ต่ออายุใบอนุญาต มีเฉพาะร้านที่เปิดแล้ว — เลือกกลุ่ม “ร้านที่เปิดแล้ว” เพื่อดู") + "</div>"; }
+      else if (w === "landtax") { if (!sh.b) h += '<div class="rg-coh">' + cohHead("a", null) + stateBox("", "ภาษีที่ดิน มีเฉพาะร้านที่เปิดแล้ว — เลือกกลุ่ม “ร้านที่เปิดแล้ว” เพื่อดู") + "</div>"; }
       else h += aBlock(function () { return w === "util" ? aUtil() : aDoc(w); }, w === "util" ? function () { return rowsU().length; } : null);
     }
     if (sh.b) {
