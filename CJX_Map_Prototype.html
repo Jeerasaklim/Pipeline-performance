@@ -404,12 +404,18 @@ function prnRender(){var w=$("prn-box");if(!w||w.style.display==="none")return;v
       :'<div class="mt" style="padding:10px 0">ไม่มีสาขาที่ปัก ผรม. ในช่วงนี้ (ตามตัวกรองด้านบน)</div>')+
     '<div class="mt" style="margin-top:8px;line-height:1.5">นับจากประวัติการปัก ผรม. ในแอป · ผรม. ที่พิมพ์ตรงในชีต Construction ไม่มีวันที่ จึงไม่อยู่ในรายการนี้ · กดแถว = ไปที่สาขาบนแผนที่</div>';}
 (function(){var w=document.createElement("div");w.id="prn-box";w.style.cssText="display:none;position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.35)";
-  w.innerHTML='<div style="background:#fff;max-width:720px;margin:6vh auto;border-radius:12px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.2)"><div style="display:flex;align-items:center;margin-bottom:10px"><b style="font-size:15px">🆕 สาขาที่เพิ่งปัก ผรม.</b><button class="btn" id="prn-x" type="button" style="margin-left:auto">✕ ปิด</button></div><div class="pn-body"></div></div>';
+  w.innerHTML='<div style="background:#fff;max-width:720px;margin:6vh auto;border-radius:12px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.2)"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><b style="font-size:15px">🆕 สาขาที่เพิ่งปัก ผรม.</b><button class="btn" id="prn-csv" type="button" style="margin-left:auto;display:none">⬇ Export CSV</button><button class="btn" id="prn-x" type="button">✕ ปิด</button></div><div class="pn-body"></div></div>';
   document.body.appendChild(w);
   w.addEventListener("click",function(e){if(e.target===w){w.style.display="none";return;}var b=e.target.closest&&e.target.closest("[data-prnd]");if(b){PRN_D=+b.getAttribute("data-prnd");renderKPI();prnRender();return;}
     var tr=e.target.closest&&e.target.closest("tr[data-prn]");if(tr){var s=BYC[tr.getAttribute("data-prn")];w.style.display="none";if(s){if(s.ll)onMarkerClick(s);else{selCode=s.code;selProv=s.prov;openPanel();renderDetail();drawMarkers();}}}});
   $("prn-x").onclick=function(){w.style.display="none";};
-  $("k-prn-box").addEventListener("click",function(){w.style.display="block";prnRender();});
+  // 22 ต.ค. (จี "Export ไม่ได้"): CSV = รายการเดียวกับที่เห็น (ช่วงวัน + ตัวกรองด้านบน) · member ไม่เห็นปุ่ม (เหมือนปุ่ม CSV หลัก)
+  $("prn-csv").onclick=function(){if(PLOG.st!=="ok"){toast("ประวัติ ผรม. ยังโหลดไม่เสร็จ");return;}var inF={};filtered().forEach(function(r){inF[r.code]=1;});
+    var L=prNew().filter(function(x){return inF[x.code];}),R=[["วันที่ปัก","เวลา","Code","สาขา","จังหวัด","ผรม.","ผรม. เดิม","โดย"]];
+    L.forEach(function(x){var s=BYC[x.code]||{};R.push([x.at.slice(0,10),x.at.slice(11,16),x.code,s.name||"",s.prov||"",x.value,x.first?"ปักครั้งแรก":(x.prev||""),x.by]);});
+    var csv="﻿"+R.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(",");}).join("\r\n");
+    var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="prm_recent_"+(PRN_D>=9999?"all":PRN_D+"d")+"_"+smNow().slice(0,10)+".csv";a.click();toast("⬇ Export "+L.length+" สาขา");};
+  $("k-prn-box").addEventListener("click",function(){$("prn-csv").style.display=(SMROLE&&SMROLE!=="member")?"":"none";w.style.display="block";prnRender();});
   renderKPI();})();
 </script>
 </body></html>
