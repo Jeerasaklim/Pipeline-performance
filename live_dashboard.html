@@ -1169,7 +1169,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=163625" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=115118" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -7852,7 +7852,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ".rg-warn{background:var(--ybg);border:1px solid var(--ymid);color:var(--rg-pend);border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:13px}.rg-warn ul{margin:6px 0 0;padding-left:20px}",
     ".rg-errbox{color:var(--rg-bad)}.rg-errbox b{color:var(--rg-bad)}.rg-retry{margin-top:10px}",
     "#tab-registration .rg-coh .rg-src,#tab-registration .rg-src{margin:10px 0 14px}#rg-drawer{width:760px}#rg-drawer table.rg-dt td{white-space:nowrap}#rg-drawer table.rg-dt td:first-child{white-space:normal;min-width:110px}",
-    "#rg-drawer .section-label{margin:16px 0 8px}#rg-drawer table.rg-dt td{vertical-align:middle}.rg-dfoot{margin-top:14px}"
+    "#rg-drawer .section-label{margin:16px 0 8px}#rg-drawer table.rg-dt td{vertical-align:middle}.rg-dfoot{margin-top:14px}",
+    "table.rg-t td.rg-dc.rg-dcw{white-space:normal;min-width:120px;max-width:170px;line-height:1.35}.rg-pt{color:var(--rg-pend);font-weight:600}"   /* 22 ต.ค. ข้อความในชีต (กำลังขอ) ตัดบรรทัดได้ */
   ].join("");
   document.head.appendChild(css);
 
@@ -8409,7 +8410,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function twoTables(c) {
     var key = c.coh + "-" + c.w, T = tally(c.rows, c.stat);
     var rk = function (r) { return c.stat(r).st; };
-    var list = sortRows(byStatus(c.rows, c.stat), rk, c.coh), pg = pageOf(key, list);
+    var list = sortRows(byStatus(c.rows, c.stat), rk, c.coh), pg = c.noPage ? { items: list, p: 0, n: 1, total: list.length } : pageOf(key, list);   // noPage: ทุกสาขาในหน้าเดียว (เลื่อนในตาราง)
     var msg = c.rows.length ? (list.length ? "" : "ไม่มีสาขาตรงตัวกรองสถานะ — กด “ล้างตัวกรอง” หรือเลือกสถานะอื่น") : "ไม่มีสาขาในกลุ่ม/ตัวกรองนี้ — ลองเปลี่ยนกลุ่ม หรือกด “ล้างตัวกรอง”";
     var b1 = pg.items.map(function (r) { return rowOpen(c.coh, r) + siteTd(r) + infoTd(c.coh, r) + c.row1(r) + '<td class="rg-nw">' + stWord(c.stat(r)) + "</td>" + (c.tail ? c.tail(r) : "") + "</tr>"; }).join("") || emptyRow(c.n1, msg);
     var b2 = c.body2 ? c.body2(pg.items) : pg.items.map(function (r) { return rowOpen(c.coh, r) + siteTd(r) + infoTd(c.coh, r) + c.row2(r) + "</tr>"; }).join("");
@@ -8484,16 +8485,22 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function bLic() {
     var m = OM();
     var sh = OLIC.map(function (l) { return '<th class="rg-sh" title="เตือนล่วงหน้า ' + (m.lead[l[0]] != null ? m.lead[l[0]] + " วันก่อนหมดอายุ" : "ไม่ระบุ") + '">' + esc(l[1]) + "<span>" + (m.lead[l[0]] != null ? "D-" + m.lead[l[0]] : "&nbsp;") + "</span></th>"; }).join("");
-    return twoTables({ coh: "b", w: "license", rows: rowsB(), stat: function (r) { return bStat(r, "license"); },
+    // 22 ต.ค. (จี "1 สาขามันควรมี 1 แถว"): ตารางวันที่ = 1 สาขา 1 แถว × 9 ใบ (เดิม 9 แถวต่อสาขา) · ผลเทียบบัญชีอยู่ใน tooltip + ⚠️ · แบบเต็มดูในหน้าต่างสาขา · ไม่แบ่งหน้า
+    function ldc(r, l) {
+      if (!r.inReg) return '<td class="rg-dc rg-muted">–</td>';
+      var x = r.lic[l[0]], ci = CMPI[x.cmp.k] || CMPI.none, flag = x.cmp.k === "warn" || x.cmp.k === "bad";
+      var tip = l[1] + " · ทะเบียน: " + (x.raw || "ว่าง") + " · บัญชี: " + (x.acc == null ? "ไม่มีข้อมูลร้านนี้" : (x.acc || "–")) + " · ผลเทียบ: " + x.cmp.t;
+      var v = x.s === "none" ? '<span class="rg-muted">ว่าง</span>' : (x.s === "na" ? '<span class="rg-muted">–</span>' :
+        (x.s === "prog" ? '<span class="rg-pt">' + esc(x.raw) + "</span>" : (x.s === "over" ? '<b class="rg-badt">' + esc(x.raw) + "</b>" : (x.s === "due" ? "<b>" + esc(x.raw) + "</b>" : esc(x.raw)))));
+      return '<td class="rg-dc' + (x.s === "prog" ? " rg-dcw" : "") + '" title="' + esc(tip) + '">' + v + (flag ? ' <span title="' + esc(x.cmp.t) + '">' + ci[0] + "</span>" : "") +
+        (x.exp ? '<div class="rg-d">' + (x.left < 0 ? "หมดแล้ว " + (-x.left) + " วัน" : "เหลือ " + x.left + " วัน") + "</div>" : "") + "</td>";
+    }
+    return twoTables({ coh: "b", w: "license", rows: rowsB(), stat: function (r) { return bStat(r, "license"); }, noPage: true,
       th1: "<tr>" + infoTh("b") + sh + "<th>สถานะ</th></tr>", n1: 3 + OLIC.length,
       row1: function (r) { return OLIC.map(function (l) { return r.inReg ? hasTd(r.lic[l[0]], l) : symTd("none", l[1] + " · ร้านนี้ไม่อยู่ในชีตทะเบียน"); }).join(""); },
-      th2: LIC_TH2, n2: 5,
-      body2: function (items) {
-        return items.map(function (r) {
-          return '<tr class="rg-grp rg-orow" data-ocode="' + esc(r.code) + '" tabindex="0"><td colspan="5"><b>' + esc(r.code) + "</b> " + esc(r.name) + ' <span class="rg-muted">· ' + esc(r.prov || DASH) +
-            " · บัญชีจ่ายล่าสุด (ใบใดก็ได้) " + esc(fmtIso(r.accLast) || DASH) + "</span></td></tr>" + licRows(r);
-        }).join("");
-      } });
+      th2: "<tr>" + infoTh("b") + OLIC.map(function (l) { return "<th>" + esc(l[1]) + "</th>"; }).join("") + "</tr>", n2: 2 + OLIC.length,
+      row2: function (r) { return OLIC.map(function (l) { return ldc(r, l); }).join(""); },
+      note: "ตารางวันที่: วันหมดอายุ / ข้อความในชีตทะเบียน · ⚠️ / 🔴 = ไม่ตรงกับบัญชีหรือหมดอายุ (ชี้ที่ช่องเพื่อดู) · ผลเทียบ ทะเบียน × บัญชี × Oper แบบเต็ม = กดแถวเปิดหน้าต่างสาขา" });
   }
   // 9 ต.ค.: หน้า ใบอนุญาต = มีใบหรือยัง · หน้า ต่ออายุ = เฉพาะใบที่มีวันหมดอายุ
   function hasTd(x, l) {
