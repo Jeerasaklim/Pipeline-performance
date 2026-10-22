@@ -1169,7 +1169,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=111408" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=163625" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -7718,91 +7718,6 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
 })();
 
 </script>
-<script>/*REG-STEPS*/
-/* ============================================================================
- * reg-steps.js — ขั้นตอนขอใบอนุญาต สาขาใหม่ (จี 22 ต.ค. 2026 · PRD_Registration.md §12)
- * กติกาล้วน (ไม่มี DOM) — registration-tab.js เรียกผ่าน window.RegSteps · ทดสอบด้วย node ได้
- * ขั้น: ยื่นเอกสาร → (ประชาพิจารณ์ = ขั้นย่อยของยื่น เฉพาะใบอันตราย) → ตรวจร้าน → รัฐแจ้งชำระ → CJX ชำระ → Clear Adv. → รับเอกสาร
- *   ขั้นที่หน่วยงานนั้นไม่มี ("–" บน whiteboard = ไม่ต้องทำ) ไม่อยู่ใน flow ของใบนั้นเลย
- * ที่มาของสถานะ: Log ในแอป (GAS แท็บ RegStep_Log — เพิ่มต่อท้ายอย่างเดียว) + วัน "ยื่น/ได้" เดิมในชีต Template_งานทะเบียน
- *   ⛔ สำเนากติกากลุ่มชีต (TPL) อยู่ใน GO_webapp.gs REG_STEP_* ด้วย — แก้ที่นี่ต้องแก้ที่นั่น
- * ========================================================================== */
-(function (root) {
-  "use strict";
-  var STEP = {
-    sub: { n: "ยื่นเอกสาร", s: "ยื่น" }, hear: { n: "ประชาพิจารณ์", s: "ประชาพิจารณ์", sub: 1 }, insp: { n: "ตรวจร้าน", s: "ตรวจร้าน" },
-    notice: { n: "รัฐแจ้งชำระ", s: "แจ้งชำระ" }, pay: { n: "CJX ชำระ", s: "ชำระ" }, adv: { n: "Clear Adv.", s: "Clear Adv." }, recv: { n: "รับเอกสาร", s: "รับใบ" }
-  };
-  var AG = {
-    local: { n: "ท้องถิ่น", payer: "รัฐกิจ", flow: ["sub", "insp", "notice", "pay", "adv", "recv"] },
-    haz: { n: "ท้องถิ่น", payer: "รัฐกิจ", flow: ["sub", "hear", "insp", "notice", "pay", "adv", "recv"] },
-    excise: { n: "สรรพสามิต", payer: "บัญชี", flow: ["sub", "notice", "pay", "recv"] },
-    feed: { n: "ปศุสัตว์", payer: "บัญชี", flow: ["sub", "notice", "pay", "recv"] },
-    carc: { n: "ปศุสัตว์", payer: "รัฐกิจ", flow: ["sub", "pay", "adv", "recv"] }
-  };
-  // tpl = กลุ่มช่องในชีต Template_งานทะเบียน (key ใน AFTER_REG cells: <tpl>_s ยื่น / <tpl>_g ได้) · ยาสูบไม่มีช่องในชีต → Log อย่างเดียว
-  var LICS = [
-    { k: "l1", n: "สุรา ป.1 (ส่ง)", ag: "excise", tpl: "rg_liquor" }, { k: "l2", n: "สุรา ป.2 (ปลีก)", ag: "excise", tpl: "rg_liquor" },
-    { k: "l3", n: "ยาสูบ ป.2", ag: "excise", tpl: null }, { k: "l4", n: "ค้าซากสัตว์", ag: "carc", tpl: "rg_carcass" },
-    { k: "l5", n: "อาหารสัตว์", ag: "feed", tpl: "rg_liquor" }, { k: "l6", n: "สะสมอาหาร", ag: "local", tpl: "rg_food" },
-    { k: "l7", n: "จำหน่ายอาหาร", ag: "local", tpl: "rg_food" }, { k: "l8", n: "อันตราย (ยาฆ่าแมลง)", ag: "haz", tpl: "rg_pest" },
-    { k: "l9", n: "อันตราย (แก๊ส)", ag: "haz", tpl: "rg_gas" }
-  ];
-  var BYK = {}; LICS.forEach(function (l) { BYK[l.k] = l; });
-  var OPS = { done: 1, undo: 1, na: 1, una: 1 };
-
-  function iso(v) { var m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(String(v || "").trim()); return m ? m[1] + "-" + ("0" + m[2]).slice(-2) + "-" + ("0" + m[3]).slice(-2) : ""; }
-  function flowOf(k) { var l = BYK[k]; return l ? AG[l.ag].flow : []; }
-  function stepName(k, st) { var l = BYK[k]; return STEP[st] ? STEP[st].n + (st === "pay" && l ? " (" + AG[l.ag].payer + ")" : "") : st; }
-
-  /** Log ทั้งหมด → { code: { lic: { steps:{st:{date,by,at}}, na:true|false|undefined, hist:[entry] } } } · เรียงตาม at (เก่า→ใหม่) */
-  function fold(log) {
-    var out = {};
-    (log || []).slice().sort(function (a, b) { return String(a.at) < String(b.at) ? -1 : (String(a.at) > String(b.at) ? 1 : 0); }).forEach(function (e) {
-      if (!e || !BYK[e.lic] || !OPS[e.op]) return;
-      var c = out[e.code] = out[e.code] || {}, x = c[e.lic] = c[e.lic] || { steps: {}, na: undefined, hist: [] };
-      x.hist.push(e);
-      if (e.op === "done" && STEP[e.step]) x.steps[e.step] = { date: iso(e.date), by: e.by || "", at: e.at || "" };
-      else if (e.op === "undo") delete x.steps[e.step];
-      else if (e.op === "na") x.na = true;
-      else if (e.op === "una") x.na = false;
-    });
-    return out;
-  }
-
-  /** สถานะ 1 ใบของ 1 สาขา
-   * fc = fold()[code] (ทุกใบของสาขานั้น หรือ undefined) · cells = AFTER_REG row.cells (ช่องยื่น/ได้ในชีต)
-   * คืน { k, flow, steps:{st:{date,src}}, na, naSrc, doneIdx, next, done, key, label } */
-  function state(fc, k, cells) {
-    var l = BYK[k], flow = flowOf(k), steps = {}, x = (fc && fc[k]) || { steps: {}, na: undefined, hist: [] };
-    Object.keys(x.steps).forEach(function (st) { if (flow.indexOf(st) >= 0) steps[st] = { date: x.steps[st].date, by: x.steps[st].by, src: "log" }; });
-    var cs = l && l.tpl && cells ? cells[l.tpl + "_s"] : null, cg = l && l.tpl && cells ? cells[l.tpl + "_g"] : null;
-    var tplNa = !!((cs && cs.na) || (cg && cg.na));
-    // วันในชีต = ขั้นยื่น/รับ ของทั้งกลุ่ม — Log มาก่อนเสมอ
-    // ช่องยื่นในชีตที่ Log เขียนเอง (= วันยื่นแรกสุดของกลุ่ม) ห้ามนับเป็น "ยื่นแล้ว" ให้ใบอื่นในกลุ่ม → ใช้ค่าชีตเฉพาะเมื่อเก่ากว่าวันยื่นใน Log ทุกใบ (= ข้อมูลเดิมก่อนมี Log)
-    var gsub = LICS.filter(function (o) { return l && o.tpl && o.tpl === l.tpl && fc && fc[o.k] && fc[o.k].steps.sub; }).map(function (o) { return fc[o.k].steps.sub.date; }).sort();
-    var csd = cs && !cs.na ? iso(cs.v) : "";
-    if (!steps.sub && csd && (!gsub.length || csd < gsub[0])) steps.sub = { date: csd, src: "sheet" };
-    if (!steps.recv && cg && !cg.na && iso(cg.v)) steps.recv = { date: iso(cg.v), src: "sheet" };
-    var logged = Object.keys(x.steps).length > 0;
-    var na = x.na !== undefined ? x.na : (logged ? false : tplNa), naSrc = x.na !== undefined ? "log" : (na ? "sheet" : "");
-    var doneIdx = -1; flow.forEach(function (st, i) { if (steps[st]) doneIdx = i; });
-    var done = !na && !!steps.recv, next = na || done ? null : flow[doneIdx + 1];
-    var key = na ? "na" : (done ? "done" : (doneIdx < 0 ? "none" : next));
-    var label = na ? "ไม่ต้องขอ" : (done ? "ได้ใบแล้ว" : (doneIdx < 0 ? "ยังไม่ยื่น" : "รอ" + STEP[next].s));
-    return { k: k, flow: flow, steps: steps, na: na, naSrc: naSrc, doneIdx: doneIdx, next: next, done: done, key: key, label: label, hist: x.hist };
-  }
-  /** ขั้นล่าสุดที่ "ย้อนได้" = ขั้นสูงสุดที่มาจาก Log (ขั้นจากชีตย้อนไม่ได้ — แก้ในชีต) */
-  function undoable(s) { for (var i = s.flow.length - 1; i >= 0; i--) { var v = s.steps[s.flow[i]]; if (v) return v.src === "log" ? s.flow[i] : null; } return null; }
-  /** ตัวกรอง "ค้างขั้นไหน" — ลำดับคงที่ */
-  var KEYS = [["none", "ยังไม่ยื่น"], ["hear", "รอประชาพิจารณ์"], ["insp", "รอตรวจร้าน"], ["notice", "รอรัฐแจ้งชำระ"], ["pay", "รอ CJX ชำระ"], ["adv", "รอ Clear Adv."], ["recv", "รอรับเอกสาร"], ["done", "ได้ใบแล้ว"], ["na", "ไม่ต้องขอ"]];
-
-  var api = { STEP: STEP, AG: AG, LICS: LICS, KEYS: KEYS, byKey: function (k) { return BYK[k] || null; }, flowOf: flowOf, stepName: stepName, fold: fold, state: state, undoable: undoable, iso: iso };
-  root.RegSteps = api;
-  if (typeof module !== "undefined" && module.exports) module.exports = api;
-})(typeof window !== "undefined" ? window : this);
-
-</script>
 <script>/*REGISTRATION-TAB*/
 /* ============================================================================
  * registration-tab.js — แท็บ Registration and License (จี 8 ต.ค. 2026)
@@ -7937,13 +7852,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ".rg-warn{background:var(--ybg);border:1px solid var(--ymid);color:var(--rg-pend);border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:13px}.rg-warn ul{margin:6px 0 0;padding-left:20px}",
     ".rg-errbox{color:var(--rg-bad)}.rg-errbox b{color:var(--rg-bad)}.rg-retry{margin-top:10px}",
     "#tab-registration .rg-coh .rg-src,#tab-registration .rg-src{margin:10px 0 14px}#rg-drawer{width:760px}#rg-drawer table.rg-dt td{white-space:nowrap}#rg-drawer table.rg-dt td:first-child{white-space:normal;min-width:110px}",
-    "#rg-drawer .section-label{margin:16px 0 8px}#rg-drawer table.rg-dt td{vertical-align:middle}.rg-dfoot{margin-top:14px}",
-    /* 22 ต.ค. ขั้นตอนขอใบอนุญาต */
-    "table.rg-t td.rg-sc{font-size:13px;min-width:74px;line-height:1.2}.rg-sk{font-size:11px;font-weight:600;margin-top:2px;white-space:nowrap}table.rg-t td.rg-sc.rg-s-pend .rg-sk{color:var(--rg-pend)}",
-    "#rg-drawer table.rg-stt td{white-space:normal;vertical-align:top}.rg-sp{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--s3);color:var(--t3);white-space:nowrap;margin:2px 0}",
-    ".rg-sp.on{background:var(--gbg);color:var(--rg-ok)}.rg-sp.cur{background:var(--surface);color:var(--blue);box-shadow:inset 0 0 0 1.5px var(--blue)}.rg-sp.skip{background:var(--s2);color:var(--t3);text-decoration:line-through}.rg-sp.sub{font-size:10.5px;font-style:italic}.rg-sp i{font-style:normal;font-weight:500;opacity:.8}",
-    ".rg-spa{color:var(--t4,#cbd5e1);margin:0 2px}.rg-sc2{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}.rg-sc2 select{font:inherit;font-size:12px;height:28px;border:1px solid var(--border2);border-radius:7px;max-width:170px}.rg-sc2 .sp-btn{padding:4px 10px;font-size:12px}",
-    ".rg-sh2{margin-top:4px;font-size:11.5px;color:var(--t2)}.rg-sh2 summary{cursor:pointer;color:var(--blue);font-weight:600}.rg-sh2 div{padding:1px 0}"
+    "#rg-drawer .section-label{margin:16px 0 8px}#rg-drawer table.rg-dt td{vertical-align:middle}.rg-dfoot{margin-top:14px}"
   ].join("");
   document.head.appendChild(css);
 
@@ -8052,7 +7961,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function regPost(body, retried) {
     var url = window.DPT_GAS_URL;
     if (!url) return Promise.reject(new Error("ยังไม่ได้ต่อ backend (โหมดทดสอบ)"));
-    body.action = body.action || "regSet"; body.token = window.DPT_ID_TOKEN || "";   // 22 ต.ค.: regStep ใช้ทางเดียวกัน
+    body.action = "regSet"; body.token = window.DPT_ID_TOKEN || "";
     return fetch(url, { method: "post", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
       .then(function (r) { return r.text(); })
       .then(function (t) { var j; try { j = JSON.parse(t); } catch (e) { throw new Error("Google ส่งผลกลับไม่ถึง — ยังไม่รู้ว่าบันทึกสำเร็จไหม ให้เปิดดูอีกครั้งหลังโหลดใหม่"); }
@@ -8107,14 +8016,13 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       var s = rowState(r);
       h += '<div class="rg-dsub">วันเปิด (ชีตทะเบียน) ' + esc(r.open || DASH) + " · " + esc(r.prov || "") + " · ค้าง " + s.pend + " / " + s.n + " ใบ" + (s.over ? ' · <span class="rg-bad">หลุด SLA</span>' : "") + "</div>" +
         '<div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เอกสาร</th><th>เดดไลน์</th><th>สถานะ</th><th>วันที่</th></tr></thead><tbody>' +
-        RCOLS.filter(function (g) { return STEP_GROUPS.indexOf(g[0]) < 0; }).map(function (g) {   // 22 ต.ค.: กลุ่มใบอนุญาต → ส่วนขั้นตอนด้านล่าง (กรอกที่เดียว)
+        RCOLS.map(function (g) {
           return g[1].map(function (c) {
             var x = r.cells[c[0]] || {};
             var stt = x.na ? '<span class="rg-na">ไม่ต้องทำ' + (x.skip ? "" : " (ตามจังหวัด)") + "</span>" : (x.v ? '<span class="rg-ok">✓ ทำแล้ว</span>' : (x.left != null && x.left < 0 ? '<span class="rg-bad">เลยมา ' + (-x.left) + " วัน</span>" : (x.left != null ? "เหลือ " + x.left + " วัน" : "ยังไม่ทำ")));
             return "<tr><td>" + esc(boxName(c[0])) + "</td><td>" + esc(x.dl || DASH) + "</td><td>" + stt + "</td><td>" + ((x.na && !x.skip) ? DASH : dateIn(cols[c[0]], x.skip ? "-" : x.v, true)) + "</td></tr>";
           }).join("");
-        }).join("") + "</tbody></table></div>" +
-        '<div class="section-label" style="margin-top:14px">📄 ขั้นตอนขอใบอนุญาต <span class="rg-muted" style="font-weight:500">· กดบันทึกแล้วลงทันที (ไม่ต้องกดปุ่มบันทึกด้านล่าง)</span></div><div id="rg-stepbox">' + stepBox(r) + "</div>";
+        }).join("") + "</tbody></table></div>";
     } else h += '<div class="rg-dsub">สาขานี้ไม่อยู่ในกลุ่มเอกสารทะเบียน (ยังไม่ยื่น อ.1 หรือเปิดแล้ว)</div>';
     if (u) h += '<div class="section-label" style="margin-top:14px">น้ำ-ไฟ · SLA ให้ทันวันเปิด (D-0)</div><div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เรื่อง</th><th>ขั้น</th><th>เตรียม</th><th>ขอ</th><th>ได้</th></tr></thead><tbody>' +
       UTRK.map(function (t) { var x = u.t[t[1]] || {}, c = UCOLS[t[1]]; return "<tr><td>" + t[0] + "</td><td>" + (x.s ? USTEP[x.s] : DASH) + "</td><td>" + dateIn(c[0], x.prep) + "</td><td>" + dateIn(c[1], x.req) + "</td><td>" + dateIn(c[2], x.got) + "</td></tr>"; }).join("") + "</tbody></table></div>";
@@ -8122,130 +8030,11 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       : '<div class="rg-dsub" style="margin-top:12px">ดูอย่างเดียว — บันทึกได้เฉพาะ Admin</div>';
     drawer(code + " · " + ((r && r.name) || (u && u.name) || ""), h);
     var sb = document.getElementById("rg-save"); if (sb) sb.onclick = function () { saveDrawer(code); };
-    if (r) bindStepBox(r);
     [].forEach.call(document.querySelectorAll("#rg-drawer .rg-w"), function (w) {
       var di = w.querySelector(".rg-in"), sk = w.querySelector(".rg-skip");
       function mark() { w.classList.toggle("dirty", wval(w) !== w.getAttribute("data-orig")); w.classList.remove("saved", "err"); }
       di.onchange = mark;
       if (sk) sk.onchange = function () { di.disabled = sk.checked || !canEdit(); if (sk.checked) di.value = ""; mark(); };
-    });
-  }
-
-  /* ===== 22 ต.ค. ขั้นตอนขอใบอนุญาต สาขาใหม่ (PRD_Registration.md §12) — กติกา = window.RegSteps (reg-steps.js)
-   * Log อยู่ในแอป (GAS getRegSteps / regStep → แท็บ RegStep_Log ชีต state) · วันยื่น/ได้เดิมในชีต Template = ขั้นยื่น/รับ
-   * บันทึกได้เฉพาะ Admin · กดบันทึก = วันนี้ (แก้วันได้) · ย้อนได้เฉพาะขั้นที่มาจาก Log ===== */
-  var STEP_GROUPS = ["สุรา+อาหารสัตว์", "ค้าซากสัตว์", "สะสม+จำหน่าย", "ยาฆ่าแมลง", "แก็ซ"];   // กลุ่ม RCOLS ที่ย้ายไปกรอกเป็นขั้นตอน
-  var STP = { st: "idle", log: [], err: "", F: null };
-  function RS() { return window.RegSteps || null; }
-  function stepFold() { if (!STP.F) STP.F = RS().fold(STP.log); return STP.F; }
-  function licState(r, k) { return RS().state(stepFold()[r.code], k, r.cells); }
-  function loadSteps(force) {
-    if (!allowed() || !RS() || STP.st === "loading" || (STP.st === "ok" && !force)) return;
-    var u = window.DPT_GAS_URL, tk = window.DPT_ID_TOKEN || "";
-    if (!u || !tk) { STP.st = "err"; STP.err = !u ? "ยังไม่ได้ต่อ backend (โหมดทดสอบ)" : "ยังไม่ได้เข้าสู่ระบบ"; render(); return; }
-    STP.st = "loading";
-    var url = u + (u.indexOf("?") < 0 ? "?" : "&") + "action=getRegSteps&token=" + encodeURIComponent(tk);
-    (typeof window.DPT_hedgedGet === "function" ? window.DPT_hedgedGet(url) : fetch(url, { redirect: "follow" }).then(function (x) { return x.json(); }))
-      .then(function (j) {
-        if (!j || !j.ok) throw new Error((j && j.error) || "โหลดไม่สำเร็จ");
-        if (!Array.isArray(j.log)) throw new Error("Apps Script ยังไม่ใช่ฉบับที่มีขั้นตอนใบอนุญาต — ต้องวาง GO_webapp.gs ใหม่แล้ว Deploy");   // กัน backend เก่าตอบอย่างอื่นกลับมาแล้วดูเหมือน "ยังไม่มีใครบันทึก"
-        STP.log = j.log; STP.F = null; STP.st = "ok"; render();
-      })
-      .catch(function (e) { STP.st = "err"; STP.err = String((e && e.message) || e); render(); });
-  }
-  // สถานะการโหลด Log ต้องเห็นชัด — โหลดไม่ได้ ≠ ยังไม่มีใครบันทึก
-  function stepGate() {
-    if (!RS()) return stateBox("rg-errbox", "<b>🔴 ไม่พบโมดูลขั้นตอนใบอนุญาต (reg-steps.js)</b>");
-    if (STP.st === "idle" && sec.classList.contains("active")) loadSteps();
-    if (STP.st === "ok") return "";
-    if (STP.st === "err") return stateBox("rg-errbox", "<b>🔴 โหลดประวัติขั้นตอนใบอนุญาตไม่สำเร็จ</b><br>" + esc(STP.err) + "<br>สถานะขั้นยังไม่แสดง — ไม่ได้แปลว่ายังไม่มีใครบันทึก<br>" +
-      '<button type="button" class="sp-btn pri rg-retry" id="rg-sretry">ลองโหลดอีกครั้ง</button>');
-    return stateBox("", "<b>กำลังโหลดประวัติขั้นตอนใบอนุญาต…</b><br>ระหว่างนี้ยังไม่มีสถานะขั้น (ไม่ใช่ยังไม่มีใครบันทึก)");
-  }
-  var SK_CLS = { none: "none", done: "done", na: "na" };
-  function stepCell(s, l) {
-    var cls = SK_CLS[s.key] || "pend", sym = s.key === "none" ? SYM.none : (s.key === "done" ? "✓" : (s.key === "na" ? "–" : "⏳"));
-    var tip = l.n + " · " + s.label + (s.naSrc === "sheet" ? " (ชีตใส่ -)" : "") + s.flow.filter(function (st) { return s.steps[st]; }).map(function (st) { return " · " + RS().STEP[st].n + " " + fmtIso(s.steps[st].date) + (s.steps[st].src === "sheet" ? " (ชีต)" : ""); }).join("");
-    return '<td class="rg-c rg-sc rg-s-' + cls + '" title="' + esc(tip) + '">' + sym + (cls === "pend" ? '<div class="rg-sk">' + esc(s.label) + "</div>" : (s.key === "none" ? '<div class="rg-sk rg-muted">ยังไม่ยื่น</div>' : "")) + "</td>";
-  }
-  function stepsView() {
-    freshen();
-    var h = filterBar();
-    if (F.grp === "open") return h + stateBox("", "ขั้นตอนขอใบอนุญาต มีเฉพาะสาขาใหม่ — เลือกกลุ่มสาขาใหม่เพื่อดู");
-    h += '<div class="rg-coh"><div class="rg-coh-h"><span class="rg-coh-t rg-coh-a">สาขาใหม่ (ยังไม่เปิด)</span><span class="rg-coh-s">ทุกสาขาที่ยื่น อ.1 แล้ว ยังไม่เปิด' + (ready() ? " · " + REG().rows.filter(passCommon).length + " สาขา" : "") + "</span></div>";
-    if (!ready()) return h + waitMsg() + "</div>";
-    var g = stepGate(); if (g) return h + g + "</div>";
-    var L = RS().LICS, lics = F.sl ? L.filter(function (l) { return l.k === F.sl; }) : L;
-    var rows = REG().rows.filter(passCommon).map(function (r) { var m = {}; L.forEach(function (l) { m[l.k] = licState(r, l.k); }); return { r: r, m: m }; });
-    var cnt = {}; rows.forEach(function (x) { lics.forEach(function (l) { var k = x.m[l.k].key; cnt[k] = (cnt[k] || 0) + 1; }); });
-    var list = rows.filter(function (x) { return !F.sk || lics.some(function (l) { return x.m[l.k].key === F.sk; }); });
-    var act = function (x) { return lics.filter(function (l) { var k = x.m[l.k].key; return k !== "done" && k !== "na"; }).length; };
-    list.sort(function (a, b) { return (act(b) > 0) - (act(a) > 0) || String(a.r.open_iso || "9").localeCompare(String(b.r.open_iso || "9")) || (a.r.code < b.r.code ? -1 : 1); });
-    var chips = RS().KEYS.filter(function (k) { return cnt[k[0]]; }).map(function (k) {
-      var cls = SK_CLS[k[0]] || "pend";
-      return '<button type="button" class="rg-chip rg-chip-' + cls + (F.sk === k[0] ? " on" : "") + '" data-sk="' + k[0] + '">' + esc(k[1]) + " <b>" + cnt[k[0]] + "</b> ใบ</button>";
-    }).join("");
-    var sel = '<select id="rg-sl"><option value="">ใบอนุญาต: ทุกใบ</option>' + L.map(function (l) { return '<option value="' + l.k + '"' + (F.sl === l.k ? " selected" : "") + ">" + esc(l.n) + "</option>"; }).join("") + "</select>";
-    var th = "<tr>" + infoTh("a") + lics.map(function (l) { return '<th class="rg-sh">' + esc(l.n) + "<span>" + esc(RS().AG[l.ag].n) + "</span></th>"; }).join("") + "<th>ค้าง</th></tr>";
-    var body = list.map(function (x) {
-      var n = act(x);
-      return rowOpen("a", x.r) + siteTd(x.r) + infoTd("a", x.r) + lics.map(function (l) { return stepCell(x.m[l.k], l); }).join("") + '<td class="rg-nw">' + (n ? '<span class="rg-st rg-st-pend">⏳ ' + n + " ใบ</span>" : '<span class="rg-st rg-st-done">✓ ครบ</span>') + "</td></tr>";
-    }).join("") || emptyRow(3 + lics.length, rows.length ? "ไม่มีสาขาที่มีใบค้างขั้นนี้ — กดแถบเดิมอีกครั้งเพื่อยกเลิก" : "ไม่มีสาขาในตัวกรองนี้");
-    return h + '<div class="rg-bar">' + sel + "</div>" + '<div class="rg-strip">' + chips + "</div>" +
-      '<div class="rg-tl">ใบอนุญาตแต่ละใบอยู่ขั้นไหน <span>· ' + list.length + " สาขา · มีใบค้างขึ้นก่อน แล้วเรียงวันเปิดใกล้สุด · กดแถวเพื่อบันทึกขั้น" + (canEdit() ? "" : " (ดูอย่างเดียว — บันทึกได้เฉพาะ Admin)") + "</span></div>" +
-      tcard("rg-stp", th, body, "") +
-      '<div class="rg-tnote">ขั้นตอน (จีเคาะ 22 ต.ค.): ยื่นเอกสาร → ตรวจร้าน → รัฐแจ้งชำระ → CJX ชำระ → Clear Adv. → รับเอกสาร · แต่ละหน่วยงานมีเฉพาะขั้นที่ต้องทำ (สรรพสามิต/อาหารสัตว์ไม่มีตรวจร้านและ Clear Adv. · ค้าซากสัตว์ไม่มีตรวจร้านและรัฐแจ้งชำระ) · ประชาพิจารณ์ = ขั้นย่อยของยื่นเอกสาร (ใบอันตราย)</div>' +
-      '<div class="rg-src">ที่มา: Log ในแอป (แท็บ RegStep_Log) + วันยื่น/ได้เดิมในชีต Template_งานทะเบียน (ผ่าน Tank G) · ยาสูบไม่มีช่องในชีต = Log อย่างเดียว</div></div>';
-  }
-  function stepBox(r) {
-    if (!RS()) return stateBox("rg-errbox", "ไม่พบโมดูลขั้นตอนใบอนุญาต");
-    if (STP.st !== "ok") { if (STP.st === "idle") loadSteps(); return STP.st === "err" ? stateBox("rg-errbox", "<b>🔴 โหลดประวัติขั้นตอนไม่สำเร็จ</b><br>" + esc(STP.err)) : stateBox("", "กำลังโหลดประวัติขั้นตอน…"); }
-    var t0 = todayIso();
-    return '<div class="table-wrap"><table class="data-table rg-dt rg-stt"><thead><tr><th>ใบอนุญาต</th><th>ขั้นตอน</th>' + (canEdit() ? "<th>บันทึก</th>" : "") + "</tr></thead><tbody>" +
-      RS().LICS.map(function (l) {
-        var s = licState(r, l.k), ag = RS().AG[l.ag];
-        var chips = s.na ? '<span class="rg-st rg-st-na">– ไม่ต้องขอ' + (s.naSrc === "sheet" ? " (ชีตใส่ -)" : "") + "</span>" : s.flow.map(function (st, i) {
-          var v = s.steps[st], cur = !v && st === s.next, implicit = !v && i < s.doneIdx;
-          return '<span class="rg-sp' + (v ? " on" : (cur ? " cur" : (implicit ? " skip" : ""))) + (RS().STEP[st].sub ? " sub" : "") + '" title="' + esc(RS().stepName(l.k, st) + (v ? " · " + fmtIso(v.date) + (v.src === "sheet" ? " (จากชีต)" : (v.by ? " · " + v.by : "")) : (implicit ? " · ไม่ได้บันทึก (ขั้นหลังบันทึกแล้ว)" : ""))) + '">' +
-            (v ? "✓ " : "") + esc(RS().STEP[st].s) + (v ? '<i>' + esc(fmtIso(v.date).slice(0, 5)) + "</i>" : "") + "</span>";
-        }).join('<span class="rg-spa">›</span>');
-        var hist = s.hist.length ? '<details class="rg-sh2"><summary>ประวัติ ' + s.hist.length + " รายการ</summary>" + s.hist.slice().reverse().map(function (e) {
-          return "<div>" + esc(String(e.at).slice(0, 16)) + " · " + esc(e.by) + " · " + esc({ done: "บันทึก", undo: "ย้อน", na: "ไม่ต้องขอ", una: "ยกเลิกไม่ต้องขอ" }[e.op] || e.op) + (e.step ? " " + esc(RS().STEP[e.step] ? RS().STEP[e.step].n : e.step) : "") + (e.date ? " " + esc(fmtIso(e.date)) : "") + "</div>";
-        }).join("") + "</details>" : "";
-        var ctl = "";
-        if (canEdit()) {
-          var left = s.flow.filter(function (st, i) { return i > s.doneIdx; }), un = RS().undoable(s);
-          ctl = '<td class="rg-nw"><span class="rg-sc2" data-lic="' + l.k + '">' + (s.na || s.done ? "" :
-            '<select class="rg-sst">' + left.map(function (st) { return '<option value="' + st + '"' + (st === s.next ? " selected" : "") + ">" + esc(RS().stepName(l.k, st)) + "</option>"; }).join("") + "</select>" +
-            '<input type="date" class="rg-in rg-sdt" value="' + t0 + '" max="' + addDays(t0, 30) + '"><button type="button" class="sp-btn pri rg-sgo">✓ บันทึก</button>') +
-            (un ? '<button type="button" class="sp-btn rg-sun" data-st="' + un + '" title="ย้อนขั้น ' + esc(RS().STEP[un].n) + '">↶ ย้อน</button>' : "") +
-            (s.done ? "" : '<button type="button" class="sp-btn rg-sna" data-op="' + (s.na ? "una" : "na") + '">' + (s.na ? "ต้องขอ" : "ไม่ต้องขอ") + "</button>") + "</span></td>";
-        }
-        return "<tr><td><b>" + esc(l.n) + '</b><div class="rg-d">' + esc(ag.n) + " · จ่ายโดย" + esc(ag.payer) + "</div></td><td>" + chips + hist + "</td>" + ctl + "</tr>";
-      }).join("") + "</tbody></table></div>";
-  }
-  function bindStepBox(r) {
-    var box = document.getElementById("rg-stepbox"); if (!box) return;
-    if (STP.st === "loading" || STP.st === "idle") { var w = setInterval(function () { if (STP.st !== "loading" && STP.st !== "idle") { clearInterval(w); var b2 = document.getElementById("rg-stepbox"); if (b2) { b2.innerHTML = stepBox(r); bindStepBox(r); } } }, 500); return; }
-    [].forEach.call(box.querySelectorAll(".rg-sc2"), function (c) {
-      var lic = c.getAttribute("data-lic"), go = c.querySelector(".rg-sgo"), un = c.querySelector(".rg-sun"), na = c.querySelector(".rg-sna");
-      function send(b, btn) {
-        [].forEach.call(c.querySelectorAll("button,select,input"), function (x) { x.disabled = true; }); btn.textContent = "กำลังบันทึก…";
-        b.action = "regStep"; b.code = r.code; b.lic = lic;
-        regPost(b).then(function (j) {
-          STP.log.push(j.entry); STP.F = null;
-          (j.tpl || []).forEach(function (t) { applyLocal(r.code, t.col, t.value); });
-          toast("✓ บันทึกแล้ว · " + RS().byKey(lic).n + ((j.tpl || []).length ? " · ลงชีต Template " + j.tpl.map(function (t) { return t.header + " = " + t.value; }).join(", ") : "") + ((j.warn || []).length ? " · " + j.warn.join(" · ") : ""), true);
-        }, function (e) { toast("บันทึกไม่สำเร็จ — " + ((e && e.message) || e), false); })
-          .then(function () { box.innerHTML = stepBox(r); bindStepBox(r); render(); });
-      }
-      if (go) go.onclick = function () {
-        var st = c.querySelector(".rg-sst").value, d = c.querySelector(".rg-sdt").value;
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) { toast("ใส่วันที่ก่อน", false); return; }
-        send({ op: "done", step: st, date: d }, go);
-      };
-      if (un) un.onclick = function () { if (window.confirm("ย้อนขั้น " + RS().STEP[un.getAttribute("data-st")].n + " ของ " + RS().byKey(lic).n + "? (บันทึกเป็นประวัติ — ชีต Template ไม่ถูกลบค่า)")) send({ op: "undo", step: un.getAttribute("data-st") }, un); };
-      if (na) na.onclick = function () { send({ op: na.getAttribute("data-op") }, na); };
     });
   }
 
@@ -8826,8 +8615,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   /* ---- ตัวกรอง (แถวเดียว เหมือนกันทุกหน้า · ใช้กับทั้งสองตาราง) ---- */
   function filterBar() {
     var sh = grpShow(), months = {}, provs = {}, ca = [], cb = [];
-    // หน้าขั้นตอน = ทุกสาขาที่ยังไม่เปิด (ไม่จำกัด D-25)
-    if (sh.a && REG()) REG().rows.filter(function (r) { return CURV === "steps" || inRange(r); }).forEach(function (r) { ca.push([r.code, r.code + " · " + r.name]); if (r.open_iso) months[r.open_iso.slice(0, 7)] = 1; if (r.prov) provs[r.prov] = 1; });
+    if (sh.a && REG()) REG().rows.filter(inRange).forEach(function (r) { ca.push([r.code, r.code + " · " + r.name]); if (r.open_iso) months[r.open_iso.slice(0, 7)] = 1; if (r.prov) provs[r.prov] = 1; });
     if (sh.b && OM()) OM().rows.forEach(function (r) { cb.push([r.code, r.code + " · " + r.name]); if (r.open_iso) months[r.open_iso.slice(0, 7)] = 1; if (r.prov) provs[r.prov] = 1; });
     var mlist = Object.keys(months).sort().map(function (m) { return [m, THM[+m.slice(5, 7) - 1] + " " + m.slice(0, 4)]; });
     var plist = Object.keys(provs).sort().map(function (p) { return [p, p]; });
@@ -8935,11 +8723,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     on("#rg-st", function () { F.st = this.value || "all"; });
     on("#rg-month", function () { F.month = this.value; });
     on("#rg-prov", function () { F.prov = this.value; });
-    var cl = v.querySelector("#rg-clear"); if (cl) cl.onclick = function () { F.q = ""; F.st = "all"; F.month = ""; F.prov = ""; F.u = ""; F.code = ""; F.grp = ""; F.range = "d25"; F.sl = ""; F.sk = ""; PG = {}; render(); };
-    on("#rg-sl", function () { F.sl = this.value; });                                       // หน้าขั้นตอนใบอนุญาต: เลือกใบ
-    [].forEach.call(v.querySelectorAll(".rg-chip[data-sk]"), function (k) { k.onclick = function () { var s = k.getAttribute("data-sk"); F.sk = F.sk === s ? "" : s; render(); }; });
-    var srt = v.querySelector("#rg-sretry"); if (srt) srt.onclick = function () { loadSteps(true); };
-    [].forEach.call(v.querySelectorAll(".rg-chip[data-st]"), function (k) { k.onclick = function () { var s = k.getAttribute("data-st"); F.st = F.st === s ? "all" : s; PG = {}; render(); }; });
+    var cl = v.querySelector("#rg-clear"); if (cl) cl.onclick = function () { F.q = ""; F.st = "all"; F.month = ""; F.prov = ""; F.u = ""; F.code = ""; F.grp = ""; F.range = "d25"; PG = {}; render(); };
+    [].forEach.call(v.querySelectorAll(".rg-chip"), function (k) { k.onclick = function () { var s = k.getAttribute("data-st"); F.st = F.st === s ? "all" : s; PG = {}; render(); }; });
     [].forEach.call(v.querySelectorAll("[data-pg]"), function (b) { b.onclick = function () { var k = b.getAttribute("data-pg"); PG[k] = (PG[k] || 0) + (+b.getAttribute("data-d")); render(); }; });
     [].forEach.call(v.querySelectorAll(".rg-det"), function (d) { d.ontoggle = function () { DET[d.getAttribute("data-det")] = d.open; }; });
     [].forEach.call(v.querySelectorAll(".rg-qcl"), function (k) { k.onclick = function () { goWork("qc", "", "b"); }; });
@@ -8956,7 +8741,6 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     house: [WORK.house.t, function () { return workView("house"); }],
     util: [WORK.util.t, function () { return workView("util"); }],
     license: [WORK.license.t, function () { return workView("license"); }],
-    steps: ["🧭 ขั้นตอนใบอนุญาต", function () { return stepsView(); }],   // 22 ต.ค. สาขาใหม่เท่านั้น
     renew: [WORK.renew.t, function () { return workView("renew"); }],
     trash: [WORK.trash.t, function () { return workView("trash"); }],
     signtax: [WORK.signtax.t, function () { return workView("signtax"); }],
@@ -8972,7 +8756,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         table(["Site Code", "ชื่อสาขา", "จังหวัด", "บริษัทประกัน", "เลขที่กรมธรรม์", "ความคุ้มครอง", "ทุนประกัน", "เบี้ยประกัน", "วันเริ่ม", "วันหมดอายุ", "สถานะ", "หมายเหตุ", "บันทึก"]);
     }]
   };
-  var ORDER = ["overview", "qc", "house", "util", "license", "steps", "renew", "trash", "signtax", "landtax", "insure"], CURV = "overview";
+  var ORDER = ["overview", "qc", "house", "util", "license", "renew", "trash", "signtax", "landtax", "insure"], CURV = "overview";
 
   var sec = document.createElement("section"); sec.id = "tab-registration"; sec.className = "tab-panel";
   sec.innerHTML =
