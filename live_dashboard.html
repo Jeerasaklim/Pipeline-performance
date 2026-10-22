@@ -1169,7 +1169,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=115118" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=131948" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -7853,6 +7853,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ".rg-errbox{color:var(--rg-bad)}.rg-errbox b{color:var(--rg-bad)}.rg-retry{margin-top:10px}",
     "#tab-registration .rg-coh .rg-src,#tab-registration .rg-src{margin:10px 0 14px}#rg-drawer{width:760px}#rg-drawer table.rg-dt td{white-space:nowrap}#rg-drawer table.rg-dt td:first-child{white-space:normal;min-width:110px}",
     "#rg-drawer .section-label{margin:16px 0 8px}#rg-drawer table.rg-dt td{vertical-align:middle}.rg-dfoot{margin-top:14px}",
+    "#tab-registration .rg-bar{position:sticky;top:0;z-index:6;background:var(--bg,#f0f2f5);padding:8px 0;margin-top:-8px;box-shadow:0 6px 8px -8px rgba(13,20,33,.25)}",   /* 22 ต.ค. แถบตัวกรองค้างด้านบนตอนเลื่อน */
     "table.rg-t td.rg-dc.rg-dcw{white-space:normal;min-width:120px;max-width:170px;line-height:1.35}.rg-pt{color:var(--rg-pend);font-weight:600}"   /* 22 ต.ค. ข้อความในชีต (กำลังขอ) ตัดบรรทัดได้ */
   ].join("");
   document.head.appendChild(css);
@@ -8296,7 +8297,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
 
   /* ---- ชิ้นส่วนหน้าจอ (ใช้ซ้ำทุกหน้า) ---- */
-  var PAGE_N = 25, PG = {}, DET = {};
+  var PAGE_N = 100000, PG = {}, DET = {};   // 22 ต.ค. (จี "ต้องมานั่งเปิดทีละหน้าหรอ"): เลิกแบ่งหน้าทุกหน้า — ทุกสาขาในตารางเดียว เลื่อนในตาราง (เดิม 25)
   function pageOf(key, list) {
     var n = Math.max(1, Math.ceil(list.length / PAGE_N)), p = Math.min(PG[key] || 0, n - 1); PG[key] = p;
     return { items: list.slice(p * PAGE_N, (p + 1) * PAGE_N), p: p, n: n, total: list.length };
