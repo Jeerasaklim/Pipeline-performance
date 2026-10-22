@@ -86,7 +86,7 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
   <div class="kpi" data-k="3"><div class="n" id="k-3" style="color:#16a34a">0</div><div class="l">🟢 ปัก3</div></div>
   <div class="kpi" data-k="4"><div class="n" id="k-4" style="color:#7c3aed">0</div><div class="l">🟣 เปิดแล้ว</div></div>
   <div class="kpi" data-k="0"><div class="n" id="k-0" style="color:#64748b">0</div><div class="l">⚪ ยังไม่ปักวัน</div></div>
-  <div class="kpi" data-k="__NONE__"><div class="n" id="k-np" style="color:#b45309">0</div><div class="l">⚠️ ยังไม่มี ผรม.</div></div>
+  <div class="kpi" data-k="__NONE__"><div class="n" id="k-np" style="color:#b45309">0</div><div class="l">⚠️ ยังไม่มี ผรม.</div></div><div class="kpi" id="k-prn-box" title="สาขาที่เพิ่งปัก/เปลี่ยน ผรม. ในแอป — กดดูรายการ"><div class="n" id="k-prn" style="color:#0d9488">…</div><div class="l" id="k-prn-l">🆕 ปัก ผรม. 7 วัน</div></div>
 </div>
 <div class="filters">
   <select id="f-pak"><option value="">สถานะ — ทั้งหมด</option><option value="4">🟣 เปิดแล้ว</option><option value="pinned">✅ ปักวันแล้ว (รวม)</option><option value="0">⚪ ยังไม่ปักวัน</option><option value="1">🔴 ปัก1</option><option value="2">🔵 ปัก2</option><option value="3">🟢 ปัก3</option></select>
@@ -381,5 +381,35 @@ function prmMgrRender(){var w=$("prm-mgr");if(!w||w.style.display==="none")retur
   document.body.appendChild(w);w.addEventListener("click",function(e){if(e.target===w){w.style.display="none";return;}var b=e.target.closest&&e.target.closest("[data-pact]");if(!b)return;var n=b.getAttribute("data-n"),a=b.getAttribute("data-pact");if(a==="ren")prmRename(n);else prmHide(n,a==="hide");});
   $("prm-mgr-x").onclick=function(){w.style.display="none";};
   $("prm-mgr-btn").onclick=function(){if(!SMROLE||SMROLE==="member"){toast("ไม่มีสิทธิ์แก้รายชื่อ ผรม.");return;}w.style.display="block";prmMgrRender();};})();
+/* 22 ต.ค. (จี "อยากได้กล่องปัก ผรม. ให้เค้าดูว่าสาขาไหนพึ่งปัก ผรม. ปักวันไหน"): กล่อง 🆕 ปัก ผรม. ล่าสุด
+ *   นับสาขา (ตามตัวกรอง) ที่รายการล่าสุดในประวัติ ผรม. (PLOG = แท็บ Audit) เป็นการปัก/เปลี่ยน ภายใน N วัน · ถอน ผรม. ไม่นับ
+ *   กดกล่อง = รายการ วันที่ · สาขา · ผรม. ใหม่ · เดิม · โดย · กดแถว = ไปที่สาขาบนแผนที่ · ผรม. ที่พิมพ์ตรงในชีต Construction ไม่มีวันที่ = ไม่อยู่ในกล่องนี้ */
+var PRN_D=7;
+function prNew(){if(PLOG.st!=="ok")return null;var d=new Date();d.setDate(d.getDate()-PRN_D+1);var since=PRN_D>=9999?"":(d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)),out=[];
+  Object.keys(PLOG.log).forEach(function(c){var L=PLOG.log[c]||[],last=L[L.length-1];if(!last||!last.value||String(last.at).slice(0,10)<since||!BYC[c])return;
+    var prev="";for(var i=L.length-2;i>=0;i--){if(L[i].value){prev=L[i].value;break;}if(i===0)prev="";}
+    out.push({code:c,at:String(last.at),by:last.by,value:last.value,prev:L.length>1?prev:"",first:L.filter(function(x){return x.value;}).length===1});});
+  return out.sort(function(a,b){return a.at<b.at?1:-1;});}
+(function(){var _rk=renderKPI;renderKPI=function(){_rk();var el=$("k-prn");if(!el)return;var L=prNew();if(L==null){el.textContent=PLOG.st==="err"?"!":"…";return;}
+  var inF={};filtered().forEach(function(r){inF[r.code]=1;});el.textContent=L.filter(function(x){return inF[x.code];}).length;$("k-prn-l").textContent="🆕 ปัก ผรม. "+(PRN_D>=9999?"ทั้งหมด":PRN_D+" วัน");};})();
+window.addEventListener("message",function(e){var d=e&&e.data;if(d&&d.t==="sm-prmlog"){renderKPI();prnRender();}});
+function prnRender(){var w=$("prn-box");if(!w||w.style.display==="none")return;var b=w.querySelector(".pn-body");
+  if(PLOG.st==="wait"){b.innerHTML='<div class="mt">กำลังโหลดประวัติ ผรม.…</div>';return;}
+  if(PLOG.st==="err"){b.innerHTML='<div class="mt" style="color:#b91c1c">โหลดประวัติไม่ได้ ('+esc(PLOG.err)+') — ยังไม่ได้แปลว่าไม่มีการปัก</div>';return;}
+  var inF={};filtered().forEach(function(r){inF[r.code]=1;});var L=prNew().filter(function(x){return inF[x.code];});
+  b.innerHTML='<div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">ช่วง: '+[7,14,30,9999].map(function(n){return '<button class="btn" data-prnd="'+n+'" style="padding:3px 10px;font-size:12px;'+(PRN_D===n?'border-color:#4f46e5;color:#4f46e5;font-weight:700':'')+'">'+(n>=9999?"ทั้งหมด":n+" วัน")+'</button>';}).join("")+'<span class="mt" style="margin-left:auto">'+L.length+' สาขา</span></div>'+
+    (L.length?'<div style="max-height:56vh;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f8fafc"><th style="text-align:left;padding:6px">วันที่ปัก</th><th style="text-align:left;padding:6px">สาขา</th><th style="text-align:left;padding:6px">ผรม.</th><th style="text-align:left;padding:6px">เดิม</th><th style="text-align:left;padding:6px">โดย</th></tr>'+
+      L.map(function(x){var s=BYC[x.code];var dt=x.at.slice(8,10)+"/"+x.at.slice(5,7)+"/"+x.at.slice(2,4)+" "+x.at.slice(11,16);
+        return '<tr data-prn="'+esc(x.code)+'" style="cursor:pointer;border-top:1px solid #eef0f4"><td style="padding:6px;white-space:nowrap">'+esc(dt)+'</td><td style="padding:6px"><b>'+esc(x.code)+'</b> '+esc(s?s.name:"")+'</td><td style="padding:6px;white-space:nowrap"><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+(PRMCOL[x.value]||"#cbd5e1")+';margin-right:5px"></i><b>'+esc(x.value)+'</b></td><td style="padding:6px;color:#64748b">'+(x.first?'ปักครั้งแรก':esc(x.prev||"–"))+'</td><td style="padding:6px;color:#64748b">'+esc(x.by)+'</td></tr>';}).join("")+'</table></div>'
+      :'<div class="mt" style="padding:10px 0">ไม่มีสาขาที่ปัก ผรม. ในช่วงนี้ (ตามตัวกรองด้านบน)</div>')+
+    '<div class="mt" style="margin-top:8px;line-height:1.5">นับจากประวัติการปัก ผรม. ในแอป · ผรม. ที่พิมพ์ตรงในชีต Construction ไม่มีวันที่ จึงไม่อยู่ในรายการนี้ · กดแถว = ไปที่สาขาบนแผนที่</div>';}
+(function(){var w=document.createElement("div");w.id="prn-box";w.style.cssText="display:none;position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.35)";
+  w.innerHTML='<div style="background:#fff;max-width:720px;margin:6vh auto;border-radius:12px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.2)"><div style="display:flex;align-items:center;margin-bottom:10px"><b style="font-size:15px">🆕 สาขาที่เพิ่งปัก ผรม.</b><button class="btn" id="prn-x" type="button" style="margin-left:auto">✕ ปิด</button></div><div class="pn-body"></div></div>';
+  document.body.appendChild(w);
+  w.addEventListener("click",function(e){if(e.target===w){w.style.display="none";return;}var b=e.target.closest&&e.target.closest("[data-prnd]");if(b){PRN_D=+b.getAttribute("data-prnd");renderKPI();prnRender();return;}
+    var tr=e.target.closest&&e.target.closest("tr[data-prn]");if(tr){var s=BYC[tr.getAttribute("data-prn")];w.style.display="none";if(s){if(s.ll)onMarkerClick(s);else{selCode=s.code;selProv=s.prov;openPanel();renderDetail();drawMarkers();}}}});
+  $("prn-x").onclick=function(){w.style.display="none";};
+  $("k-prn-box").addEventListener("click",function(){w.style.display="block";prnRender();});
+  renderKPI();})();
 </script>
 </body></html>
