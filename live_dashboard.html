@@ -1169,7 +1169,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=191920" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=163117" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5984,8 +5984,9 @@ setTimeout(applyBoard,300);
     fab.style.cssText="position:fixed;top:160px;right:0;z-index:9000;background:#0f172a;color:#fff;border:0;border-radius:10px 0 0 10px;padding:12px 9px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:-2px 2px 10px rgba(0,0,0,.18);writing-mode:vertical-rl;letter-spacing:1px";
     fab.textContent="👷 สรุป ผรม.";
     fab.onclick=openPrm;
+    // 26 ต.ค. (จี "Tap ข้างบนมันบัง Side bar"): แถบ "ได้ข้อมูลใหม่แล้ว" (z 99990) ทับหัวแผง → ยกแผงขึ้นชั้นเดียวกับ drawer อื่น (100001+) ใต้ toast (100003+)
     p=document.createElement("aside"); p.id="sm-prm-panel";
-    p.style.cssText="position:fixed;top:0;right:0;height:100vh;width:500px;max-width:96vw;z-index:9001;background:var(--surface);border-left:1px solid var(--border2);box-shadow:-6px 0 24px rgba(0,0,0,.16);transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column";
+    p.style.cssText="position:fixed;top:0;right:0;height:100vh;width:500px;max-width:96vw;z-index:100002;background:var(--surface);border-left:1px solid var(--border2);box-shadow:-6px 0 24px rgba(0,0,0,.16);transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column";
     p.innerHTML=
       '<div style="display:flex;align-items:center;gap:9px;padding:14px 16px;border-bottom:1px solid var(--border)">'+
         '<span style="font-size:16px">👷</span>'+
