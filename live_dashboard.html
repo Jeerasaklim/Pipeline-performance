@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=194256" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=195001" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -4102,7 +4102,11 @@ setTimeout(applyBoard,300);
       const r = constr[i], code = cell(r, AC_CODE);
       if (!code || seen.has(code) || pseen.has(code)) continue;
       if (goIsoOpen(cell(r, AC_OPEN))) continue;                       // has a date -> not pool
-      if (cell(r, AC_ACT) === "Active" || cell(r, AC_HIDE) === "Hide") continue;  // opened -> drop
+      // opened -> drop · 30 ต.ค. (จี "ยกเลิก ปัก3 แล้วหายจาก Site Management"): ใช้นิยาม "เปิดแล้ว" ชุดเดียว (2 ต.ค.)
+      //   = ธง Active/Hide และ SLA ไม่ได้บอกว่ายังไม่เปิด (openUnconfirmed) — เดิมเช็คแค่ธง → สาขาที่มี T-code (ธง Active)
+      //   แต่ SLA ยังไม่เปิด พอวันเปิดถูกล้าง (ยกเลิก ปัก3) หลุดทั้งคิวรอปักและร้านเปิดแล้ว = หายจากปฏิทิน+แผนที่
+      //   ธง Hide อย่างเดียว (ไม่มี Active) = ทีมก่อสร้างซ่อนเอง (ยกเลิก/Potential) → ตัดเหมือนเดิม
+      if (cell(r, AC_ACT) === "Active" ? !openUnconfirmed(code, slaSt) : cell(r, AC_HIDE) === "Hide") continue;
       pseen.add(code);
       const sub = submitted.has(code) ? 1 : 0;
       const phoi = goIsoOpen(ho_of[code] || "");
