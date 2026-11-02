@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=201927" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=192454" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -3285,7 +3285,11 @@ setTimeout(applyBoard,300);
   function expExcluded(v) { return GLOBAL_EXCLUDE_EXP.has((v || "").trim()); }            // :208
   function negoStatus(r, L) { return cell(r, COL_NEGO) || (L.nego2[cell(r, COL_CODE)] || ""); } // :736
   function isHoldNego(r, L) { return negoStatus(r, L) === NEGO_HOLD; }   // 8 ต.ค.: BB (ว่าง → Site Nego J) แทนคอลัมน์ G
-  function isSigned(r, L) { return cell(r, COL_SIGN_DATE) !== "" || (L.sign2[cell(r, COL_CODE)] || "") !== ""; } // :730
+  // 2 พ.ย. 69: กติกากลาง 28 ก.ย. (จี) "เซ็นแล้ว" = มีวันเซ็น (SLA AA / Site Nego R) **หรือ** สถานะเจรจา 3. / 4. / เปิดร้านแล้ว
+  //   (5. 6. 7. ไม่นับ) — เดิมดูวันเซ็นอย่างเดียว → สาขาที่สถานะเซ็นแล้วแต่ยังไม่กรอกวัน ค้างกล่องรอเซ็นสัญญา
+  function isSignedByStatus(r, L) { const s = negoStatus(r, L); return /^[34]\./.test(s) || s === "เปิดร้านแล้ว"; }
+  function hasSignDate(r, L) { return cell(r, COL_SIGN_DATE) !== "" || (L.sign2[cell(r, COL_CODE)] || "") !== ""; }
+  function isSigned(r, L) { return hasSignDate(r, L) || isSignedByStatus(r, L); } // :730
   function isOpened(r) { return cell(r, COL_EXPANSION) === EXP_OPENED; }                  // :775
   function isCancelled(r, L) { return cell(r, COL_EXPANSION) === EXP_CANCEL || negoStatus(r, L) === "5.ยกเลิก"; } // :780
   function hasN4(r, L) { return cell(r, COL_GET_N4) !== "" || (L.ratkitN4[cell(r, COL_CODE)] || "") !== ""; } // :692
@@ -5057,7 +5061,9 @@ setTimeout(applyBoard,300);
       const cancelled = t === "ยกเลิก", held = signSlaStatus(t) === "Potential with cons";
       const kt = normDate(pnegoKt[code] || ""), ktd = parseDate(kt);
       let ktUsed = false, aging = null, sla = null;
-      if (!cancelled) {
+      // 2 พ.ย.: เซ็นแล้วตามสถานะ (3./4./เปิดร้านแล้ว) แต่ยังไม่มีวันเซ็น → นับ aging ไม่ได้ = "—" (ไม่นับถึงวันนี้ ไม่งั้นเกิน SLA ปลอม)
+      const signedNoDate = !sign && isSigned(r, L);
+      if (!cancelled && !signedNoDate) {
         const sd = parseDate(sign);
         const end = (sign && sd) ? dateOnly(sd) : today;
         let start = dateOnly(d);
