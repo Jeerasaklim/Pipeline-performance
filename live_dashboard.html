@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=165556" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=171800" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -2848,7 +2848,7 @@ var cnt=cByMonth(),ms=bMonths();var _n=new Date();var nowYM=_n.getFullYear()+"-"
 function pickYM(){var _c=cByMonth(),_m=bMonths();var _n=new Date();var _ny=_n.getFullYear()+"-"+("0"+(_n.getMonth()+1)).slice(-2);curYM=(_c[_ny]?_ny:null);if(!curYM){for(var _i2=0;_i2<_m.length;_i2++){if(_c[_m[_i2]]){curYM=_m[_i2];break;}}}if(!curYM)curYM=_m[0]||_ny;}
 function setModel(model){if(!model)return;SITES=model.sites||[];POOL=model.pool||[];VANISHED=model.vanished||[];CHANGELOG=model.changelog||[];ALLDATES=model.alldates||{};OPENED_NOW=model.opened_now||0;OPENED_2026=model.opened_2026||0;OPENED_LIST=model.opened_list||[];NEWGOT=model.newgot||[];NEWGOT_SET={};for(var _j=0;_j<NEWGOT.length;_j++)NEWGOT_SET[NEWGOT[_j]]=1;byCode={};SITES.forEach(function(s){byCode[s.code]=s;});pickYM();rAll();}
 function applyOverlay(ov){if(!ov)return;pinned=ov.pinned||{};gnote=ov.gnote||{};gstat=ov.gstat||{};gver=ov.gver||{};g2=ov.g2||{};rslog=ov.rslog||{};if(ov.rsDmgPerDay!=null&&!isNaN(+ov.rsDmgPerDay))RS_DMG_PER_DAY=+ov.rsDmgPerDay;cancelled=ov.cancelled||{};Object.keys(cancelled).forEach(function(_cc){delete pinned[_cc];if(byCode[_cc]){var _si=SITES.indexOf(byCode[_cc]);if(_si>=0)SITES.splice(_si,1);delete byCode[_cc];}for(var _pi=POOL.length-1;_pi>=0;_pi--){if(POOL[_pi].code===_cc)POOL.splice(_pi,1);}});rAll();}
-post=function(k,v){try{var _r=window.DPT_ROLE;if(_r==="member"||_r==="construction_management"){if(typeof gtoast==="function")gtoast("แท็บนี้ดูอย่างเดียว — ไม่มีสิทธิ์แก้ไข",false);return;}if(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL){fetch(window.DPT_GAS_URL,{method:"post",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"note",key:k,value:v})});}}catch(e){}};postSheet=function(code,date,cb,_try){var _r2=window.DPT_ROLE;if(_r2==="member"||_r2==="construction_management"){if(cb)cb(false);return;}if(!(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL)){if(cb)cb(true);return;}_try=_try||0;fetch(window.DPT_GAS_URL,{method:"post",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"sheet",code:code,date:date})}).then(function(r){return r.json();}).then(function(j){if(j&&j.ok){if(cb)cb(true,j);}else if(_try<2){postSheet(code,date,cb,_try+1);}else{if(cb)cb(false,j);}}).catch(function(){if(_try<2){setTimeout(function(){postSheet(code,date,cb,_try+1);},600);}else{if(cb)cb(false);}});};
+post=function(k,v){try{var _r=window.DPT_ROLE;if(_r==="member"||_r==="construction_management"||_r==="qs"||_r==="qs_manager"){if(typeof gtoast==="function")gtoast("แท็บนี้ดูอย่างเดียว — ไม่มีสิทธิ์แก้ไข",false);return;}if(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL){fetch(window.DPT_GAS_URL,{method:"post",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"note",key:k,value:v})});}}catch(e){}};postSheet=function(code,date,cb,_try){var _r2=window.DPT_ROLE;if(_r2==="member"||_r2==="construction_management"||_r2==="qs"||_r2==="qs_manager"){if(cb)cb(false);return;}if(!(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL)){if(cb)cb(true);return;}_try=_try||0;fetch(window.DPT_GAS_URL,{method:"post",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"sheet",code:code,date:date})}).then(function(r){return r.json();}).then(function(j){if(j&&j.ok){if(cb)cb(true,j);}else if(_try<2){postSheet(code,date,cb,_try+1);}else{if(cb)cb(false,j);}}).catch(function(){if(_try<2){setTimeout(function(){postSheet(code,date,cb,_try+1);},600);}else{if(cb)cb(false);}});};
 var OPENED_LIST=[],OPSHOW=null;
 function opPref(){try{return localStorage.getItem("go_opened_show")==="1";}catch(e){return false;}}
 function opToggle(){OPSHOW=!(OPSHOW===null?opPref():OPSHOW);try{localStorage.setItem("go_opened_show",OPSHOW?"1":"0");}catch(e){}if(!OPSHOW&&String(curYM).indexOf("op:")===0){pickYM();rAll();return;}rOpened();}
@@ -6524,6 +6524,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           managing_director:['Managing Director','#047857','#d1fae5','#6ee7b7'],
           head_business_strategy:['Head of Business Strategy Excellent','#047857','#d1fae5','#6ee7b7'],
           construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],
+          qs:['QS','#7c3aed','#ede9fe','#c4b5fd'],qs_manager:['QS Department Manager','#7c3aed','#ede9fe','#c4b5fd'],
           member:['ดูอย่างเดียว (Member)','#475569','#f1f5f9','#cbd5e1']};
         function paintUser(){
           var e=document.getElementById('dpt-uemail'), r=document.getElementById('dpt-urole');
@@ -6573,7 +6574,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var ROLES=[['Admin','admin'],['Head of Construction','head_construction'],
     ['Head of Site Expansion','head_site_expansion'],['Head of Site Negotiation','head_site_negotiation'],
     ['Managing Director','managing_director'],['Head of Business Strategy Excellent','head_business_strategy'],
-    ['Construction Management','construction_management'],['Member','member']];
+    ['Construction Management','construction_management'],['QS','qs'],['QS Department Manager','qs_manager'],['Member','member']];
   var RM={admin:['Admin','#1d4ed8','#dbeafe','#93c5fd'],
     head_construction:['Head of Construction','#047857','#d1fae5','#6ee7b7'],
     head_site_expansion:['Head of Site Expansion','#047857','#d1fae5','#6ee7b7'],
@@ -6581,6 +6582,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           managing_director:['Managing Director','#047857','#d1fae5','#6ee7b7'],
           head_business_strategy:['Head of Business Strategy Excellent','#047857','#d1fae5','#6ee7b7'],
     construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],
+          qs:['QS','#7c3aed','#ede9fe','#c4b5fd'],qs_manager:['QS Department Manager','#7c3aed','#ede9fe','#c4b5fd'],
     member:['ดูอย่างเดียว (Member)','#475569','#f1f5f9','#cbd5e1']};
   var DOMAIN='cjmart.co.th';
   function gurl(){return window.DPT_GAS_URL||'';}
@@ -9186,12 +9188,13 @@ function render(){alerts();bands();months();var l=vis();$("cnt").textContent="�
     " · งานหลักเปิด PR ครบ = ทุกช่องในเตรียมการ + อาคารหลัก + Pre-con 1 ถึงขั้นเปิด PR แล้ว หรือไม่มีงานนี้ (ช่องที่ Kissflow ไม่มีงานนี้ไม่นับ)"}
 function openSite(code){var r=S.rows.filter(function(x){return x.code===code})[0];if(!r)return;SEL=code;
   $("dt").textContent=(r.t?r.t+" ":"")+r.name;$("ds").textContent=[r.code,r.prov,"ผรม. "+(r.con||"–"),"QS "+(r.qs||"–"),"Plan ตอกเข็ม "+fd(r.pile),"Deadline QS "+fd(r.deadline),"Grand Opening "+fd(r.go),r.stage,r.cjxv?"ใบอนุมัติราคา "+r.cjxv:""].filter(Boolean).join(" · ");
+  if(!canEditQs())$("ds").textContent+=" · 👁 ดูอย่างเดียว (แก้ได้เฉพาะ QS / QS Department Manager / Admin)";
   $("db").innerHTML=PH.map(function(p){return'<div class="ph">'+esc(p.long)+"</div>"+TASKS.filter(function(t){return t.ph===p.k}).map(function(t){var c=r.cells[t.k],o=r.orig[t.k],k=r.code+"|"+t.k,loc=!!LNA[k];
     var det=[];if(c.step&&c.step!==ST[c.s].label)det.push(esc(c.step)+(c.owner?" · "+esc(c.owner):"")+(c.stepDays!=null?" · ค้าง "+c.stepDays+" วัน":""));
     if(c.pr&&c.pr.length)det.push(c.pr.map(function(x){return"<code>"+esc(x.ref)+"</code> "+esc(x.step)+(x.po&&x.po.length?" · PO "+x.po.map(function(q){return esc(q.no||"(ยังไม่มีเลข)")}).join(", "):"")}).join("<br>"));
     if(c.s==="na")det.push(c.src==="sheet"?"ชีตเลือกงาน Precon: "+esc(c.pick||""):"QS กดไม่มีงานนี้ "+esc(c.by||""));
     if(c.s==="nosrc")det.push("Kissflow/แท็บ PR ไม่มีประเภทงานนี้");if(t.guess)det.push("* จับคู่กับประเภท PR \""+esc(t.type)+"\" — รอ QS ยืนยัน");
-    var canNA=!(o.s==="na"&&o.src==="sheet");
+    var canNA=!(o.s==="na"&&o.src==="sheet")&&canEditQs();
     return'<div class="tk"><div class="r1"><span class="cell st-'+c.s+'">'+SHORT[c.s]+'</span><b>'+esc(t.label)+'<span style="font-weight:500;color:var(--ink2)"> · '+esc(ST[c.s].label)+"</span></b>"+
       (canNA?'<button type="button" class="nab'+(loc?" on":"")+'" data-k="'+esc(t.k)+'">'+(loc?"✓ ไม่มีงานนี้ (กดเพื่อยกเลิก)":"ไม่มีงานนี้")+"</button>":"")+"</div>"+
       (det.length?'<div class="r2">'+det.join("<br>")+"</div>":"")+(c.conflict?'<div class="warn">⚠️ '+esc(c.conflict)+"</div>":"")+"</div>"}).join("")}).join("");
@@ -9200,6 +9203,7 @@ function openSite(code){var r=S.rows.filter(function(x){return x.code===code})[0
     qsPost({code:r.code,task:task,on:on}).then(function(j){if(on)LNA[k]={by:j.by,at:j.at};apply(r);render();openSite(code);toast(on?"บันทึกแล้ว: ไม่มีงานนี้":"ยกเลิกแล้ว",true)})
       .catch(function(e){if(prev)LNA[k]=prev;else delete LNA[k];apply(r);render();openSite(code);toast("บันทึกไม่สำเร็จ — "+(e&&e.message||e),false)})}});
   $("drw").classList.add("on");$("dbg").classList.add("on")}
+function canEditQs(){var r=window.DPT_ROLE;return typeof r==="undefined"||r==="admin"||r==="qs"||r==="qs_manager"}   // จี 4 พ.ย.: แก้ได้เฉพาะ Admin / QS / QS Department Manager · คนอื่นดูอย่างเดียว (server ตรวจซ้ำใน prNaSet_)
 function closeD(){$("drw").classList.remove("on");$("dbg").classList.remove("on")}
 $("dx").onclick=closeD;$("dbg").onclick=closeD;
 ["q"].forEach(function(i){$(i).oninput=render});["fCon","fProv","fQs","sort","fConf","fOpen"].forEach(function(i){$(i).onchange=render});
