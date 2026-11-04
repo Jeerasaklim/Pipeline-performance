@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=192454" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=123538" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -1548,7 +1548,7 @@ tr.go-nd-hide{display:none!important}
     if(q){
       rows = rows.filter(function(r){
         return String(r.code||'').toLowerCase().indexOf(q) >= 0
-            || String(r.name||'').toLowerCase().indexOf(q) >= 0;
+            || String(r.name||'').toLowerCase().indexOf(q) >= 0 || String(r.name_old||'').toLowerCase().indexOf(q) >= 0;
       });
     }
     return rows;
@@ -2821,11 +2821,11 @@ function goUncancel(c){var x=cancelled[c];if(!x)return;delete cancelled[c];post(
 function vanCancel(c){var v=null,A=(typeof VANISHED!=="undefined"&&VANISHED)?VANISHED:[];for(var i=0;i<A.length;i++){if(A[i].code===c){v=A[i];break;}}var from=v?(v.open||""):"";var nm=v?(v.name||""):"";var rs="วันหายจากชีต Construction (รับทราบ/ยกเลิก)";var at=nowStamp();cancelled[c]={from:from,reason:rs,at:at,name:nm,_site:null};post("XC:"+c,from+"~|~"+rs+"~|~"+at+"~|~"+nm);gtoast("🚫 รับทราบ/ยกเลิก: "+c+" (ย้ายไปกล่องยกเลิก ปัก3)",true);rAll();}
 function rCancelList(){var ks=Object.keys(cancelled);if(!ks.length)return '<div class="go-empty-msg">ยังไม่มีสาขาที่ยกเลิก ปัก3</div>';ks.sort(function(a,b){var x=cancelled[a].at||"",y=cancelled[b].at||"";return x<y?1:(x>y?-1:0);});var rows=ks.map(function(c){var x=cancelled[c];var nm=x.name||(byCode[c]?byCode[c].name:"");return '<div class="go-nosub-row"><div class="go-nosub-head"><b>'+esc(c)+'</b> '+esc(nm)+'<span class="go-nosub-meta">🕐 '+esc(x.at||"")+'</span></div><div class="go-nosub-blk">ยกเลิกจากวัน <b style="color:#dc2626">'+esc(x.from||"—")+'</b> · 📝 '+esc(x.reason||"")+'</div><div class="go-ed-row"><button class="go-btn-save" onclick="GO.goUncancel(\'' +c+ '\')">↩️ ปักกลับ ปัก3</button></div></div>';}).join("");return '<div class="go-cal-title">🚫 ยกเลิก ปัก3 (สะสม) — '+ks.length+' สาขา · เคยมี Potential จะเปิด · เคลียประเด็นแล้วกด "ปักกลับ ปัก3" ได้</div>'+rows;}
 function addOn(ymd){var w=document.getElementById("go-editor");w.setAttribute("data-ymd",ymd);w.innerHTML='<div class="go-ed-box"><div class="go-ed-title">➕ เพิ่มสาขาเปิดวันที่ '+ymd+'</div><div class="go-ed-sub">ค้นหาสาขาที่ยังไม่มีวันเปิด (พิมพ์ code หรือชื่อ) แล้วกดเลือก</div><div class="go-ed-row"><input type="text" id="go-add-q" oninput="GO.addFilter()" placeholder="ค้นหา code / ชื่อ..." style="flex:1;padding:7px 10px;border:1px solid #cbd5e1;border-radius:8px"></div><div id="go-add-list" class="go-add-list"></div><div class="go-ed-row"><button onclick="GO.close()">ปิด</button></div></div>';w.style.display="flex";var q=document.getElementById("go-add-q");if(q)q.focus();addFilter();}
-function addFilter(){var qe=document.getElementById("go-add-q");var q=(qe?qe.value:"").toLowerCase().trim();var arr=POOL.filter(function(p){return !q||((p.code+" "+(p.name||"")).toLowerCase().indexOf(q)>=0);});var el=document.getElementById("go-add-list");if(!el)return;if(!arr.length){el.innerHTML='<div class="go-add-empty">ไม่พบสาขา</div>';return;}el.innerHTML=arr.slice(0,80).map(function(p){return '<div class="go-add-item" onclick="GO.addPick(\'' +p.code+ '\')"><b>'+esc(p.code)+'</b> '+esc(p.name||"")+' <span class="go-add-st'+(p.sub?"":" go-add-nosub")+'">'+esc(p.status||"")+'</span></div>';}).join("")+(arr.length>80?'<div class="go-add-empty">…อีก '+(arr.length-80)+' รายการ พิมพ์ค้นหาเพิ่ม</div>':"");}
+function addFilter(){var qe=document.getElementById("go-add-q");var q=(qe?qe.value:"").toLowerCase().trim();var arr=POOL.filter(function(p){return !q||((p.code+" "+(p.name||"")+" "+(p.name_old||"")).toLowerCase().indexOf(q)>=0);});var el=document.getElementById("go-add-list");if(!el)return;if(!arr.length){el.innerHTML='<div class="go-add-empty">ไม่พบสาขา</div>';return;}el.innerHTML=arr.slice(0,80).map(function(p){return '<div class="go-add-item" onclick="GO.addPick(\'' +p.code+ '\')"><b>'+esc(p.code)+'</b> '+esc(p.name||"")+' <span class="go-add-st'+(p.sub?"":" go-add-nosub")+'">'+esc(p.status||"")+'</span></div>';}).join("")+(arr.length>80?'<div class="go-add-empty">…อีก '+(arr.length-80)+' รายการ พิมพ์ค้นหาเพิ่ม</div>':"");}
 function addPick(code){var w=document.getElementById("go-editor");var ymd=w.getAttribute("data-ymd");var i=-1;for(var k=0;k<POOL.length;k++){if(POOL[k].code===code){i=k;break;}}if(i<0)return;var p=POOL.splice(i,1)[0];var site={code:p.code,name:p.name,owner:p.owner,status:p.status,open:ymd,sub:p.sub,blk:p.blk||[]};SITES.push(site);byCode[code]=site;pinned[code]=ymd;post("OPEN:"+code,ymd);postSheet(code,ymd,function(ok){saveCb(code,ok);});closeE();curYM=ymd.slice(0,7);rAll();}
 function goMonth(y){curYM=y;rAll();}
 function goHilite(code){var found=false;document.querySelectorAll("#go-cal .go-chip").forEach(function(c){c.classList.remove("go-chip-hit");});document.querySelectorAll("#go-cal .go-chip").forEach(function(c){if(c.textContent.indexOf(code)>=0){c.classList.add("go-chip-hit");if(!found&&c.scrollIntoView)c.scrollIntoView({behavior:"smooth",block:"center"});found=true;}});return found;}
-function xfind(q){q=(q||"").trim();if(q.length<2)return null;var Q=q.toUpperCase();var hit=null,inpool=false,i;for(i=0;i<SITES.length;i++){if((SITES[i].code+" "+(SITES[i].name||"")).toUpperCase().indexOf(Q)>=0){hit=SITES[i];break;}}if(!hit){for(i=0;i<POOL.length;i++){if((POOL[i].code+" "+(POOL[i].name||"")).toUpperCase().indexOf(Q)>=0){hit=POOL[i];inpool=true;break;}}}if(!hit)return {none:true};if(inpool)return {code:hit.code,name:hit.name,msg:"ยังไม่ปักวันเปิด (รอปัก) — กด ＋ ในปฏิทินเพื่อเพิ่มวัน"};var o=effOpen(hit.code),ym=o?o.slice(0,7):null;if(ym){curYM=ym;rAll();}goHilite(hit.code);return {code:hit.code,name:hit.name,msg:"วันเปิด "+(o||"?")+(hit.sub?" · ยื่น อ.1 แล้ว":" · ⚠️ ยังไม่ยื่น อ.1")+(hit.ho?"":" · 🏗️ ยังไม่ส่งมอบพื้นที่")};}
+function xfind(q){q=(q||"").trim();if(q.length<2)return null;var Q=q.toUpperCase();var hit=null,inpool=false,i;for(i=0;i<SITES.length;i++){if((SITES[i].code+" "+(SITES[i].name||"")+" "+(SITES[i].name_old||"")).toUpperCase().indexOf(Q)>=0){hit=SITES[i];break;}}if(!hit){for(i=0;i<POOL.length;i++){if((POOL[i].code+" "+(POOL[i].name||"")+" "+(POOL[i].name_old||"")).toUpperCase().indexOf(Q)>=0){hit=POOL[i];inpool=true;break;}}}if(!hit)return {none:true};if(inpool)return {code:hit.code,name:hit.name,msg:"ยังไม่ปักวันเปิด (รอปัก) — กด ＋ ในปฏิทินเพื่อเพิ่มวัน"};var o=effOpen(hit.code),ym=o?o.slice(0,7):null;if(ym){curYM=ym;rAll();}goHilite(hit.code);return {code:hit.code,name:hit.name,msg:"วันเปิด "+(o||"?")+(hit.sub?" · ยื่น อ.1 แล้ว":" · ⚠️ ยังไม่ยื่น อ.1")+(hit.ho?"":" · 🏗️ ยังไม่ส่งมอบพื้นที่")};}
 function pval(v){v=String(v||"").trim();if(!v)return "";if(/^\d{4}-\d{2}-\d{2}/.test(v))return v.slice(0,10);var d=new Date(v);if(!isNaN(d.getTime()))return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);return "";}
 function load(){try{fetch(WH,{method:"GET"}).then(function(r){return r.json();}).then(function(j){if(j&&typeof j==="object"){for(var k in j){if(k.indexOf("OPEN:")===0){var v=pval(j[k]);if(v)pinned[k.slice(5)]=v;}else if(k.indexOf("GN:")===0){if(j[k])gnote[k.slice(3)]=j[k];}else if(k.indexOf("GS:")===0){if(j[k])gstat[k.slice(3)]=j[k];}else if(k.indexOf("GV:")===0){if(j[k])gver[k.slice(3)]=1;}else if(k.indexOf("G2:")===0){if(j[k])g2[k.slice(3)]=1;}else if(k.indexOf("RS:")===0){if(j[k]){var _pp=String(j[k]).split("~|~");rslog[k.slice(3)]={from:_pp[0]||"",who:_pp[1]||"",reason:_pp[2]||"",at:_pp[3]||""};}}else if(k.indexOf("XC:")===0){if(j[k]){var _xx=String(j[k]).split("~|~");cancelled[k.slice(3)]={from:_xx[0]||"",reason:_xx[1]||"",at:_xx[2]||"",name:_xx[3]||""};}}}Object.keys(cancelled).forEach(function(_cc){delete pinned[_cc];if(byCode[_cc]){var _si=SITES.indexOf(byCode[_cc]);if(_si>=0)SITES.splice(_si,1);delete byCode[_cc];}for(var _pi=POOL.length-1;_pi>=0;_pi--){if(POOL[_pi].code===_cc)POOL.splice(_pi,1);}});rAll();}}).catch(function(){});}catch(e){}}
 function goNote(code){var el=document.getElementById("gn-"+code);var v=el?el.value:"";gnote[code]=v;post("GN:"+code,v);gtoast(v?("✓ บันทึก Note: "+code):("✓ ลบ Note: "+code),true);}
@@ -2950,15 +2950,15 @@ dm.addEventListener("click",function(e){var td=(e.target&&e.target.closest)?e.ta
 </style>
 <div id="xsearch"><input id="xsearch-in" type="text" placeholder="🔍 ค้นหา Site Code / ชื่อ..." oninput="xSearch()" autocomplete="off"><div id="xsearch-res"></div></div>
 <script>(function(){
-var IDX=null,NM={};
-function build(){IDX={};if(typeof STEP_DETAILS==="undefined")return;for(var k in STEP_DETAILS){var a=STEP_DETAILS[k];if(!a||!a.length)continue;for(var i=0;i<a.length;i++){var c=((a[i].code||"")+"").trim();if(!c)continue;if(!IDX[c])IDX[c]=[];IDX[c].push(k);if(a[i].name)NM[c]=a[i].name;}}}
+var IDX=null,NM={},NO={};
+function build(){IDX={};if(typeof STEP_DETAILS==="undefined")return;for(var k in STEP_DETAILS){var a=STEP_DETAILS[k];if(!a||!a.length)continue;for(var i=0;i<a.length;i++){var c=((a[i].code||"")+"").trim();if(!c)continue;if(!IDX[c])IDX[c]=[];IDX[c].push(k);if(a[i].name)NM[c]=a[i].name;if(a[i].name_old)NO[c]=a[i].name_old;}}}
 function lab(k){return (typeof DETAIL_LABELS!=="undefined"&&DETAIL_LABELS[k])?DETAIL_LABELS[k]:k;}
 function clr(){var e=document.querySelectorAll(".xsearch-hit");for(var i=0;i<e.length;i++)e[i].classList.remove("xsearch-hit");var g=document.querySelectorAll(".go-chip-hit");for(var j=0;j<g.length;j++)g[j].classList.remove("go-chip-hit");}
 window.xSearch=function(){var q=(document.getElementById("xsearch-in").value||"").trim();var res=document.getElementById("xsearch-res");clr();
 var gp=document.getElementById("tab-grandopen");
 if(gp&&gp.offsetParent!==null&&window.GO&&GO.xfind){if(q.length<2){res.className="";res.innerHTML="";return;}var r=GO.xfind(q);res.className="show";if(!r||r.none){res.innerHTML='<span class="xs-none">ไม่พบสาขานี้</span>';}else{res.innerHTML='<span class="xs-code">'+r.code+'</span> '+(r.name||"")+'<br><span class="xs-at">'+r.msg+'</span>';}return;}
 if(!IDX)build();var Q=q.toUpperCase();if(q.length<3){res.className="";res.innerHTML="";return;}
-var codes=[];for(var c in IDX){if(c.toUpperCase().indexOf(Q)>=0||((NM[c]||"").toUpperCase().indexOf(Q)>=0))codes.push(c);}
+var codes=[];for(var c in IDX){if(c.toUpperCase().indexOf(Q)>=0||((NM[c]||"").toUpperCase().indexOf(Q)>=0)||((NO[c]||"").toUpperCase().indexOf(Q)>=0))codes.push(c);}
 if(!codes.length){res.className="show";res.innerHTML='<span class="xs-none">ไม่พบสาขานี้</span>';return;}
 var code=null;for(var i=0;i<codes.length;i++){if(codes[i].toUpperCase()===Q){code=codes[i];break;}}if(!code)code=codes[0];
 var keys=IDX[code]||[];var first=null,labs=[];
@@ -3838,6 +3838,7 @@ setTimeout(applyBoard,300);
     //   (cohort ยื่น อ.1 · ช่องกรอกแล้ว = ทำแล้ว · เดดไลน์ = วันเปิดในชีตทะเบียน − D · ถังเทศบาล=ต่างจังหวัด / SCM=กทม.)
     //   d25 = กลุ่มเดียวกับกล่อง d_reg_ready · เพิ่มสาขาที่ยังไม่เปิดแต่ไกลกว่า D-25 ไว้ให้ตัวกรองเลือกดู (ไม่กระทบตัวเลขกล่อง)
     const regRows = [];
+    const afNewNm = slaNameMap(tabs.sla || []);
     records.forEach(function (rec) {
       const opPlan = afPdate(rec.open_date);
       const opD = afPdate(rec.open_date_raw);
@@ -3854,7 +3855,7 @@ setTimeout(applyBoard,300);
         const dl = (dd != null && op) ? addDays(op, -dd) : null;
         cells[key] = { v: filled ? val : "", dl: dl ? fmtDMY2(dl) : "", left: (!filled && dl) ? daysBetween(today, dl) : null };
       }
-      regRows.push({ code: rec.code, name: rec.name, prov: prov, open: op ? fmtDMY2(op) : "", open_iso: op ? (op.getFullYear() + "-" + _pad2(op.getMonth() + 1) + "-" + _pad2(op.getDate())) : "",
+      regRows.push({ code: rec.code, name: (afNewNm[rec.code] || rec.name), name_old: ((afNewNm[rec.code] && afNewNm[rec.code] !== rec.name) ? rec.name : undefined), prov: prov, open: op ? fmtDMY2(op) : "", open_iso: op ? (op.getFullYear() + "-" + _pad2(op.getMonth() + 1) + "-" + _pad2(op.getDate())) : "",
         d25: !!(opPlan && daysBetween(today, opPlan) <= 25), cells: cells });
     });
     return { counts: counts, buckets: buckets, sla: sla, reg: { keys: AF_EXTRA.map(function (x) { return x[0]; }), cols: AF_EXTRA.reduce(function (o, x) { o[x[0]] = x[1]; return o; }, {}), sla: AF_REG_SLA, rows: regRows } };
@@ -3950,6 +3951,27 @@ setTimeout(applyBoard,300);
       if (!(c in m) || (m[c] === "" && v !== "")) m[c] = v;
     }
     return m;
+  }
+  // 4 พ.ย. 26: ชื่อสาขาใช้ "CF ชื่อสาขาใหม่" (SLA col E) ก่อน ว่างค่อยใช้ "ชื่อสาขา" (col C) — ทุกหน้าโชว์ชื่อเดียวกับก่อสร้าง/S&P
+  function siteName(r) { return cell(r, COL_NAME_NEW) || cell(r, COL_NAME); }
+  function slaNameMap(slaRows) {   // {code: ชื่อใหม่} เฉพาะแถวที่กรอก col E
+    const m = {};
+    for (let i = HEADER_ROW + 1; i < (slaRows || []).length; i++) {
+      const c = cell(slaRows[i], COL_CODE), nm = cell(slaRows[i], COL_NAME_NEW);
+      if (c && nm && !(c in m)) m[c] = nm;
+    }
+    return m;
+  }
+  function slaOldNameMap(slaRows) {   // {code: ชื่อเดิม col C} เฉพาะสาขาที่ชื่อใหม่ต่างจากชื่อเดิม — ใช้ค้นหาเท่านั้น
+    const m = {};
+    for (let i = HEADER_ROW + 1; i < (slaRows || []).length; i++) {
+      const c = cell(slaRows[i], COL_CODE), nw = cell(slaRows[i], COL_NAME_NEW), od = cell(slaRows[i], COL_NAME);
+      if (c && nw && od && nw !== od && !(c in m)) m[c] = od;
+    }
+    return m;
+  }
+  function tagOldNames(list, oldMap) {   // name_old = ให้ช่องค้นหาพิมพ์ชื่อเดิมก็เจอ (ไม่แสดงผล)
+    (list || []).forEach(it => { const o = it && oldMap[it.code]; if (o && o !== it.name) it.name_old = o; });
   }
   function openUnconfirmed(code, slaSt) {
     if (!slaSt || !(code in slaSt)) return false;
@@ -4076,7 +4098,8 @@ setTimeout(applyBoard,300);
     GO_PROG3.forEach(([key, label]) => _detBox(details, key).forEach(it => {
       const c = it.code || ""; (prog3_of[c] = prog3_of[c] || []).push(label);
     }));
-    const nameOf = c => reg.name[c] || "";
+    const newNm = slaNameMap(tabs.sla || []);
+    const nameOf = c => newNm[c] || reg.name[c] || "";
     const ownerOf = c => reg.owner[c] || "";
 
     // ---- SITES (:1284-1306): rows with a future open-date this month onward, not yet opened.
@@ -4137,7 +4160,7 @@ setTimeout(applyBoard,300);
       const rsub = submitted.has(code) ? 1 : 0;
       const rp = []; (prog3_of[code] || []).forEach(x => { if (rp.indexOf(x) < 0) rp.push(x); });
       pseen.add(code);
-      pool.push({ code: code, name: (reg.name[code] || sdName[code] || code), owner: ownerOf(code),
+      pool.push({ code: code, name: (nameOf(code) || sdName[code] || code), owner: ownerOf(code),
         status: o1stat(code, ""), sub: rsub, prog: rp, ho: 0, hodate: "", sstep: "", sdate: "",
         blk: (rsub ? [] : (blk_of[code] || [])), feed: seenmap[code] });
     });
@@ -4172,6 +4195,8 @@ setTimeout(applyBoard,300);
     const changelog = (state.changelog != null) ? state.changelog : [];
 
     opened_list.sort((a, b) => (a.open < b.open ? -1 : a.open > b.open ? 1 : (a.code < b.code ? -1 : 1)));
+    const oldNm = slaOldNameMap(tabs.sla || []);
+    tagOldNames(sites, oldNm); tagOldNames(pool, oldNm); tagOldNames(opened_list, oldNm);
     return { sites, pool, alldates, newgot, opened_now, opened_2026, opened_list,
       vanished, changelog, _snapshot: diff.snapshot, _wipSeen: seenmap };
   }
@@ -4392,7 +4417,7 @@ setTimeout(applyBoard,300);
     const cc = (code, idx) => constrCell(constrRow, code, idx);
     function siteList(subset) {  // site_list (:1274)
       const items = subset.map(r => ({
-        code: cell(r, COL_CODE), name: cell(r, COL_NAME),
+        code: cell(r, COL_CODE), name: siteName(r),
         sign_status: sdGreenStatus(r, L), plan_status: sdOrangeStatus(r, L),
         date: cell(r, COL_APPROVED), aging: wdFrom(cell(r, COL_APPROVED), today), note: cell(r, COL_NOTE),
       }));
@@ -4405,7 +4430,7 @@ setTimeout(applyBoard,300);
         const code = cell(r, COL_CODE), rg = reg[code] || {};
         const prep = normDate(rg[kp] || ""), req = normDate(rg[kq] || ""), got = normDate(rg[kg] || "");
         const scan = legalScan(r, L);
-        const row = { code: code, name: cell(r, COL_NAME), date: cell(r, COL_APPROVED), scan_date: scan,
+        const row = { code: code, name: siteName(r), date: cell(r, COL_APPROVED), scan_date: scan,
           reg_prep: prep, reg_req: req, reg_got: got };
         if (box === "prep") row.aging = wdFrom(scan, today);
         else if (box === "req") row.aging = wdFrom(prep, today);
@@ -4477,7 +4502,7 @@ setTimeout(applyBoard,300);
       cancelled: outcomeList(cancelledD, COL_CANCEL_DATE, "cancel_date"),
       approve: (function () {  // approve_list (:1232): grouped by stage order, then date asc
         const idx = {}; SD_APPROVE_ORDER.forEach((s, n) => { idx[s] = n; });
-        const items = pulled.map(r => ({ code: cell(r, COL_CODE), name: cell(r, COL_NAME), date: cell(r, COL_APPROVED), status: sdApproveStage(r, L) }));  // 29 ก.ย.: ไม่รวมรอนำเสนอใหม่ (ตรงกับตัวเลขกล่อง)
+        const items = pulled.map(r => ({ code: cell(r, COL_CODE), name: siteName(r), date: cell(r, COL_APPROVED), status: sdApproveStage(r, L) }));  // 29 ก.ย.: ไม่รวมรอนำเสนอใหม่ (ตรงกับตัวเลขกล่อง)
         items.sort((a, b) => { const ia = (a.status in idx) ? idx[a.status] : 9, ib = (b.status in idx) ? idx[b.status] : 9; return ia !== ib ? ia - ib : sdCmp(sdKey(a.date), sdKey(b.date)); });
         return items;
       })(),
@@ -4495,7 +4520,7 @@ setTimeout(applyBoard,300);
     // sign_contract / wait_kt (sign_contract_list :1319) — split by wait_kt_cover.
     function signContractList(subset) {
       const items = subset.map(r => ({
-        code: cell(r, COL_CODE), name: cell(r, COL_NAME), site_pic: cell(r, COL_PIC_SITE),
+        code: cell(r, COL_CODE), name: siteName(r), site_pic: cell(r, COL_PIC_SITE),
         plan_status: sdOrangeStatus(r, L), date: cell(r, COL_APPROVED),
         aging: wdFrom(cell(r, COL_APPROVED), today), note: cell(r, COL_NOTE),
       }));
@@ -4509,7 +4534,7 @@ setTimeout(applyBoard,300);
     result.send_check = (function () {
       const subset = base.filter(r => noO1(r) && isSigned(r, L) && sendLegal(r, L) === "" && legalScan(r, L) === "");
       const items = subset.map(r => ({
-        code: cell(r, COL_CODE), name: cell(r, COL_NAME), plan_status: sdOrangeStatus(r, L),
+        code: cell(r, COL_CODE), name: siteName(r), plan_status: sdOrangeStatus(r, L),
         date: cell(r, COL_APPROVED), sign_date: sdSignedDate(r, L), aging_sign: wdFrom(sdSignedDate(r, L), today), note: cell(r, COL_NOTE),
       }));
       items.sort((a, b) => sdCmp(sdKey(a.sign_date), sdKey(b.sign_date)));
@@ -4519,7 +4544,7 @@ setTimeout(applyBoard,300);
     result.check_contract = (function () {
       const subset = base.filter(r => noO1(r) && isSigned(r, L) && sendLegal(r, L) !== "" && legalScan(r, L) === "");
       const items = subset.map(r => ({
-        code: cell(r, COL_CODE), name: cell(r, COL_NAME), plan_status: sdOrangeStatus(r, L),
+        code: cell(r, COL_CODE), name: siteName(r), plan_status: sdOrangeStatus(r, L),
         date: cell(r, COL_APPROVED), sign_date: sdSignedDate(r, L), send_date: sendLegal(r, L),
         aging_send: wdFrom(sendLegal(r, L), today), note: cell(r, COL_NOTE),
       }));
@@ -4530,7 +4555,7 @@ setTimeout(applyBoard,300);
     result.contract_final = (function () {
       const subset = base.filter(r => noO1(r) && legalScan(r, L) !== "" && !inO1Prep(r, L));
       const items = subset.map(r => ({
-        code: cell(r, COL_CODE), name: cell(r, COL_NAME), plan_status: sdOrangeStatus(r, L),
+        code: cell(r, COL_CODE), name: siteName(r), plan_status: sdOrangeStatus(r, L),
         date: cell(r, COL_APPROVED), sign_date: sdSignedDate(r, L), send_date: sendLegal(r, L),
         scan_date: legalScan(r, L), aging_scan: wdFrom(legalScan(r, L), today), note: cell(r, COL_NOTE),
       }));
@@ -4543,7 +4568,7 @@ setTimeout(applyBoard,300);
     const isMakeN4 = r => noO1(r) && hasN4d(r) && (cc(cell(r, COL_CODE), CONSTR_COL_N4_ENG_GET) === "" || cc(cell(r, COL_CODE), CONSTR_COL_N4_ARC_GET) === "");
     function makeN2DocsList(subset) {  // make_n2_docs_list (:1513)
       const items = subset.map(r => { const code = cell(r, COL_CODE); return {
-        code: code, name: cell(r, COL_NAME), date: cell(r, COL_APPROVED),
+        code: code, name: siteName(r), date: cell(r, COL_APPROVED),
         n4_date: fmtN4(cell(r, COL_GET_N4) || (ratkitN4[code] || "")),
         n2_eng_req: cc(code, CONSTR_COL_N2_ENG_REQ), n2_arc_req: cc(code, CONSTR_COL_N2_ARC_REQ),
         n2_eng_get: cc(code, CONSTR_COL_N2_ENG_GET), n2_arc_get: cc(code, CONSTR_COL_N2_ARC_GET),
@@ -4553,7 +4578,7 @@ setTimeout(applyBoard,300);
     }
     function makeN4DocsList(subset) {  // make_n4_docs_list (:1554) + getn4_docs reuse
       const items = subset.map(r => { const code = cell(r, COL_CODE); return {
-        code: code, name: cell(r, COL_NAME), date: cell(r, COL_APPROVED),
+        code: code, name: siteName(r), date: cell(r, COL_APPROVED),
         n4_date: fmtN4(cell(r, COL_GET_N4) || (ratkitN4[code] || "")),
         n4_eng_req: cc(code, CONSTR_COL_N4_ENG_REQ), n4_arc_req: cc(code, CONSTR_COL_N4_ARC_REQ),
         n4_eng_get: cc(code, CONSTR_COL_N4_ENG_GET), n4_arc_get: cc(code, CONSTR_COL_N4_ARC_GET),
@@ -4575,7 +4600,7 @@ setTimeout(applyBoard,300);
     result.n4n2 = (function () {
       const subset = base.filter(r => noO1(r) && hasN4d(r) && cc(cell(r, COL_CODE), CONSTR_COL_SEND_RATKIT) !== "" && !inO1Prep(r, L));
       const items = subset.map(r => { const code = cell(r, COL_CODE); return {
-        code: code, name: cell(r, COL_NAME), date: cell(r, COL_APPROVED),
+        code: code, name: siteName(r), date: cell(r, COL_APPROVED),
         n4_date: fmtN4(cell(r, COL_GET_N4) || (ratkitN4[code] || "")),
         n4_eng_req: cc(code, CONSTR_COL_N4_ENG_REQ), n4_arc_req: cc(code, CONSTR_COL_N4_ARC_REQ),
         n4_eng_get: cc(code, CONSTR_COL_N4_ENG_GET), n4_arc_get: cc(code, CONSTR_COL_N4_ARC_GET),
@@ -4589,7 +4614,7 @@ setTimeout(applyBoard,300);
       && hasN4d(r) && cc(cell(r, COL_CODE), CONSTR_COL_SEND_RATKIT) !== "";
     function waitO1List(subset) {
       const items = subset.map(r => { const code = cell(r, COL_CODE); return {
-        code: code, name: cell(r, COL_NAME), date: cell(r, COL_APPROVED),
+        code: code, name: siteName(r), date: cell(r, COL_APPROVED),
         scan_date: legalScan(r, L), permit_date: permit[code] || "", send_ratkit: cc(code, CONSTR_COL_SEND_RATKIT),
       }; });
       items.sort((a, b) => sdCmp(sdKey(a.date), sdKey(b.date)));
@@ -4603,7 +4628,7 @@ setTimeout(applyBoard,300);
     result.measure = (function () {  // measure_list (:1399) sorted by survey_date asc
       const subset = base.filter(r => surveyed(r) && cell(r, COL_LEVEL_DATE) === "" && noO1(r));
       const items = subset.map(r => { const sdate = surveyM(r, L) || cell(r, COL_SURVEY_RESULT); return {
-        code: cell(r, COL_CODE), name: cell(r, COL_NAME), sign_status: sdGreenStatus(r, L),
+        code: cell(r, COL_CODE), name: siteName(r), sign_status: sdGreenStatus(r, L),
         date: cell(r, COL_APPROVED), survey_date: sdate, aging_survey: wdFrom(sdate, today), note: cell(r, COL_NOTE),
       }; });
       items.sort((a, b) => sdCmp(sdKey(a.survey_date), sdKey(b.survey_date)));
@@ -4615,7 +4640,7 @@ setTimeout(applyBoard,300);
       return sorted.map(r => {
         const sdate = surveyM(r, L) || cell(r, COL_SURVEY_RESULT);
         const k = sdKey(sdate); const aging = k === SD_PDMAX ? "" : String(workingDays(new Date(k), today));
-        return { code: cell(r, COL_CODE), name: cell(r, COL_NAME), sign_status: sdGreenStatus(r, L),
+        return { code: cell(r, COL_CODE), name: siteName(r), sign_status: sdGreenStatus(r, L),
           date: cell(r, COL_APPROVED), survey_date: sdate, level_date: cell(r, COL_LEVEL_DATE), aging_ml: aging, note: cell(r, COL_NOTE) };
       });
     })();
@@ -4626,7 +4651,7 @@ setTimeout(applyBoard,300);
       return sorted.map(r => {
         const sdate = surveyM(r, L) || cell(r, COL_SURVEY_RESULT); const m = md(r);
         const aging = m === SD_PDMAX ? "" : String(workingDays(new Date(m), today));
-        return { code: cell(r, COL_CODE), name: cell(r, COL_NAME), sign_status: sdGreenStatus(r, L),
+        return { code: cell(r, COL_CODE), name: siteName(r), sign_status: sdGreenStatus(r, L),
           date: cell(r, COL_APPROVED), n4_date: fmtN4(cell(r, COL_GET_N4) || (ratkitN4[cell(r, COL_CODE)] || "")),
           survey_date: sdate, level_date: cell(r, COL_LEVEL_DATE), aging_max: aging, note: cell(r, COL_NOTE) };
       });
@@ -4637,7 +4662,7 @@ setTimeout(applyBoard,300);
       const subset = base.filter(r => noO1(r) && surveyed(r) && hasN4(r, L) && cell(r, COL_PLAN_APPROVE) !== "" && cell(r, COL_PLAN_APPROVED) === "");
       const sorted = subset.slice().sort((a, b) => sdCmp(sdKey(cell(a, COL_PLAN_APPROVE)), sdKey(cell(b, COL_PLAN_APPROVE))));
       return sorted.map(r => { const sdate = surveyM(r, L) || cell(r, COL_SURVEY_RESULT); return {
-        code: cell(r, COL_CODE), name: cell(r, COL_NAME), sign_status: sdGreenStatus(r, L),
+        code: cell(r, COL_CODE), name: siteName(r), sign_status: sdGreenStatus(r, L),
         date: cell(r, COL_APPROVED), n4_date: fmtN4(cell(r, COL_GET_N4) || (ratkitN4[cell(r, COL_CODE)] || "")),
         survey_date: sdate, level_date: cell(r, COL_LEVEL_DATE), plan_enter_date: cell(r, COL_PLAN_APPROVE),
         aging_plan: wdFrom(cell(r, COL_PLAN_APPROVE), today),
@@ -4647,7 +4672,7 @@ setTimeout(applyBoard,300);
       const subset = base.filter(r => noO1(r) && surveyed(r) && cell(r, COL_PLAN_APPROVE) !== "" && cell(r, COL_PLAN_APPROVED) !== "" && (permit[cell(r, COL_CODE)] || "") === "");
       const sorted = subset.slice().sort((a, b) => sdCmp(sdKey(cell(a, COL_PLAN_APPROVED)), sdKey(cell(b, COL_PLAN_APPROVED))));
       return sorted.map(r => { const sdate = surveyM(r, L) || cell(r, COL_SURVEY_RESULT); return {
-        code: cell(r, COL_CODE), name: cell(r, COL_NAME), sign_status: sdGreenStatus(r, L),
+        code: cell(r, COL_CODE), name: siteName(r), sign_status: sdGreenStatus(r, L),
         date: cell(r, COL_APPROVED), n4_date: fmtN4(cell(r, COL_GET_N4) || (ratkitN4[cell(r, COL_CODE)] || "")),
         survey_date: sdate, level_date: cell(r, COL_LEVEL_DATE), plan_enter_date: cell(r, COL_PLAN_APPROVE),
         plan_ok_date: cell(r, COL_PLAN_APPROVED), aging_plan_ok: wdFrom(cell(r, COL_PLAN_APPROVED), today),
@@ -4658,7 +4683,7 @@ setTimeout(applyBoard,300);
       const bl = r => permit[cell(r, COL_CODE)] || "";
       const sorted = subset.slice().sort((a, b) => sdCmp(sdKey(bl(a)), sdKey(bl(b))));
       return sorted.map(r => { const sdate = surveyM(r, L) || cell(r, COL_SURVEY_RESULT), b = bl(r); return {
-        code: cell(r, COL_CODE), name: cell(r, COL_NAME), sign_status: sdGreenStatus(r, L),
+        code: cell(r, COL_CODE), name: siteName(r), sign_status: sdGreenStatus(r, L),
         date: cell(r, COL_APPROVED), n4_date: fmtN4(cell(r, COL_GET_N4) || (ratkitN4[cell(r, COL_CODE)] || "")),
         survey_date: sdate, level_date: cell(r, COL_LEVEL_DATE), plan_enter_date: cell(r, COL_PLAN_APPROVE),
         plan_ok_date: cell(r, COL_PLAN_APPROVED), permit_date: b, aging_permit: wdFrom(b, today),
@@ -4667,7 +4692,7 @@ setTimeout(applyBoard,300);
     // confirm_o1_list (:1385) sorted by submit_o1 asc
     result.confirm_o1 = (function () {
       const subset = base.filter(r => cell(r, COL_SUBMIT_O1) !== "" || cell(r, COL_GOT_O1) !== "");
-      const items = subset.map(r => ({ code: cell(r, COL_CODE), name: cell(r, COL_NAME), date: cell(r, COL_APPROVED), submit_o1: cell(r, COL_SUBMIT_O1), note: cell(r, COL_NOTE) }));
+      const items = subset.map(r => ({ code: cell(r, COL_CODE), name: siteName(r), date: cell(r, COL_APPROVED), submit_o1: cell(r, COL_SUBMIT_O1), note: cell(r, COL_NOTE) }));
       items.sort((a, b) => sdCmp(sdKey(a.submit_o1), sdKey(b.submit_o1)));
       return items;
     })();
@@ -4756,6 +4781,8 @@ setTimeout(applyBoard,300);
     sdMarkMax(result.getn4_docs, ["n4_eng_get", "n4_arc_get"]);
     sdMarkMax(result.wait_o1, ["scan_date", "permit_date", "send_ratkit"]);
 
+    const oldNm = slaOldNameMap(rows);
+    Object.keys(result).forEach(k => { if (Array.isArray(result[k])) tagOldNames(result[k], oldNm); });
     return { STEP_DETAILS: result, SLA_SUMMARY: buildSlaSummary(result) };
   }
 
@@ -8268,7 +8295,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var q = F.q.trim().toLowerCase();
     return REG().rows.filter(function (r) {
       if (!inRange(r)) return false;
-      if (q && (r.code + " " + r.name).toLowerCase().indexOf(q) < 0) return false;
+      if (q && (r.code + " " + r.name + " " + (r.name_old || "")).toLowerCase().indexOf(q) < 0) return false;
       if (F.month && r.open_iso.slice(0, 7) !== F.month) return false;
       if (F.prov && r.prov !== F.prov) return false;
       if (F.st !== "all" && rowState(r, keys).st !== F.st) return false;
@@ -8376,7 +8403,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function grpShow() { return { a: F.grp !== "open", b: F.grp === "" || F.grp === "open" }; }
   function passCommon(r) {
     var q = F.q.trim().toLowerCase();
-    if (q && (r.code + " " + r.name).toLowerCase().indexOf(q) < 0) return false;
+    if (q && (r.code + " " + r.name + " " + (r.name_old || "")).toLowerCase().indexOf(q) < 0) return false;
     if (F.code && r.code !== F.code) return false;
     if (F.month && String(r.open_iso || "").slice(0, 7) !== F.month) return false;
     if (F.prov && r.prov !== F.prov) return false;
