@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=172156" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=173026" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6562,6 +6562,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   .au-tbl tr:hover td{background:var(--s2);}
   .au-tbl tr.au-inactive td{opacity:.5;}
   .au-badge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;}
+  .au-delbtn{color:#b91c1c!important;border-color:#fca5a5!important;background:#fff!important;} .au-delbtn:hover{background:#fef2f2!important;}
   .au-editbtn{border:1px solid var(--border2);background:var(--s3);color:var(--t2);font-size:11.5px;font-weight:600;
            padding:4px 12px;border-radius:7px;cursor:pointer;} .au-editbtn:hover{background:var(--border2);}
   .au-state{padding:26px 10px;text-align:center;color:var(--t3);font-size:13px;}
@@ -6644,7 +6645,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       var inact=(String(x.active).toUpperCase()==='FALSE');
       return '<tr'+(inact?' class="au-inactive"':'')+'>'+
         '<td>'+esc(x.email)+'</td><td>'+esc(x.name||'')+'</td><td>'+badge+'</td>'+
-        '<td style="text-align:right"><button class="au-editbtn" type="button" onclick="AUedit(\''+esc(x.email).replace(/'/g,"\\'")+'\')">แก้</button></td></tr>';
+        '<td style="text-align:right;white-space:nowrap"><button class="au-editbtn" type="button" onclick="AUedit(\''+esc(x.email).replace(/'/g,"\\'")+'\')">แก้</button>'+
+        (canDel(x.email)?' <button class="au-editbtn au-delbtn" type="button" onclick="AUdel(\''+esc(x.email).replace(/'/g,"\\'")+'\')">ลบ</button>':'')+'</td></tr>';
     }).join('');
     host.innerHTML='<div style="max-height:46vh;overflow:auto;border:1px solid var(--border);border-radius:10px">'+
       '<table class="au-tbl"><thead><tr><th>อีเมล</th><th>ชื่อ</th><th>สิทธิ์ปัจจุบัน</th><th></th></tr></thead>'+
@@ -6709,7 +6711,25 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if(lo&&lo.parentNode===boxu) boxu.insertBefore(b,lo); else boxu.appendChild(b);
     return true;
   }
-  window.AUopen=open_; window.AUclose=close; window.AUsave=save; window.AUedit=edit; window.AUfilter=render;
+  // 4 พ.ย. (จี "ทำให้ลบได้ บางคนลาออกไปแล้ว"): ลบแถวออกจากชีต Roles (server ตรวจ admin + ห้ามลบตัวเอง/เจ้าของระบบ) แล้วยืนยันด้วย listUsers
+  function canDel(email){ email=String(email||'').toLowerCase(); return email!==String(window.DPT_USER||'').toLowerCase() && email!=='jeerasak.li@cjmart.co.th'; }
+  function del(email){
+    if(!confirm('ลบ '+email+' ออกจากระบบ?\nคนนี้จะเข้าแอปไม่ได้อีก (ถ้าลบผิด เพิ่มกลับได้ด้วยช่องด้านบน)')) return;
+    var u=gurl();
+    try{ fetch(u,{method:'post',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:tok(),action:'deleteUser',email:email})}); }catch(err){}
+    toast('กำลังลบ '+email+'…',true); verifyGone(String(email).toLowerCase(),0);
+  }
+  function verifyGone(email,tries){
+    var u=gurl();
+    fetch(u+(u.indexOf('?')<0?'?':'&')+'action=listUsers&token='+encodeURIComponent(tok()),{redirect:'follow'})
+      .then(function(r){return r.json();})
+      .then(function(j){ var still=!(j&&j.ok)||(j.users||[]).some(function(x){return String(x.email||'').toLowerCase()===email;});
+        if(!still){ _users=j.users||[]; toast('✓ ลบแล้ว: '+email,true); render(); }
+        else if(tries<3){ setTimeout(function(){verifyGone(email,tries+1);},1200); }
+        else { toast('✗ ลบไม่สำเร็จ หรือยังไม่ยืนยัน — ลองใหม่',false); load(); } })
+      .catch(function(){ if(tries<3){ setTimeout(function(){verifyGone(email,tries+1);},1200); } else { toast('✗ ลบไม่สำเร็จ — เช็คเน็ตแล้วลองใหม่',false); } });
+  }
+  window.AUopen=open_; window.AUclose=close; window.AUsave=save; window.AUedit=edit; window.AUfilter=render; window.AUdel=del;
   function initBtn(){
     if(tryButton()) return;
     var t=setInterval(function(){ if(tryButton()) clearInterval(t); },500);
