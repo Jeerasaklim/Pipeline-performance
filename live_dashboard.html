@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=142151" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=142645" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -7963,7 +7963,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ".rg-st-done{color:var(--rg-ok);background:var(--gbg)}.rg-st-pend{color:var(--rg-pend);background:var(--ybg)}.rg-st-over{color:var(--rg-bad);background:var(--rbg)}.rg-st-none{color:var(--t2);background:var(--s3)}.rg-st-na{color:var(--t3);background:none}",
     ".rg-pager{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;padding:10px 14px;font-size:12.5px;color:var(--t2);border-top:1px solid var(--border);background:var(--surface)}",
     ".rg-det{margin-top:14px}.rg-det>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--text);padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface);min-height:44px;box-sizing:border-box}",
-    ".rg-det>summary::-webkit-details-marker{display:none}.rg-det>summary:hover{border-color:var(--blue)}.rg-det-t{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--blue)}.rg-det[open]>summary{margin-bottom:10px}.rg-det[open] .rg-det-t{font-size:0}.rg-det[open] .rg-det-t::after{content:'ซ่อนตารางวันที่ ▴';font-size:12.5px}",
+    ".rg-det>summary::-webkit-details-marker{display:none}.rg-det>summary:hover{border-color:var(--blue)}.rg-det-t{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--blue)}.rg-det[open]>summary{margin-bottom:10px}.rg-det[open] .rg-det-t{font-size:0}.rg-det[open] .rg-det-t::after{content:'ซ่อนตาราง ▴';font-size:12.5px}.rg-dsub2{font-size:12px;font-weight:500;color:var(--t3)}.rg-det>.card{margin-top:0}",
     ".rg-tnote{font-size:12.5px;color:var(--t2);background:var(--s2);border-left:3px solid var(--border2);padding:8px 12px;margin:10px 0 0;border-radius:0 8px 8px 0;line-height:1.6}",
     ".rg-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}",
     "body.rg-active #xsearch,body.rg-active #svm-filter{display:none!important}",
@@ -8461,8 +8461,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function rowOpen(coh, r) { return coh === "a" ? '<tr class="rg-row" data-code="' + esc(r.code) + '" tabindex="0">' : '<tr class="rg-orow" data-ocode="' + esc(r.code) + '" tabindex="0">'; }
   function infoTd(coh, r) { return '<td class="rg-nw">' + esc(coh === "a" ? (r.open || DASH) : (r.prov || DASH)) + "</td>"; }
   function infoTh(coh, rs) { return '<th class="rg-stk"' + (rs ? ' rowspan="' + rs + '"' : "") + ">สาขา</th><th" + (rs ? ' rowspan="' + rs + '"' : "") + ">" + (coh === "a" ? "วันเปิด" : "จังหวัด") + "</th>"; }
-  function details(key, inner) {
-    return '<details class="rg-det" data-det="' + key + '"' + (DET[key] === false ? "" : " open") + '><summary><span>📅 วันที่ (ทุกสาขา)</span><span class="rg-det-t">แสดงตารางวันที่ ▾</span></summary>' + inner + "</details>";
+  // 4 พ.ย. (จี "อยากซ่อนตารางได้ทุกตาราง"): ทุกตารางในแท็บ = กล่องพับได้ชุดเดียว · เปิดเป็นค่าเริ่ม · จำสถานะใน DET ระหว่างใช้งาน
+  function details(key, inner, title) {
+    return '<details class="rg-det" data-det="' + key + '"' + (DET[key] === false ? "" : " open") + '><summary><span>' + (title || "📅 วันที่ (ทุกสาขา)") + '</span><span class="rg-det-t">แสดงตาราง ▾</span></summary>' + inner + "</details>";
   }
   function strip(T, coh, w) {
     var red = redWord(coh, w);
@@ -8564,7 +8565,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var b2 = c.body2 ? c.body2(pg.items) : pg.items.map(function (r) { return rowOpen(c.coh, r) + siteTd(r) + infoTd(c.coh, r) + c.row2(r) + "</tr>"; }).join("");
     var pgH = pager(key, pg);
     return strip(T, c.coh, c.w) +
-      '<div class="rg-tl">ทำแล้วหรือยัง <span>· ' + list.length + " สาขา</span></div>" + tcard("rg-t1", c.th1, b1, pgH) +
+      details(key + "-t1", tcard("rg-t1", c.th1, b1, pgH), '✅ ทำแล้วหรือยัง <span class="rg-dsub2">· ' + list.length + " สาขา</span>") +
       (c.note ? '<div class="rg-tnote">' + c.note + "</div>" : "") +
       details(key, tcard("rg-t2", c.th2, b2 || emptyRow(c.n2, msg), pgH));
   }
@@ -8696,9 +8697,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         '<td class="c">' + (c.ok + c.soon) + '</td><td class="c">' + dot(c.due, "rgp-a") + '</td><td class="c">' + dot(c.over, "rgp-r") + '</td><td class="c">' + pg + '</td><td class="c">' + dot(c.none, "rgp-u") + "</td>" +
         '<td class="c">' + (c.zn ? '<span class="rgp-zn">🚫 ' + c.zn + "</span> + " + c.na : (c.na || "·")) + '</td><td class="c rgp-tot">' + N + "</td></tr>";
     }).join("");
-    h += '<div class="card rgp-card"><div class="rgp-h2">รายใบอนุญาต</div><div class="rgp-tw"><table class="rgp-t"><tr><th>ใบอนุญาต</th><th class="c">มีใบแล้ว</th><th class="c">✓ ยังไม่หมด</th><th class="c">🟠 ถึงรอบต่อ</th><th class="c">🔴 หมดแล้ว</th>' +
+    h += details("lic-sum", '<div class="card rgp-card"><div class="rgp-tw"><table class="rgp-t"><tr><th>ใบอนุญาต</th><th class="c">มีใบแล้ว</th><th class="c">✓ ยังไม่หมด</th><th class="c">🟠 ถึงรอบต่อ</th><th class="c">🔴 หมดแล้ว</th>' +
       '<th class="c">ยังไม่ได้ใบ<br><span class="rgp-thn">(ทีมกำลังขอ)</span></th><th class="c">? ว่าง</th><th class="c">– ไม่ต้องมี<br><span class="rgp-thn">(🚫 = ติด Zoning)</span></th><th class="c">รวม</th></tr>' + lt + "</table></div>" +
-      '<div class="rgp-f">"มีใบแล้ว" = ช่องที่ชีตมีวันหมดอายุ ÷ ช่องที่ต้องมีใบ (ไม่นับ "ไม่ต้องมี") · ถึงรอบต่อ = วันนี้อยู่ในช่วงต่อล่วงหน้าตามหัวคอลัมน์ชีต (D-90 / D-60 / D-45) · "ไม่ต้องมี" นับทั้ง "-" และคำว่า "ไม่ต้องมี"</div>' + pNote() + "</div>";
+      '<div class="rgp-f">"มีใบแล้ว" = ช่องที่ชีตมีวันหมดอายุ ÷ ช่องที่ต้องมีใบ (ไม่นับ "ไม่ต้องมี") · ถึงรอบต่อ = วันนี้อยู่ในช่วงต่อล่วงหน้าตามหัวคอลัมน์ชีต (D-90 / D-60 / D-45) · "ไม่ต้องมี" นับทั้ง "-" และคำว่า "ไม่ต้องมี"</div>' + pNote() + "</div>", "📄 รายใบอนุญาต");
 
     // รายสาขา
     var t0 = todayIso(), fl = PF.fl === "" ? null : OLIC[+PF.fl], list = rows.map(function (r) { return { r: r, st: OLIC.map(function (l) { return pst(r, l); }), s: pScore(r) }; });
@@ -8723,14 +8724,14 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       return '<tr class="rg-orow" data-ocode="' + esc(r.code) + '" tabindex="0"><td class="rgp-st"><b>' + esc(r.code) + "</b> " + esc(r.name) + '</td><td class="c rgp-od' + (age != null && age <= 90 ? " rgp-new" : "") + '"' + (age != null ? ' title="เปิดมาแล้ว ' + age + ' วัน"' : "") + ">" + esc(pEx(r.open_iso)) + "</td>" + cells +
         '<td class="c rgp-rn">' + ((n.over + n.due) || "") + '</td><td class="c rgp-pn">' + (n.prog || "") + '</td><td class="c rgp-un">' + (n.none || "") + "</td></tr>";
     }).join("") || '<tr><td colspan="' + (5 + OLIC.length) + '" class="rg-empty">' + (rows.length ? "ไม่มีร้านตรงตัวกรอง — กด “ล้างตัวกรอง”" : "ไม่มีร้านในกลุ่ม/ตัวกรองนี้") + "</td></tr>";
-    h += '<div class="card rgp-card"><div class="rgp-h2">รายสาขา (' + N + " ร้าน · มีเรื่องต้องตาม " + todo + " ร้าน)</div>" +
+    h += details("lic-site", '<div class="card rgp-card">' +
       '<div class="rgp-leg"><span class="rgp-ok">✓ มีใบ ยังไม่หมด</span><span class="rgp-due">🟠 ถึงรอบต่อ</span><span class="rgp-over">🔴 หมดอายุแล้ว</span><span class="rgp-prog">คำในช่อง = ยังไม่ได้ใบ · สถานะที่ทีมเขียนในชีต</span><span class="rgp-none">? ยังไม่มีบันทึก</span><span class="rgp-na">– ไม่ต้องมี</span><span class="rgp-zn">🚫 ติด Zoning (ขายสุราไม่ได้)</span><span class="rgp-nw">วันเปิดสีส้ม = เปิดมาไม่เกิน 90 วัน</span> · ชี้ที่ช่องเพื่อดูค่าในชีต · กดแถวเพื่อดูรายละเอียดร้าน</div>' +
       '<div class="rgp-flt">' + pSel("fs", PF.fs, [["", "สถานะสาขา: ทั้งหมด"], ["todo", "มีเรื่องต้องตาม (หมด/ถึงรอบ/ยังไม่ได้ใบ/ว่าง)"], ["over", "🔴 มีใบหมดอายุ"], ["due", "🟠 มีใบถึงรอบต่อ"], ["none", "? มีช่องว่าง"], ["prog", "มีใบที่ยังไม่ได้ (ทีมกำลังขอ)"], ["clean", "✓ ไม่มีเรื่องต้องตาม"], ["zn", "🚫 ติด Zoning"]]) +
       pSel("fl", PF.fl, pLicOpts("ใบอนุญาต: ทุกใบ")) +
       pSel("fv", PF.fv, [["", "สถานะในใบที่เลือก: ทั้งหมด"], ["ok", "✓ ยังไม่หมด"], ["due", "🟠 ถึงรอบต่อ"], ["over", "🔴 หมดแล้ว"], ["prog", "ยังไม่ได้ใบ"], ["none", "? ว่าง"], ["na", "– ไม่ต้องมี"], ["zn", "🚫 ติด Zoning"]]) +
       pSel("so", PF.so, [["code", "เรียง: รหัสสาขา"], ["open", "เรียง: เปิดล่าสุดก่อน"], ["score", "เรียง: เรื่องต้องตามมากสุด"]]) +
       '<button type="button" class="rgp-clr" data-pfclr="lic">ล้างตัวกรอง</button><span class="rgp-cnt">แสดง ' + list.length + " จาก " + N + " ร้าน</span></div>" +
-      '<div class="rgp-tw rgp-scroll"><table class="rgp-t rgp-mx"><thead><tr><th>สาขา</th><th class="c">วันเปิด</th>' + pTh() + '<th class="c">หมด/ถึงรอบ</th><th class="c">ยังไม่ได้ใบ</th><th class="c">ว่าง</th></tr></thead><tbody>' + body + "</tbody></table></div></div>";
+      '<div class="rgp-tw rgp-scroll"><table class="rgp-t rgp-mx"><thead><tr><th>สาขา</th><th class="c">วันเปิด</th>' + pTh() + '<th class="c">หมด/ถึงรอบ</th><th class="c">ยังไม่ได้ใบ</th><th class="c">ว่าง</th></tr></thead><tbody>' + body + "</tbody></table></div></div>", "🏪 รายสาขา <span class=\"rg-dsub2\">· " + N + " ร้าน · มีเรื่องต้องตาม " + todo + " ร้าน</span>");
     return h;
   }
 
@@ -8749,8 +8750,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       return "<tr><td>" + esc(PLAB[l[0]]) + '</td><td class="c">' + (c.over ? '<b class="rgp-r">' + c.over + "</b>" : "·") + '</td><td class="c">' + (c.due ? '<b class="rgp-a">' + c.due + "</b>" : "·") + '</td><td class="c">' + (c.soon || "·") +
         '</td><td class="c">' + c.ok + '</td><td class="c">' + (m.lead[l[0]] != null ? m.lead[l[0]] + " วัน" : DASH) + "</td></tr>";
     }).join("");
-    h += '<div class="card rgp-card"><div class="rgp-h2">รายใบอนุญาต</div><div class="rgp-tw"><table class="rgp-t"><tr><th>ใบอนุญาต</th><th class="c">🔴 หมดแล้ว</th><th class="c">🟠 ถึงรอบต่อ</th><th class="c">🟡 อีก ≤30 วัน</th><th class="c">ยังไม่ถึงรอบ</th><th class="c">ต่อล่วงหน้าได้</th></tr>' + lt + "</table></div>" +
-      '<div class="rgp-f">นับเฉพาะช่องที่ชีตมีวันหมดอายุ · ช่องที่เป็นข้อความ (กำลังขอ/รอชำระ) ดูที่หน้า 📄 ใบอนุญาต</div>' + pNote() + "</div>";
+    h += details("ren-sum", '<div class="card rgp-card"><div class="rgp-tw"><table class="rgp-t"><tr><th>ใบอนุญาต</th><th class="c">🔴 หมดแล้ว</th><th class="c">🟠 ถึงรอบต่อ</th><th class="c">🟡 อีก ≤30 วัน</th><th class="c">ยังไม่ถึงรอบ</th><th class="c">ต่อล่วงหน้าได้</th></tr>' + lt + "</table></div>" +
+      '<div class="rgp-f">นับเฉพาะช่องที่ชีตมีวันหมดอายุ · ช่องที่เป็นข้อความ (กำลังขอ/รอชำระ) ดูที่หน้า 📄 ใบอนุญาต</div>' + pNote() + "</div>", "📄 รายใบอนุญาต");
     var li = RF.rl === "" ? null : +RF.rl;
     var shown = list.filter(function (x) {
       if (!pTopSt(x.r, x.st)) return false;
@@ -8768,13 +8769,13 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         return '<td class="rgp-m rgp-rn-' + k + '" title="' + esc(pTip(l, v, s)) + '">' + (k === "na" ? "–" : (v.raw ? esc(String(v.raw).slice(0, 24)) : "ว่าง")) + "</td>";
       }).join("") + "</tr>";
     }).join("") || '<tr><td colspan="' + (1 + OLIC.length) + '" class="rg-empty">' + (rows.length ? "ไม่มีร้านตรงตัวกรอง — เลือก “แสดง: ทุกร้าน” หรือกด “ล้างตัวกรอง”" : "ไม่มีร้านในกลุ่ม/ตัวกรองนี้") + "</td></tr>";
-    h += '<div class="card rgp-card"><div class="rgp-h2">รายสาขา</div>' +
+    h += details("ren-site", '<div class="card rgp-card">' +
       '<div class="rgp-leg"><span class="rgp-rn-over">หมด N วัน = หมดอายุแล้ว</span><span class="rgp-rn-due">เหลือ N วัน = ถึงรอบต่อ</span><span class="rgp-rn-soon">เหลือ N วัน = อีก ≤30 วันถึงรอบ</span><span class="rgp-rn-ok">วันที่ = ยังไม่ถึงรอบ</span><span class="rgp-rn-prog">ข้อความในชีต</span> · กดแถวเพื่อดูรายละเอียดร้าน</div>' +
       '<div class="rgp-flt">' + pSel("rf", RF.rf, [["any", "แสดง: เฉพาะร้านที่ต้องต่อ (🔴🟠🟡)"], ["over", "🔴 มีใบหมดอายุแล้ว"], ["due", "🟠 มีใบถึงรอบต่อ"], ["soon", "🟡 มีใบอีก ≤30 วันถึงรอบ"], ["", "ทุกร้าน"]]) +
       pSel("rl", RF.rl, pLicOpts("ใบอนุญาต: ทุกใบ")) + pSel("rs", RF.rs, [["w", "เรียง: หมดก่อนขึ้นก่อน"], ["code", "เรียง: รหัสสาขา"]]) +
       '<button type="button" class="rgp-clr" id="rgp-csv">⬇ Export CSV</button><button type="button" class="rgp-clr" data-pfclr="renew">ล้างตัวกรอง</button><span class="rgp-cnt">แสดง ' + shown.length + " จาก " + rows.length + " ร้าน</span></div>" +
       '<div class="rgp-tw rgp-scroll"><table class="rgp-t rgp-rx"><thead><tr><th>สาขา</th>' + pTh() + "</tr></thead><tbody>" + body + "</tbody></table></div>" +
-      '<div class="rgp-f">ชี้ที่ช่อง = วันหมดอายุ · เหลือ/เลยกี่วัน · ต่อล่วงหน้าได้กี่วัน · ที่มา: ชีตทะเบียน แท็บ ใบอนุญาต</div></div>';
+      '<div class="rgp-f">ชี้ที่ช่อง = วันหมดอายุ · เหลือ/เลยกี่วัน · ต่อล่วงหน้าได้กี่วัน · ที่มา: ชีตทะเบียน แท็บ ใบอนุญาต</div></div>', "🏪 รายสาขา <span class=\"rg-dsub2\">· แสดง " + shown.length + " จาก " + rows.length + " ร้าน</span>");
     PCSV = shown;
     return h;
   }
@@ -8925,8 +8926,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           esc(WORK[w].t.replace(/^\S+\s/, "") + ": " + SYMW[s.st] + (s.word ? " · " + s.word : "") + (s.miss && s.miss.length ? " — ยังไม่ครบ: " + s.miss.join(" · ") : "") + " (กดเพื่อเปิดหน้างาน)") + '">' + SYM[s.st] + "</button></td>";
       }).join("") + "</tr>";
     }).join("") || emptyRow(2 + works.length, rows.length ? "ไม่มีสาขาตรงตัวกรองสถานะ — กด “ล้างตัวกรอง”" : "ไม่มีสาขาในกลุ่ม/ตัวกรองนี้");
-    return '<div class="rg-tl">' + (coh === "a" ? "สาขาใหม่" : "ร้านที่เปิดแล้ว") + " × ประเภทงาน <span>· " + list.length + " สาขา · 🔴 ขึ้นก่อน" + (coh === "a" ? " แล้วเรียงวันเปิดใกล้สุด" : "") + " · กดช่องเพื่อเปิดหน้างานของสาขานั้น</span></div>" +
-      tcard("rg-ov", th, body, pager(key, pg));
+    return details(key, tcard("rg-ov", th, body, pager(key, pg)), (coh === "a" ? "สาขาใหม่" : "ร้านที่เปิดแล้ว") + ' × ประเภทงาน <span class="rg-dsub2">· ' + list.length + " สาขา · 🔴 ขึ้นก่อน" + (coh === "a" ? " แล้วเรียงวันเปิดใกล้สุด" : "") + " · กดช่องเพื่อเปิดหน้างานของสาขานั้น</span>");
   }
   function overviewView() {
     freshen();
@@ -9021,10 +9021,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       return '<div class="rg-note rg-note2">คอลัมน์ร่าง — ยังไม่มีต้นทางข้อมูล (ชีตทะเบียนไม่มีประกันร้านค้า · "เงินประกัน" ในชีต = มัดจำมิเตอร์น้ำ-ไฟ) · รอยืนยันว่าต้องติดตามอะไร</div>' +
         bar('<select disabled><option>บริษัทประกัน: ทั้งหมด</option></select>') +
         '<div class="rg-kpis">' + kpi("🔴 หมดอายุแล้ว") + kpi("🟠 ใกล้หมดอายุ") + kpi("✅ คุ้มครองอยู่") + kpi("⚪ ยังไม่มีกรมธรรม์") + kpi("📋 สาขาทั้งหมด") + "</div>" +
-        '<div class="section-label">ต้องต่ออายุ</div>' +
-        table(["Site Code", "ชื่อสาขา", "บริษัทประกัน", "เลขที่กรมธรรม์", "วันหมดอายุ", "เหลือ / เลย (วัน)", "บันทึก"], "เรียงจากหมดก่อน") +
-        '<div class="section-label">รายสาขา</div>' +
-        table(["Site Code", "ชื่อสาขา", "จังหวัด", "บริษัทประกัน", "เลขที่กรมธรรม์", "ความคุ้มครอง", "ทุนประกัน", "เบี้ยประกัน", "วันเริ่ม", "วันหมดอายุ", "สถานะ", "หมายเหตุ", "บันทึก"]);
+        details("ins-due", table(["Site Code", "ชื่อสาขา", "บริษัทประกัน", "เลขที่กรมธรรม์", "วันหมดอายุ", "เหลือ / เลย (วัน)", "บันทึก"], "เรียงจากหมดก่อน"), "ต้องต่ออายุ") +
+        details("ins-site", table(["Site Code", "ชื่อสาขา", "จังหวัด", "บริษัทประกัน", "เลขที่กรมธรรม์", "ความคุ้มครอง", "ทุนประกัน", "เบี้ยประกัน", "วันเริ่ม", "วันหมดอายุ", "สถานะ", "หมายเหตุ", "บันทึก"]), "รายสาขา");
     }]
   };
   var ORDER = ["overview", "license", "renew", "house", "util", "trash", "signtax", "landtax", "insure", "qc"], CURV = "overview";   // 4 พ.ย. (จี): ภาพรวม → ใบอนุญาต → ต่ออายุ ขึ้นก่อน · ตรวจข้อมูลไว้หลังสุด
