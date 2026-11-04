@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=160724" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=164310" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -9147,7 +9147,7 @@ function uniq(f){var o={};S.rows.forEach(function(r){var v=f(r);if(v)o[v]=1});re
 opts("fCon","ผรม.",uniq(function(r){return r.con}));opts("fProv","จังหวัด",uniq(function(r){return r.prov}));opts("fQs","QS",uniq(function(r){return r.qs}));
 opts("fMonth","เดือนตอกเข็ม",uniq(function(r){return r.pile.slice(0,7)}).map(function(v){return[v[0],ml(v[0])]}));
 (function(){var a=S.synced_at||"",b=S.sheet_read_at||"",st=S.status||{};$("freshtx").textContent="Kissflow ดึง "+a+" · ชีต Log PR อ่าน "+b+(S.o1_read_at?" · อ.1 (Pipeline) อ่าน "+S.o1_read_at:"")+" · นับวัน ณ "+fd(S.today);
-  if(st.kf==="fail")$("fresh").className="fresh err";})();
+  if(st.kf==="fail")$("fresh").className="fresh err";if(S.warn&&S.warn.length){$("fresh").className="fresh stale";$("fresh").title=S.warn.join(" · ");$("freshtx").textContent+=" · ⚠️ ข้อมูลยังไม่ครบ (ชี้เพื่อดู)"}})();
 $("legend").innerHTML=["none","cc","ccOk","pr","prOk","poRun","po","prx","na","nosrc"].map(function(k){return'<span><i class="sw st-'+k+'"></i>'+(SHORT[k]?"<b>"+SHORT[k]+"</b> ":"")+esc(ST[k].label)+"</span>"}).join("")+
   '<span><i class="sw" style="background:#e1f3da"></i>งานหลัก มีผลต่อ Deadline</span><span>⚠️ ชีต/QS บอกไม่มีงานนี้ แต่ Kissflow มี PR</span><span>* จับคู่ประเภท PR เอง รอ QS ยืนยัน</span>';
 function vis(){var q=$("q").value.trim().toLowerCase(),con=$("fCon").value,prov=$("fProv").value,qs=$("fQs").value,mo=$("fMonth").value||F.month,cf=$("fConf").checked;
