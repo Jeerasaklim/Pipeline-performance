@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=181137" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=181938" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -4051,6 +4051,17 @@ setTimeout(applyBoard,300);
    * @param {Date}   todayArg optional; defaults to todayDate()
    * @returns {object} { sites, pool, alldates, newgot, opened_now, opened_2026, opened_list, vanished, changelog }
    */
+  /** วันเปิดชุดเดียวกับ Grand Opening: วันในชีตก่อสร้าง (EH · แถวแรกที่เจอต่อรหัส) แล้ว "ปัก OPEN: ในแอป" ทับ (pins = {code: ค่าดิบ}) ·
+   *  4 พ.ย. 26 (จี "ใช้วันที่ปักใน Pipeline"): หน้า PR / PO ก่อสร้าง (pr_sync.gs) เรียกตัวนี้ · pins = null = ไม่ทับ (alldates เดิม) */
+  function goOpenDates(constr, pins) {
+    const out = {};
+    for (let i = AF_CONSTR_DATA_ROW; i < (constr || []).length; i++) {
+      const cc = cell(constr[i], AC_CODE);
+      if (cc && !(cc in out)) { const di = goIsoOpen(cell(constr[i], AC_OPEN)); if (di) out[cc] = di; }
+    }
+    Object.keys(pins || {}).forEach(c => { const iso = goPinIso(pins[c]); if (iso) out[c] = iso; });
+    return out;
+  }
   function buildGrandOpenModel(tabs, L, extra, details, state, todayArg) {
     extra = extra || {}; details = details || {}; state = state || {};
     const today = todayArg || todayDate();
@@ -4068,11 +4079,7 @@ setTimeout(applyBoard,300);
     const ho_of = extra.hoOf || afHandover(tabs.sla || []);
 
     // alldates (:1193) — first-wins iso open per code across ALL constr rows.
-    const alldates = {};
-    for (let i = AF_CONSTR_DATA_ROW; i < constr.length; i++) {
-      const cc = cell(constr[i], AC_CODE);
-      if (cc && !(cc in alldates)) { const di = goIsoOpen(cell(constr[i], AC_OPEN)); if (di) alldates[cc] = di; }
-    }
+    const alldates = goOpenDates(constr, null);
 
     // STEP_DETAILS-derived inputs (:1215-1242,1277-1281).
     // 29 ก.ย. 26: กล่อง approve ไม่มีสาขารอนำเสนอใหม่แล้ว → อ่านจากกล่อง site_ex ตรง ๆ (ชุดสาขาเดียวกันเป๊ะ:
@@ -5144,7 +5151,7 @@ setTimeout(applyBoard,300);
     afterCohort, assignAfterBuckets, buildAfterModel, computeAfterSla, formatAfterCounts,
     // Grand Opening tab (calendar-based open-date planner) — client-computable model
     // + the 3 cross-day pure engines the daily GAS mirrors (SPEC §GO / GO-2).
-    buildGrandOpenModel, goSuggest, goIsoOpen, goPinIso, goThDateToEn, afParseO1,   // afParseO1: 4 พ.ย. ให้หน้า Check List QS (PR-Alert) อ่าน อ.1 ชุดเดียวกับ Grand Opening
+    buildGrandOpenModel, goSuggest, goIsoOpen, goPinIso, goThDateToEn, afParseO1, goOpenDates,   // afParseO1: 4 พ.ย. ให้หน้า Check List QS (PR-Alert) อ่าน อ.1 ชุดเดียวกับ Grand Opening
     goWipUpdate, goSnapshotDiff, goChangelogAppend,
     // Site Management map model (chunk 2) — merges GO model + Construction + AR coords.
     buildSiteMgmtModel, smCleanPrm, SM_PROV_REGION,
@@ -9195,10 +9202,10 @@ function o1Td(r){var c=r.o1st==="ได้ อ.1 แล้ว"?"#2b7a2f":r.o1st=
   return'<td title="'+esc(tip)+'" style="color:'+c+';font-weight:600">'+esc(r.o1st||"–")+(r.o1src!=="pipeline"&&r.o1st?'<small style="display:block;color:var(--ink3);font-weight:500">(ชีต Log PR)</small>':"")+"</td>"}
 function render(){alerts();bands();months();var l=vis();$("cnt").textContent="แสดง "+l.length+" จาก "+scope().length+" สาขา"+($("fOpen").checked?"":" · ซ่อนร้านที่เปิดแล้ว "+(S.rows.length-scope().length));
   var grp='<tr class="grp"><th colspan="7" class="sticky"></th>'+PH.map(function(p){var n=TASKS.filter(function(t){return t.ph===p.k}).length;return'<th colspan="'+n+'" class="task'+(p.k==="pr"||p.k==="con"?" divider":" subdiv")+(p.k==="pr"||p.k==="p1"?" core-h":"")+'" title="'+esc(p.long)+'">'+esc(p.label)+"</th>"}).join("")+"<th></th></tr>";
-  var hd='<tr><th class="sticky">วันยื่น อ.1<br><span style="font-weight:500">(Pipeline)</span></th><th>Deadline QS (ตอกเข็ม −14 วัน)</th><th>Plan ตอกเข็ม</th><th>Grand Opening</th><th>สาขา</th><th>ผรม.</th><th>สถานะ อ.1<br><span style="font-weight:500">(Pipeline)</span></th>'+TASKS.map(function(t,i){return'<th class="task'+div(i)+(CORE[t.k]?" core":"")+'">'+esc(t.label)+(t.guess?"*":"")+"</th>"}).join("")+"<th>QS</th></tr>";
+  var hd='<tr><th class="sticky">วันยื่น อ.1<br><span style="font-weight:500">(Pipeline)</span></th><th>Deadline QS (ตอกเข็ม −14 วัน)</th><th>Plan ตอกเข็ม</th><th>Grand Opening<br><span style="font-weight:500">(Pipeline)</span></th><th>สาขา</th><th>ผรม.</th><th>สถานะ อ.1<br><span style="font-weight:500">(Pipeline)</span></th>'+TASKS.map(function(t,i){return'<th class="task'+div(i)+(CORE[t.k]?" core":"")+'">'+esc(t.label)+(t.guess?"*":"")+"</th>"}).join("")+"<th>QS</th></tr>";
   var body=l.map(function(r){var d=dueTx(r),gl=r.go?Math.round((Date.parse(r.go)-Date.parse(S.today))/864e5):null;
     return'<tr data-c="'+esc(r.code)+'"'+(r.code===SEL?' class="sel"':"")+' tabindex="0"><td class="sticky dt">'+(r.o1sub?fd(r.o1sub):'<span style="color:var(--ink4)">ยังไม่ยื่น</span>')+'</td><td><span class="due '+d.c+'">'+d.m+"<small>"+d.s+"</small></span></td>"+
-      '<td class="dt">'+fd(r.pile)+'</td><td class="dt">'+fd(r.go)+(gl!=null?"<small>"+(gl<0?"เปิดแล้ว "+(-gl)+" วัน":gl===0?"เปิดวันนี้":"อีก "+gl+" วัน")+"</small>":"")+"</td>"+
+      '<td class="dt">'+fd(r.pile)+'</td><td class="dt" title="'+esc(r.goSrc==="pipeline"?"วันเปิดใน Pipeline (ปักในแอป / ชีตก่อสร้าง)"+(r.goSheet&&r.goSheet!==r.go?" · ชีต Log PR เขียน "+fd(r.goSheet):""):"Pipeline ไม่มีวันเปิด — ใช้วันในชีต Log PR")+'">'+fd(r.go)+(gl!=null?"<small>"+(gl<0?"เปิดแล้ว "+(-gl)+" วัน":gl===0?"เปิดวันนี้":"อีก "+gl+" วัน")+"</small>":"")+"</td>"+
       '<td class="name"><b>'+esc((r.t?r.t+" ":"")+r.name)+"</b><small>"+esc([r.code,r.prov,r.format,r.stage,r.opened?"เปิดร้านแล้ว":""].filter(Boolean).join(" · "))+"</small></td><td>"+esc(r.con||"–")+"</td>"+o1Td(r)+
       TASKS.map(function(t,i){var c=r.cells[t.k];return'<td class="task'+div(i)+'"><span class="cell st-'+c.s+(c.loc?" loc":"")+'" title="'+esc(tip(t,c))+'">'+SHORT[c.s]+(c.conflict?'<span class="cf">⚠️</span>':"")+"</span></td>"}).join("")+
       "<td>"+esc(r.qs||"–")+"</td></tr>"}).join("")||'<tr><td colspan="'+(TASKS.length+8)+'" class="empty">ไม่มีสาขาที่ตรงกับตัวกรอง</td></tr>';
