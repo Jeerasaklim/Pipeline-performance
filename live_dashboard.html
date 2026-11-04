@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=142645" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=144400" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -7963,7 +7963,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ".rg-st-done{color:var(--rg-ok);background:var(--gbg)}.rg-st-pend{color:var(--rg-pend);background:var(--ybg)}.rg-st-over{color:var(--rg-bad);background:var(--rbg)}.rg-st-none{color:var(--t2);background:var(--s3)}.rg-st-na{color:var(--t3);background:none}",
     ".rg-pager{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;padding:10px 14px;font-size:12.5px;color:var(--t2);border-top:1px solid var(--border);background:var(--surface)}",
     ".rg-det{margin-top:14px}.rg-det>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--text);padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface);min-height:44px;box-sizing:border-box}",
-    ".rg-det>summary::-webkit-details-marker{display:none}.rg-det>summary:hover{border-color:var(--blue)}.rg-det-t{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--blue)}.rg-det[open]>summary{margin-bottom:10px}.rg-det[open] .rg-det-t{font-size:0}.rg-det[open] .rg-det-t::after{content:'ซ่อนตาราง ▴';font-size:12.5px}.rg-dsub2{font-size:12px;font-weight:500;color:var(--t3)}.rg-det>.card{margin-top:0}",
+    ".rg-det>summary::-webkit-details-marker{display:none}.rg-det>summary:hover{border-color:var(--blue)}.rg-det-t{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--blue)}.rg-det[open]>summary{margin-bottom:10px}.rg-det[open] .rg-det-t{font-size:0}.rg-det[open] .rg-det-t::after{content:'ซ่อนตาราง ▴';font-size:12.5px}.rg-dsub2{font-size:12px;font-weight:500;color:var(--t3)}td.rg-c.rg-mc{line-height:1.2}.rg-ml{font-size:10.5px;font-weight:500;color:var(--t2);margin-top:2px;white-space:nowrap}.rg-det>.card{margin-top:0}",
     ".rg-tnote{font-size:12.5px;color:var(--t2);background:var(--s2);border-left:3px solid var(--border2);padding:8px 12px;margin:10px 0 0;border-radius:0 8px 8px 0;line-height:1.6}",
     ".rg-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}",
     "body.rg-active #xsearch,body.rg-active #svm-filter{display:none!important}",
@@ -8463,7 +8463,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function infoTh(coh, rs) { return '<th class="rg-stk"' + (rs ? ' rowspan="' + rs + '"' : "") + ">สาขา</th><th" + (rs ? ' rowspan="' + rs + '"' : "") + ">" + (coh === "a" ? "วันเปิด" : "จังหวัด") + "</th>"; }
   // 4 พ.ย. (จี "อยากซ่อนตารางได้ทุกตาราง"): ทุกตารางในแท็บ = กล่องพับได้ชุดเดียว · เปิดเป็นค่าเริ่ม · จำสถานะใน DET ระหว่างใช้งาน
   function details(key, inner, title) {
-    return '<details class="rg-det" data-det="' + key + '"' + (DET[key] === false ? "" : " open") + '><summary><span>' + (title || "📅 วันที่ (ทุกสาขา)") + '</span><span class="rg-det-t">แสดงตาราง ▾</span></summary>' + inner + "</details>";
+    return '<details class="rg-det" data-det="' + key + '"' + (DET[key] === false ? "" : " open") + '><summary><span>' + title + '</span><span class="rg-det-t">แสดงตาราง ▾</span></summary>' + inner + "</details>";
   }
   function strip(T, coh, w) {
     var red = redWord(coh, w);
@@ -8554,60 +8554,70 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     return w.length ? '<div class="rg-warn"><b>⚠️ ข้อมูลร้านที่เปิดแล้วมีจุดต้องระวัง ' + w.length + " ข้อ</b><ul>" + w.map(function (x) { return "<li>" + esc(typeof x === "string" ? x : JSON.stringify(x)) + "</li>"; }).join("") + "</ul></div>" : "";
   }
 
-  /* ---- ตาราง 2 ชุด (ทำแล้วหรือยัง + วันที่) ใช้ร่วมทุกหน้า ---- */
-  // c: { coh, w, rows, stat, th1, row1(r), tail(r)?, n1, th2, row2(r) | body2(items), n2, note }
+  /* ---- ตารางหน้างาน (ใช้ร่วมทุกหน้า) ---- */
+  // 4 พ.ย. (จี "เอา 2 ตารางออก ดูแปลกกับตารางสรุป" → ข้อ 2 ทุกหน้า): ตารางเดียว 1 สาขา 1 แถว แบบหน้าใบอนุญาตร้านที่เปิดแล้ว
+  //   ตารางวันที่แยกเอาออก — วันที่อยู่ในช่อง (ตัวเล็ก) + ชี้ที่ช่อง · รายละเอียด/ลงวันที่ = กดแถว (ลิ้นชักเดิม)
+  // c: { coh, w, rows, stat, th, row(r), n, note, noPage }
   function twoTables(c) {
     var key = c.coh + "-" + c.w, T = tally(c.rows, c.stat);
     var rk = function (r) { return c.stat(r).st; };
-    var list = sortRows(byStatus(c.rows, c.stat), rk, c.coh), pg = c.noPage ? { items: list, p: 0, n: 1, total: list.length } : pageOf(key, list);   // noPage: ทุกสาขาในหน้าเดียว (เลื่อนในตาราง)
+    var list = sortRows(byStatus(c.rows, c.stat), rk, c.coh), pg = c.noPage ? { items: list, p: 0, n: 1, total: list.length } : pageOf(key, list);
     var msg = c.rows.length ? (list.length ? "" : "ไม่มีสาขาตรงตัวกรองสถานะ — กด “ล้างตัวกรอง” หรือเลือกสถานะอื่น") : "ไม่มีสาขาในกลุ่ม/ตัวกรองนี้ — ลองเปลี่ยนกลุ่ม หรือกด “ล้างตัวกรอง”";
-    var b1 = pg.items.map(function (r) { return rowOpen(c.coh, r) + siteTd(r) + infoTd(c.coh, r) + c.row1(r) + '<td class="rg-nw">' + stWord(c.stat(r)) + "</td>" + (c.tail ? c.tail(r) : "") + "</tr>"; }).join("") || emptyRow(c.n1, msg);
-    var b2 = c.body2 ? c.body2(pg.items) : pg.items.map(function (r) { return rowOpen(c.coh, r) + siteTd(r) + infoTd(c.coh, r) + c.row2(r) + "</tr>"; }).join("");
-    var pgH = pager(key, pg);
+    var b1 = pg.items.map(function (r) { return rowOpen(c.coh, r) + siteTd(r) + infoTd(c.coh, r) + c.row(r) + '<td class="rg-nw">' + stWord(c.stat(r)) + "</td></tr>"; }).join("") || emptyRow(c.n, msg);
     return strip(T, c.coh, c.w) +
-      details(key + "-t1", tcard("rg-t1", c.th1, b1, pgH), '✅ ทำแล้วหรือยัง <span class="rg-dsub2">· ' + list.length + " สาขา</span>") +
-      (c.note ? '<div class="rg-tnote">' + c.note + "</div>" : "") +
-      details(key, tcard("rg-t2", c.th2, b2 || emptyRow(c.n2, msg), pgH));
+      details(key + "-t1", tcard("rg-t1", c.th, b1, pager(key, pg)), '🏪 รายสาขา <span class="rg-dsub2">· ' + list.length + " สาขา · กดแถวเพื่อดูรายละเอียด" + (c.coh === "a" ? " / ลงวันที่" : "") + "</span>") +
+      (c.note ? '<div class="rg-tnote">' + c.note + "</div>" : "");
+  }
+  // ช่องรวม (1 ช่อง = หลายขั้น เช่น ยื่น/ได้): สัญลักษณ์ + วันที่ตัวเล็กในช่อง
+  function mTd(k, line, tip) { return '<td class="rg-c rg-mc rg-s-' + k + '" title="' + esc(tip) + '">' + SYM[k] + (line ? '<div class="rg-ml">' + esc(line) + "</div>" : "") + "</td>"; }
+  function cTip(lab, c) {
+    if (!c || c.na) return lab + ": ไม่ต้องทำ";
+    if (c.v) return lab + ": ทำแล้ว " + c.v + (c.dl ? " (กำหนด " + c.dl + ")" : "");
+    if (c.left != null) return lab + ": ยังไม่ทำ · กำหนด " + c.dl + (c.left < 0 ? " · เลยมา " + (-c.left) + " วัน" : " · เหลือ " + c.left + " วัน");
+    return lab + ": ยังไม่ทำ · ไม่มีเดดไลน์";
+  }
+  /** กลุ่มใบ (สาขาใหม่) → ช่องเดียว: ได้แล้ว ✓ · มีขั้นเลยกำหนด 🔴 · ยื่นแล้ว/ยังไม่ถึงกำหนด ⏳ · ไม่มีเดดไลน์ ☐ · ไม่ต้องทำทั้งกลุ่ม – */
+  function grpTd(r, g) {
+    var ks = g[1], cs = ks.map(function (k) { return r.cells[k[0]]; }), tip = g[0] + "\n" + ks.map(function (k, i) { return cTip(k[1], cs[i]); }).join("\n");
+    var live = cs.filter(function (c) { return c && !c.na; });
+    if (!live.length) return mTd("na", "", tip);
+    var last = cs[cs.length - 1];
+    if (last && !last.na && last.v) return mTd("done", "ได้ " + last.v, tip);
+    var late = live.filter(function (c) { return !c.v && c.left != null && c.left < 0; })[0];
+    if (late) return mTd("over", "เลย " + late.dl, tip);
+    var did = live.filter(function (c) { return c.v; })[0];
+    if (did) return mTd("pend", "ยื่น " + did.v, tip);
+    var nx = live.filter(function (c) { return c.left != null; })[0];
+    return nx ? mTd("pend", "กำหนด " + nx.dl, tip) : mTd("none", "", tip);
   }
 
   /* ---- กลุ่ม A: สาขาใหม่ ---- */
   function aDoc(w) {
-    var groups = RCOLS.filter(function (g) { return WORK[w].g.indexOf(g[0]) >= 0; }), keys = keysOf(WORK[w].g), SLA = REG().sla || {};
-    function dx(k) { return SLA[k] != null ? "D-" + SLA[k] : ""; }
-    var gh = groups.map(function (g) { return '<th colspan="' + g[1].length + '" class="rg-gh">' + esc(g[0]) + "</th>"; }).join("");
-    var sh = groups.map(function (g) { return g[1].map(function (k) { return '<th class="rg-sh" title="' + esc(boxName(k[0])) + (dx(k[0]) ? " · เดดไลน์ " + dx(k[0]) + " (วันเปิด − " + SLA[k[0]] + " วัน)" : " · ไม่มี D-x") + '">' + esc(k[1]) + "<span>" + (dx(k[0]) || "ไม่มี D-x") + "</span></th>"; }).join(""); }).join("");
-    function dcell(x) {
-      if (!x || x.na) return '<td class="rg-dc rg-muted">ไม่ต้องทำ</td>';
-      var late = !x.v && x.left != null && x.left < 0;
-      return '<td class="rg-dc">' + (x.v ? '<b class="rg-okt">ทำ ' + esc(x.v) + "</b>" : (late ? '<b class="rg-badt">เลยกำหนด</b>' : '<span class="rg-muted">ยังไม่ทำ</span>')) +
-        (x.dl ? '<div class="rg-d">กำหนด ' + esc(x.dl) + "</div>" : "") + "</td>";
-    }
-    return twoTables({ coh: "a", w: w, rows: rowsA(), stat: function (r) { return aStat(r, w); },
-      th1: "<tr>" + infoTh("a", 2) + gh + '<th rowspan="2">สถานะ</th></tr><tr>' + sh + "</tr>", n1: 3 + keys.length,
-      row1: function (r) { return keys.map(function (k) { return cellHtml(r.cells[k]); }).join(""); },
-      th2: "<tr>" + infoTh("a", 2) + gh + "</tr><tr>" + sh + "</tr>", n2: 2 + keys.length,
-      row2: function (r) { return keys.map(function (k) { return dcell(r.cells[k]); }).join(""); } });
+    var groups = RCOLS.filter(function (g) { return WORK[w].g.indexOf(g[0]) >= 0; }), SLA = REG().sla || {};
+    function dx(k) { return SLA[k] != null ? "D-" + SLA[k] : "–"; }
+    var th = "<tr>" + infoTh("a") + groups.map(function (g) {
+      return '<th class="rg-sh" title="' + esc(g[1].map(function (k) { return k[1] + " " + boxName(k[0]) + " · เดดไลน์ " + dx(k[0]); }).join("\n")) + '">' + esc(g[0]) +
+        "<span>" + g[1].map(function (k) { return k[1] + " " + dx(k[0]); }).join(" · ") + "</span></th>";
+    }).join("") + "<th>สถานะ</th></tr>";
+    return twoTables({ coh: "a", w: w, rows: rowsA(), stat: function (r) { return aStat(r, w); }, th: th, n: 3 + groups.length,
+      row: function (r) { return groups.map(function (g) { return grpTd(r, g); }).join(""); } });
   }
   var USUB = [["prep", "เตรียม"], ["req", "ขอ"], ["got", "ได้"]];
   function aUtil() {
     var t0 = todayIso();
-    var gh = UTRK.map(function (t) { return '<th colspan="3" class="rg-gh">' + esc(t[0]) + "</th>"; }).join("");
-    var sh = UTRK.map(function () { return USUB.map(function (s) { return '<th class="rg-sh" title="SLA = ให้ทันวันเปิด (D-0)">' + s[1] + (s[0] === "got" ? "<span>D-0</span>" : "<span>&nbsp;</span>") + "</th>"; }).join(""); }).join("");
-    function ucell(r, u, tk, f) {
-      var x = (u && u.t[tk]) || {};
-      if (x[f]) return symTd("done", "ทำแล้ว " + x[f]);
-      if (f === "prep" ? (x.req || x.got) : (f === "req" && x.got)) return symTd("none", "ไม่มีวันที่ขั้นนี้ในชีต (ขั้นถัดไปลงแล้ว)");
-      if (!r.open_iso) return symTd("none", "ยังไม่ทำ · ไม่ทราบวันเปิด (ยังไม่นับ SLA)");
+    var th = "<tr>" + infoTh("a") + UTRK.map(function (t) { return '<th class="rg-sh" title="เตรียม → ขอ → ได้ · SLA = ให้ทันวันเปิด (D-0)">' + esc(t[0]) + "<span>เตรียม · ขอ · ได้ D-0</span></th>"; }).join("") + "<th>สถานะ</th></tr>";
+    function utd(r, u, tk, lab) {
+      var x = (u && u.t[tk]) || {}, tip = lab + "\nเตรียม: " + (x.prep || "–") + "\nขอ: " + (x.req || "–") + "\nได้: " + (x.got || "–");
+      if (x.got) return mTd("done", "ได้ " + x.got, tip);
+      if (!r.open_iso) return mTd(x.req || x.prep ? "pend" : "none", x.req ? "ขอ " + x.req : (x.prep ? "เตรียม " + x.prep : ""), tip + "\nไม่ทราบวันเปิด (ยังไม่นับ SLA)");
       var left = dayDiff(r.open_iso, t0);
-      return left <= 0 ? symTd("over", "ยังไม่ทำ · ถึง/เลยวันเปิด " + r.open + " แล้ว") : symTd("pend", "ยังไม่ทำ · ต้องได้ก่อนวันเปิด " + r.open + " · เหลือ " + left + " วัน");
+      if (left <= 0) return mTd("over", "ถึงวันเปิดแล้ว", tip + "\nยังไม่ได้ · ถึง/เลยวันเปิด " + r.open);
+      return mTd("pend", x.req ? "ขอ " + x.req : (x.prep ? "เตรียม " + x.prep : "ยังไม่เตรียม"), tip + "\nต้องได้ก่อนวันเปิด " + r.open + " · เหลือ " + left + " วัน");
     }
     var base = rowsU(), um = umap();
-    return twoTables({ coh: "a", w: "util", rows: base, stat: function (r) { return aStat(r, "util"); },
-      th1: "<tr>" + infoTh("a", 2) + gh + '<th rowspan="2">สถานะ</th></tr><tr>' + sh + "</tr>", n1: 12,
-      row1: function (r) { var u = um[r.code]; if (!u) return '<td colspan="9" class="rg-dc rg-muted">ไม่มีข้อมูลน้ำ-ไฟ</td>'; return UTRK.map(function (t) { return USUB.map(function (s) { return ucell(r, u, t[1], s[0]); }).join(""); }).join(""); },
-      th2: "<tr>" + infoTh("a", 2) + gh + "</tr><tr>" + sh + "</tr>", n2: 11,
-      row2: function (r) { var u = um[r.code]; if (!u) return '<td colspan="9" class="rg-dc rg-muted">ไม่มีข้อมูลน้ำ-ไฟ</td>'; return UTRK.map(function (t) { var x = u.t[t[1]] || {}; return USUB.map(function (s) { return '<td class="rg-dc">' + (x[s[0]] ? '<b class="rg-okt">' + esc(x[s[0]]) + "</b>" : '<span class="rg-muted">' + DASH + "</span>") + "</td>"; }).join(""); }).join(""); },
-      note: "รายชื่อ = ชุดเดียวกับกล่องน้ำ-ไฟในแท็บ Overall (ทุกสาขา ไม่ใช่เฉพาะ D-25) · SLA น้ำ-ไฟ = ต้องได้ครบภายในวันเปิด (D-0) · ถึงวันเปิดแล้วยังได้ไม่ครบ = 🔴 · ไม่ทราบวันเปิด = ยังไม่นับ SLA" });
+    return twoTables({ coh: "a", w: "util", rows: base, stat: function (r) { return aStat(r, "util"); }, th: th, n: 6,
+      row: function (r) { var u = um[r.code]; if (!u) return '<td colspan="3" class="rg-dc rg-muted">ไม่มีข้อมูลน้ำ-ไฟ</td>'; return UTRK.map(function (t) { return utd(r, u, t[1], t[0]); }).join(""); },
+      note: "รายชื่อ = ชุดเดียวกับกล่องน้ำ-ไฟในแท็บ Overall (ทุกสาขา ไม่ใช่เฉพาะ D-25) · SLA น้ำ-ไฟ = ต้องได้ครบภายในวันเปิด (D-0)" });
   }
 
   /* ---- กลุ่ม B: ร้านที่เปิดแล้ว ---- */
@@ -8791,22 +8801,20 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var csv = "﻿" + out.map(function (r) { return r.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(","); }).join("\r\n");
     var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = "ต่ออายุใบอนุญาต_" + todayIso() + ".csv"; a.click();
   }
-  function bOne(w, label, tip, extra) {
-    // งานที่มีช่องเดียวต่อร้าน (ภ.พ.20 / ค่าขยะ / ภาษีที่ดิน): ตาราง 1 = สัญลักษณ์ 1 ช่อง · ตาราง 2 = ข้อความ/วันที่ในชีต
+  function bOne(w, label, tip, line) {
+    // งานที่มีช่องเดียวต่อร้าน (ภ.พ.20 / ค่าขยะ): สัญลักษณ์ + ข้อความในชีตตัวเล็กในช่อง
     return twoTables({ coh: "b", w: w, rows: rowsB(), stat: function (r) { return bStat(r, w); },
-      th1: "<tr>" + infoTh("b") + '<th class="rg-sh">' + label + "</th><th>สถานะ</th></tr>", n1: 4,
-      row1: function (r) { var s = bStat(r, w); return symTd(s.st, tip(r, s)); },
-      th2: "<tr>" + infoTh("b") + extra.th + "</tr>", n2: 2 + extra.n, row2: extra.row, note: extra.note });
+      th: "<tr>" + infoTh("b") + '<th class="rg-sh">' + label + "</th><th>สถานะ</th></tr>", n: 4,
+      row: function (r) { var s = bStat(r, w); return mTd(s.st, line(r), tip(r, s)); } });
   }
   function txt(v) { v = String(v == null ? "" : v).trim(); return v ? esc(v) : '<span class="rg-muted">' + DASH + "</span>"; }
   function bHouse() {
     return bOne("house", "ภ.พ.20", function (r, s) { return r.inReg ? "ภ.พ.20 · " + (r.pp20 || "ยังไม่มีบันทึกในชีต") : "ร้านนี้ไม่อยู่ในชีตทะเบียน"; },
-      { th: "<th>ภ.พ.20 (ข้อความในชีต)</th>", n: 1, row: function (r) { return "<td>" + (r.inReg ? txt(r.pp20) : '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>') + "</td>"; } });
+      function (r) { return r.inReg ? (r.pp20 || "") : "ไม่อยู่ในชีตทะเบียน"; });
   }
   function bTrash() {
     return bOne("trash", "ค่าขยะ", function (r) { var t = r.trash; return t ? "ค่าขยะ " + (t.rate || "ยังไม่มีบันทึก") + (t.band ? " · " + t.band : "") : "ยังไม่มีบันทึกในชีตค่าขยะ"; },
-      { th: "<th>จัดเก็บขยะโดย</th><th>จัดหาถังขยะ</th><th>รอบการจัดเก็บ</th><th>ค่าขยะ</th><th>เรทค่าขยะ</th>", n: 5,
-        row: function (r) { var t = r.trash || {}; return ["by", "bin", "freq", "rate", "band"].map(function (f) { return '<td class="rg-nw">' + txt(t[f]) + "</td>"; }).join(""); } });
+      function (r) { var t = r.trash || {}; return [t.rate, t.by].filter(Boolean).join(" · "); });
   }
   // 9 ต.ค.: ภาษี = บัญชีเป็นหลัก (✓ จ่ายแล้ว) · ตารางวันที่วางทะเบียน (ภป.1/ภป.3) คู่บัญชี (ส่ง E-mail/จ่าย)
   function payTd(paid, mail, s, n) {
@@ -8814,13 +8822,12 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if (s === "over") return symTd("over", n + " · ยังไม่จ่าย (เลยกำหนด)" + (mail ? " · ส่ง E-mail " + fmtIso(mail) : ""));
     return symTd("pend", n + " · ยังไม่จ่าย" + (mail ? " · ส่ง E-mail " + fmtIso(mail) : ""));
   }
-  function dTd(v) { return '<td class="rg-nw">' + (v ? esc(fmtIso(v) || v) : '<span class="rg-muted">' + DASH + "</span>") + "</td>"; }
   var LPARTS = [["c", "ประเมินรวม"], ["l", "ภาษีที่ดิน"], ["b", "สิ่งปลูกสร้าง"]];
   function bLand() {
     return twoTables({ coh: "b", w: "landtax", rows: rowsB(), stat: function (r) { return bStat(r, "landtax"); },
-      th1: "<tr>" + infoTh("b", 2) + '<th colspan="3" class="rg-gh">ปี 2569 · บัญชีจ่ายแล้วหรือยัง</th><th rowspan="2">สถานะ</th></tr><tr>' +
-        LPARTS.map(function (p) { return '<th class="rg-sh">' + p[1] + "<span>30 มิ.ย.</span></th>"; }).join("") + "</tr>", n1: 6,
-      row1: function (r) {
+      th: "<tr>" + infoTh("b", 2) + '<th colspan="3" class="rg-gh">ปี 2569 · บัญชีจ่ายแล้วหรือยัง</th><th rowspan="2">สถานะ</th></tr><tr>' +
+        LPARTS.map(function (p) { return '<th class="rg-sh">' + p[1] + "<span>30 มิ.ย.</span></th>"; }).join("") + "</tr>", n: 6,
+      row: function (r) {
         var y = r.taxL;
         return LPARTS.map(function (p) {
           if (!y) return symTd("none", p[1] + " · ไม่อยู่ในไฟล์บัญชี");
@@ -8828,35 +8835,20 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           return (x.has || x.paid) ? payTd(x.paid, x.mail, y.s, p[1]) : symTd("na", p[1] + " · ไม่มีใบประเมินส่วนนี้");
         }).join("");
       },
-      th2: "<tr>" + infoTh("b", 2) + LPARTS.map(function (p) { return '<th colspan="2" class="rg-gh">' + p[1] + "</th>"; }).join("") + '<th rowspan="2">Remark (บัญชี)</th><th rowspan="2">ทะเบียน · สถานะปี 2568</th></tr><tr>' +
-        LPARTS.map(function () { return "<th>ส่ง E-mail</th><th>วันจ่าย</th>"; }).join("") + "</tr>", n2: 10,
-      row2: function (r) {
-        var y = r.taxL, ld = (r.land && r.land.y68) || {};
-        return LPARTS.map(function (p) { var x = y && y.parts.filter(function (q) { return q.k === p[0]; })[0]; return x && (x.has || x.paid) ? dTd(x.mail) + dTd(x.paid) : '<td class="rg-muted">–</td><td class="rg-muted">–</td>'; }).join("") +
-          "<td>" + txt(y && y.rem) + "</td><td>" + txt(ld.st) + "</td>";
-      },
       note: "ที่มา ✓/🔴: ไฟล์บัญชีภาษี (30 ก.ย. 2569) · กำหนดชำระ 30 มิ.ย. · ร้านเปิดตั้งแต่ 1 ม.ค. 2569 ยังไม่นับเลยกำหนด · – = ไม่มีใบประเมินส่วนนี้" });
   }
   function bSign() {
     return twoTables({ coh: "b", w: "signtax", rows: rowsB(), stat: function (r) { return bStat(r, "signtax"); },
-      th1: "<tr>" + infoTh("b", 2) + '<th colspan="2" class="rg-gh">ทะเบียน · ปี 2569</th><th class="rg-gh">บัญชี · ปี 2569</th><th rowspan="2">สถานะ</th></tr><tr>' +
-        '<th class="rg-sh">ยื่น ภป.1<span>31 มี.ค.</span></th><th class="rg-sh">ได้ ภป.3<span>&nbsp;</span></th><th class="rg-sh">จ่ายแล้ว<span>&nbsp;</span></th></tr>', n1: 6,
-      row1: function (r) {
+      th: "<tr>" + infoTh("b", 2) + '<th colspan="2" class="rg-gh">ทะเบียน · ปี 2569</th><th class="rg-gh">บัญชี · ปี 2569</th><th rowspan="2">สถานะ</th></tr><tr>' +
+        '<th class="rg-sh">ยื่น ภป.1<span>31 มี.ค.</span></th><th class="rg-sh">ได้ ภป.3<span>&nbsp;</span></th><th class="rg-sh">จ่ายแล้ว<span>&nbsp;</span></th></tr>', n: 6,
+      row: function (r) {
         var y = (r.sign && r.sign.y69) || {}, g = r.taxS;
         return (y.s1 ? symTd("done", "ยื่น ภป.1 " + y.s1) : symTd("none", "ยื่น ภป.1 · ยังไม่มีบันทึกในชีตทะเบียน")) +
           (y.s3 ? symTd("done", "ได้ ภป.3 " + y.s3) : symTd("none", "ได้ ภป.3 · ยังไม่มีบันทึกในชีตทะเบียน")) +
           (g ? payTd(g.paid, g.mail, g.s, "ภาษีป้าย 2569") : symTd("none", "ไม่อยู่ในไฟล์บัญชีภาษีป้าย"));
       },
-      th2: "<tr>" + infoTh("b", 2) + '<th colspan="3" class="rg-gh">ทะเบียน · ปี 2569</th><th colspan="3" class="rg-gh">บัญชี · ปี 2569</th><th rowspan="2">กำหนด</th><th rowspan="2">ทะเบียน · สถานะปี 2568</th></tr><tr>' +
-        "<th>ภป.1</th><th>ภป.3</th><th>ชำระ</th><th>ส่ง E-mail</th><th>วันจ่าย</th><th>Remark</th></tr>", n2: 10,
-      row2: function (r) {
-        var y = (r.sign && r.sign.y69) || {}, g = r.taxS || {};
-        return '<td class="rg-nw">' + txt(y.s1) + '</td><td class="rg-nw">' + txt(y.s3) + '</td><td class="rg-nw">' + txt(y.paid) + "</td>" + dTd(g.mail) + dTd(g.paid) + "<td>" + txt(g.rem) + "</td>" + dTd(g.dl) + y68Td(r);
-      },
       note: "สถานะ = ฝั่งบัญชี (ไฟล์บัญชีภาษี 30 ก.ย. 2569) · กำหนดยื่น ภป.1 = 31 มี.ค. (ร้านเปิดหลังจากนั้น = วันเปิด + 15 วัน) · ช่องทะเบียน ☐ = ทีมทะเบียนยังไม่ได้ลงในชีต" });
   }
-  // คอลัมน์ "สถานะปี 2568" อยู่ท้ายตาราง 1 ของภาษีป้าย → ต่อท้ายแถวหลังคอลัมน์สถานะ (twoTables วางสถานะไว้ท้ายเสมอ)
-  function y68Td(r) { var y = r.sign && r.sign.y68; return "<td>" + txt(y && y.st) + "</td>"; }
 
   /* ---- ประกอบหน้างาน ---- */
   function aBlock(body, n) { return '<div class="rg-coh">' + cohHead("a", ready() ? (n ? n() : rowsA().length) : null) + (ready() ? body() : waitMsg()) + '<div class="rg-src">' + SRC_A + "</div></div>"; }
