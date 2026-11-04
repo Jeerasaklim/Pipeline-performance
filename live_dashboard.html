@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=144400" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=160724" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5144,7 +5144,7 @@ setTimeout(applyBoard,300);
     afterCohort, assignAfterBuckets, buildAfterModel, computeAfterSla, formatAfterCounts,
     // Grand Opening tab (calendar-based open-date planner) — client-computable model
     // + the 3 cross-day pure engines the daily GAS mirrors (SPEC §GO / GO-2).
-    buildGrandOpenModel, goSuggest, goIsoOpen, goPinIso, goThDateToEn,
+    buildGrandOpenModel, goSuggest, goIsoOpen, goPinIso, goThDateToEn, afParseO1,   // afParseO1: 4 พ.ย. ให้หน้า Check List QS (PR-Alert) อ่าน อ.1 ชุดเดียวกับ Grand Opening
     goWipUpdate, goSnapshotDiff, goChangelogAppend,
     // Site Management map model (chunk 2) — merges GO model + Construction + AR coords.
     buildSiteMgmtModel, smCleanPrm, SM_PROV_REGION,
@@ -9046,6 +9046,176 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   render();
 
   function gate() { tb.style.display = allowed() ? "" : "none"; }
+  var gi = 0, giv = setInterval(function () { gate(); if (++gi > 60) clearInterval(giv); }, 1000);
+  gate();
+})();
+
+</script>
+<script>/*QS-TAB*/
+/* ============================================================================
+ * qs-tab.js — แท็บ PR / PO ก่อสร้าง · Check List QS (4 พ.ย. 2569 · จี "ขึ้น APP จริงเลย")
+ * ⚠️ ไฟล์นี้สร้างจาก D:\BSA\App\PR-Alert\qs.html ด้วย tools/make_qs_tab.py — แก้หน้าตา/กติกาที่ qs.html แล้วรันใหม่ (ห้ามแก้ตรงนี้)
+ * ข้อมูล: doGet action=getQs (prSync ใน Apps Script ทุก 1 ชม. · pr_core.buildQS) · ไม่มีงานนี้: doPost action=qsNa (แท็บ PR_NA)
+ * เห็น/กดได้ ทุก role ที่มีในชีต Roles (บันทึกอีเมล + เวลา ทุกครั้ง)
+ * ========================================================================== */
+(function () {
+  "use strict";
+  var nav = document.querySelector("nav.tabs"), main = document.querySelector("main");
+  if (!nav || !main) return;
+  var css = document.createElement("style"); css.textContent = "#tab-qs{--canvas:#f0f2f5;--card:#fff;--subtle:#f7f8fa;--muted:#eef0f4;--line:#e3e6ed;--line2:#c8cdd9;--ink:#0d1421;--ink2:#4a5568;--ink3:#8a93a8;--ink4:#b8bece;--blue:#1d4ed8;\n--past:#b42318;--d14:#b54708;--d60:#7a5b00;--later:#475467;--ok:#2b7a2f;\n--s-cc:#ffe36e;--s-ccok:#ffa040;--s-pr:#9cc7ee;--s-prok:#7fb8e8;--s-porun:#c5e6a0;--s-po:#9bd35a;--s-na:#c9ced4;--s-prx:#ffa3a3}#tab-qs .sub{color:var(--ink3);margin:4px 0 12px;font-size:13px;font-weight:500}#tab-qs .fresh{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;color:var(--ink2);margin-right:8px}#tab-qs .fresh i{width:8px;height:8px;border-radius:50%;background:#0ca678}#tab-qs .fresh.stale i{background:#c67e00}#tab-qs .fresh.err i{background:#dc2626}#tab-qs .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}#tab-qs .bands{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:16px 0 12px}#tab-qs .band{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;text-align:left;cursor:pointer}#tab-qs .band .l{display:block;font-size:12px;font-weight:600;color:var(--ink3)}#tab-qs .band .n{display:block;font-size:28px;font-weight:800;margin-top:6px}#tab-qs .band[aria-pressed=\"true\"]{background:#eff6ff;border-color:var(--blue)}#tab-qs .band[data-b=\"past\"] .n{color:var(--past)}#tab-qs .band[data-b=\"d14\"] .n{color:var(--d14)}#tab-qs .band[data-b=\"d60\"] .n{color:var(--d60)}#tab-qs .band[data-b=\"later\"] .n{color:var(--later)}#tab-qs .band[data-b=\"done\"] .n{color:var(--ok)}#tab-qs .todo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;padding:0 0 12px;border-bottom:1px solid var(--line)}#tab-qs .todo .lb{font-size:13px;font-weight:700;margin-right:4px}#tab-qs .chip{display:inline-flex;align-items:center;gap:6px;height:32px;border:1px solid var(--line2);background:#fff;border-radius:999px;padding:0 12px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer}#tab-qs .chip b{font-size:13px;color:var(--ink)}#tab-qs .chip.red b{color:var(--past)}#tab-qs .chip.amb b{color:var(--d14)}#tab-qs .chip.blu b{color:var(--blue)}#tab-qs .chip[aria-pressed=\"true\"]{background:#eff6ff;border-color:var(--blue);color:var(--blue)}#tab-qs .chip .who{font-weight:500;color:var(--ink3)}#tab-qs .todo .ok{font-size:12px;color:var(--ink3)}#tab-qs .months{margin:0 0 14px}#tab-qs .mhead{display:flex;gap:10px;align-items:baseline;margin-bottom:8px}#tab-qs .mhead b{font-size:14px}#tab-qs .mhead span{font-size:12px;color:var(--ink3)}#tab-qs .mrow{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}#tab-qs .mcard{flex:none;width:150px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-align:left;cursor:pointer}#tab-qs .mcard.cur{border-color:var(--blue)}#tab-qs .mcard[aria-pressed=\"true\"]{background:#eff6ff;border-color:var(--blue)}#tab-qs .mcard .ml{font-size:12px;font-weight:700}#tab-qs .mcard .mn{font-size:12px;color:var(--ink2)}#tab-qs .mcard .mn b{font-size:18px;color:var(--ink)}#tab-qs .mbar{height:6px;background:var(--muted);border-radius:6px;overflow:hidden;margin:6px 0}#tab-qs .mbar i{display:block;height:100%;background:var(--ok)}#tab-qs .ms{display:flex;justify-content:space-between;font-size:11.5px}#tab-qs .ms .ok{color:var(--ok)}#tab-qs .ms .left{color:var(--d14);font-weight:600}#tab-qs .mo{font-size:11.5px;color:var(--past);font-weight:600}#tab-qs .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}#tab-qs .bar input,#tab-qs .bar select,#tab-qs .btn{height:34px;border:1px solid var(--line2);background:var(--card);border-radius:10px;padding:0 10px;font-size:13px}#tab-qs .bar input[type=search]{flex:1 1 220px;max-width:320px}#tab-qs .bar label{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink2)}#tab-qs .btn{cursor:pointer;font-weight:600;color:var(--ink2)}#tab-qs .cnt{font-size:12.5px;color:var(--ink2)}#tab-qs .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink2);margin:0 0 10px}#tab-qs .legend span{display:inline-flex;align-items:center;gap:6px}#tab-qs .sw{width:14px;height:14px;border-radius:3px;border:1px solid var(--line2);display:inline-block}#tab-qs .tablebox{overflow:auto;max-height:calc(100vh - 150px);background:var(--card);border:1px solid var(--line);border-radius:10px}#tab-qs table.mx{border-collapse:separate;border-spacing:0;width:100%;min-width:1500px;font-size:12.5px}#tab-qs .mx th,#tab-qs .mx td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:middle}#tab-qs .mx thead{position:sticky;top:0;z-index:4}#tab-qs .mx thead th{background:var(--subtle);font-weight:600;font-size:11.5px;color:var(--ink2)}#tab-qs .mx thead tr.grp th{text-align:center;font-size:11.5px;color:var(--ink3)}#tab-qs .mx th.task,#tab-qs .mx td.task{text-align:center;width:56px;min-width:56px;padding:4px 3px;border-left:1px solid var(--line)}#tab-qs .mx th.task{line-height:1.25;overflow-wrap:anywhere}#tab-qs .mx .divider{border-left:3px solid var(--blue)!important}#tab-qs .mx .subdiv{border-left:1px dashed var(--ink3)!important}#tab-qs .mx thead th.core{background:#e1f3da}#tab-qs .mx thead th.core-h{background:#e1f3da;color:var(--ok);font-weight:700}#tab-qs .mx td.sticky,#tab-qs .mx th.sticky{position:sticky;left:0;background:var(--card);z-index:2}#tab-qs .mx thead th.sticky{background:var(--subtle);z-index:5}#tab-qs .mx tbody tr{cursor:pointer}#tab-qs .mx tbody tr:hover td{background:#f8fafc}#tab-qs .mx tbody tr.sel td{background:#eaf2fe}#tab-qs .due{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:700;white-space:nowrap}#tab-qs .due small{display:block;font-weight:500;font-size:11px}#tab-qs .due.past{background:#fde7e5;color:var(--past)}#tab-qs .due.d14{background:#fef0c7;color:var(--d14)}#tab-qs .due.d60{background:#fff8db;color:var(--d60)}#tab-qs .due.later{background:#eef1f4;color:var(--later)}#tab-qs .due.done{background:#e1f3da;color:var(--ok)}#tab-qs td.name b{display:block;white-space:nowrap}#tab-qs td.name small,#tab-qs td.dt small{display:block;color:var(--ink3);font-size:11px}#tab-qs td.dt{white-space:nowrap}#tab-qs .cell{display:inline-flex;align-items:center;justify-content:center;width:46px;height:26px;border-radius:5px;font-size:11px;font-weight:700;color:#1d2b3a;position:relative;border:1px solid transparent}#tab-qs .st-none,#tab-qs .st-noPr{background:#fff;border:1px dashed var(--line2);color:var(--ink4)}#tab-qs .st-cc{background:var(--s-cc)}#tab-qs .st-ccOk{background:var(--s-ccok)}#tab-qs .st-prx{background:#fff;border:2px solid var(--s-prx);color:#b91c1c}#tab-qs .st-pr{background:var(--s-pr)}#tab-qs .st-prOk{background:var(--s-prok)}#tab-qs .st-poRun{background:var(--s-porun)}#tab-qs .st-po{background:var(--s-po)}#tab-qs .st-na{background:var(--s-na);color:#475467}#tab-qs .st-nosrc{background:repeating-linear-gradient(135deg,#f1f4f8 0 4px,#fff 4px 8px);border:1px solid var(--line);color:var(--ink4)}#tab-qs .cell .cf{position:absolute;top:-6px;right:-6px;font-size:11px}#tab-qs .cell.loc{outline:2px solid #7c3aed;outline-offset:1px}#tab-qs .foot{font-size:12px;color:#8791a3;margin-top:8px}#tab-qs .dbg{position:fixed;inset:0;background:rgba(13,20,33,.35);display:none;z-index:40}#tab-qs .dbg.on{display:block}#tab-qs .drw{position:fixed;top:0;right:0;bottom:0;width:min(560px,100vw);background:var(--card);border-left:1px solid var(--line);z-index:41;transform:translateX(100%);transition:transform .2s;display:flex;flex-direction:column}#tab-qs .drw.on{transform:none}#tab-qs .dh{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}#tab-qs .dh h2{margin:0;font-size:17px}#tab-qs .dh p{margin:4px 0 0;color:var(--ink3);font-size:12px}#tab-qs .dx{border:0;background:none;font-size:20px;cursor:pointer;color:var(--ink3)}#tab-qs .db{overflow:auto;padding:12px 18px 24px}#tab-qs .ph{font-size:11.5px;font-weight:700;color:var(--ink3);margin:14px 0 6px;letter-spacing:.2px}#tab-qs .tk{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}#tab-qs .tk .r1{display:flex;align-items:center;gap:10px}#tab-qs .tk .r1 b{flex:1}#tab-qs .tk .r2{font-size:12px;color:var(--ink2);margin-top:4px}#tab-qs .tk .r2 code{font-family:inherit;font-weight:700;color:var(--ink)}#tab-qs .tk .warn{font-size:12px;color:#b91c1c;font-weight:600;margin-top:4px}#tab-qs .nab{height:30px;border:1px solid var(--line2);background:#fff;border-radius:8px;padding:0 10px;cursor:pointer;font-size:12px;font-weight:600;color:var(--ink2);white-space:nowrap}#tab-qs .nab.on{background:#475467;color:#fff;border-color:#475467}#tab-qs .nab:disabled{opacity:.5;cursor:not-allowed}#tab-qs .empty{text-align:center;color:var(--ink3);padding:30px!important}@media (max-width:1100px){#tab-qs .al{grid-template-columns:minmax(0,1fr)}}@media (max-width:820px){#tab-qs .bands{grid-template-columns:repeat(2,1fr)}}#tab-qs .qs-state{padding:28px;text-align:center;color:var(--ink2)}#tab-qs .qs-state.err{color:#b91c1c}#tab-qs .qs-retry{margin-top:10px}#tab-qs .qs-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0d1421;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;z-index:60;display:none}#tab-qs .qs-toast.on{display:block}#tab-qs .qs-toast.bad{background:#b91c1c}"; document.head.appendChild(css);
+  var tb = document.createElement("button"); tb.className = "tab-btn"; tb.setAttribute("data-tab", "qs"); tb.style.display = "none";
+  tb.onclick = function () { showTab("qs"); };
+  tb.innerHTML = '<span class="tab-ico">🧾</span><span class="tab-txt"><span class="tab-primary">PR / PO ก่อสร้าง</span><span class="tab-sub">Check List QS</span></span>';
+  var after = nav.querySelector('.tab-btn[data-tab="sitemgmt"]');
+  nav.insertBefore(tb, after ? after.nextSibling : null);
+  var sec = document.createElement("section"); sec.id = "tab-qs"; sec.className = "tab-panel";
+  sec.innerHTML = '<div class="page-head"><h1>🧾 PR / PO ก่อสร้าง <span class="page-th">Check List Status QS</span></h1></div>' + "<div id=\"qs-wrap\" hidden><div class=\"sub\">ติดตามเอกสารงานก่อสร้างสาขา · สถานะทุกช่องดึงจาก Kissflow อัตโนมัติ (อนุมัติราคา → PR → PO) · Deadline QS = Plan วันตอกเข็ม − 14 วัน · QS กด \"ไม่มีงานนี้\" ได้ที่รายละเอียดสาขา</div>\n  <div><span class=\"fresh\" id=\"qs-fresh\"><i></i><span id=\"qs-freshtx\">กำลังโหลด…</span></span></div>\n  <div class=\"bands\" id=\"qs-bands\"></div>\n  <div class=\"months\" id=\"qs-months\"></div>\n  <div class=\"card\">\n    <div class=\"todo\" id=\"qs-alerts\"></div>\n    <div class=\"bar\">\n      <input type=\"search\" id=\"qs-q\" placeholder=\"🔍 ค้นหารหัส / ชื่อสาขา / ผรม.\">\n      <select id=\"qs-fCon\"></select><select id=\"qs-fProv\"></select><select id=\"qs-fMonth\"></select><select id=\"qs-fQs\"></select>\n      <select id=\"qs-sort\"><option value=\"due\">เรียงตาม Deadline QS (ใกล้สุดก่อน)</option><option value=\"open\">งานค้างมากสุดก่อน</option><option value=\"seq\">ลำดับเดิมตามชีต</option></select>\n      <label><input type=\"checkbox\" id=\"qs-fConf\"> เฉพาะช่องที่ขัดกัน ⚠️</label><label title=\"ชีต Log PR: Grand opening ถึงวันนี้แล้ว แต่ status ยังไม่ใช่ 14. ก่อสร้างเรียบร้อย\"><input type=\"checkbox\" id=\"qs-fOpen\"> แสดงร้านที่เปิดแล้ว</label>\n      <button type=\"button\" class=\"btn\" id=\"qs-clr\">ล้างตัวกรอง</button><button type=\"button\" class=\"btn\" id=\"qs-csv\">⬇ Export CSV</button>\n      <span class=\"cnt\" id=\"qs-cnt\"></span>\n    </div>\n    <div class=\"legend\" id=\"qs-legend\"></div>\n    <div class=\"tablebox\"><table class=\"mx\" id=\"qs-mx\"></table></div>\n    <div class=\"foot\" id=\"qs-foot\"></div>\n  </div>\n<div class=\"dbg\" id=\"qs-dbg\"></div>\n<aside class=\"drw\" id=\"qs-drw\" aria-label=\"รายละเอียดสาขา\"><div class=\"dh\"><div><h2 id=\"qs-dt\"></h2><p id=\"qs-ds\"></p></div><button class=\"dx\" id=\"qs-dx\" aria-label=\"ปิด\">✕</button></div><div class=\"db\" id=\"qs-db\"></div></aside></div><div id=\"qs-state\" class=\"qs-state\"></div><div id=\"qs-toast\" class=\"qs-toast\"></div>";
+  main.appendChild(sec);
+  var ROOT = sec, ST = { st: "idle", err: "" };
+
+var $=function(i){return document.getElementById("qs-"+i)};
+var TH=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function fd(i){if(!i)return"–";var a=String(i).slice(0,10).split("-");return(+a[2])+" "+TH[+a[1]-1]+" "+String(+a[0]+543).slice(2)}
+function ml(m){return TH[+m.slice(5,7)-1]+" "+String(+m.slice(0,4)+543).slice(2)}
+
+  function toast(t, ok) { var e = $("toast"); e.textContent = t; e.className = "qs-toast on" + (ok ? "" : " bad"); clearTimeout(toast.h); toast.h = setTimeout(function () { e.className = "qs-toast"; }, 3500); }
+  function state(html, err) { $("state").className = "qs-state" + (err ? " err" : ""); $("state").innerHTML = html; $("state").hidden = !html; $("wrap").hidden = !!html; }
+  function qsPost(body, retried) {
+    var url = window.DPT_GAS_URL;
+    if (!url) return Promise.reject(new Error("ยังไม่ได้ต่อ backend"));
+    body.action = "qsNa"; body.token = window.DPT_ID_TOKEN || "";
+    return fetch(url, { method: "post", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.text(); })
+      .then(function (t) { var j; try { j = JSON.parse(t); } catch (e) { throw new Error("Google ส่งผลกลับไม่ถึง — ยังไม่รู้ว่าบันทึกสำเร็จไหม ลองรีเฟรชดู"); }
+        if (!j || !j.ok) { var e2 = new Error((j && j.error) || "บันทึกไม่สำเร็จ"); e2.code = j && j.status; throw e2; } return j; })
+      .catch(function (err) {
+        if (err && err.code === 401 && !retried && typeof window.DPT_reauth === "function") return window.DPT_reauth().then(function () { return qsPost(body, true); });
+        throw err;
+      });
+  }
+  function load() {
+    if (ST.st === "loading") return;
+    var u = window.DPT_GAS_URL, tk = window.DPT_ID_TOKEN || "";
+    if (!u || !tk) { ST.st = "idle"; state("<b>ยังไม่ได้เข้าสู่ระบบ</b><br>เข้าสู่ระบบด้านบนก่อน แล้วเปิดแท็บนี้ใหม่", true); return; }
+    ST.st = "loading"; state("<b>กำลังโหลดข้อมูล PR / PO จาก Kissflow…</b>");
+    var url = u + (u.indexOf("?") < 0 ? "?" : "&") + "action=getQs&token=" + encodeURIComponent(tk);
+    (typeof window.DPT_hedgedGet === "function" ? window.DPT_hedgedGet(url) : fetch(url, { redirect: "follow" }).then(function (r) { return r.json(); }))
+      .then(function (j) {
+        if (!j || !j.rows) throw new Error((j && j.error) || "โหลดไม่สำเร็จ");
+        ST.st = "ok"; state(""); boot(j);
+      })
+      .catch(function (e) { ST.st = "err"; state("<b>🔴 โหลดข้อมูล PR / PO ไม่สำเร็จ</b><br>" + esc(String((e && e.message) || e)) + '<br><button type="button" class="btn qs-retry" id="qs-retry">ลองโหลดอีกครั้ง</button>', true);
+        var b = $("retry"); if (b) b.onclick = function () { ST.st = "idle"; load(); }; });
+  }
+  function boot(S) {
+var TASKS=S.tasks,PH=S.phases,ST=S.states,CORE={};TASKS.forEach(function(t){if(t.ph==="pr"||t.ph==="p1")CORE[t.k]=1});
+var SHORT={none:"",noPr:"",cc:"ราคา",ccOk:"ราคา✓",prx:"PR?",pr:"PR",prOk:"PR✓",poRun:"PO…",po:"PO✓",na:"–",nosrc:""};
+var BANDS=[["past","เลย Deadline QS แล้ว"],["d14","ถึง Deadline QS ภายใน 14 วัน"],["d60","ถึง Deadline QS ภายใน 15–60 วัน"],["later","มากกว่า 60 วัน"],["done","งานหลักเปิด PR ครบแล้ว (เตรียมการ + อาคารหลัก + Pre-con 1)"]];
+/* ---- "ไม่มีงานนี้" = แท็บ PR_NA (บันทึกผ่าน qsNa) · กติกาเดียวกับ pr_core.buildQS ---- */
+var LNA={};Object.keys(S.na||{}).forEach(function(k){LNA[k]=S.na[k]||{}});   // ค่าจากแท็บ PR_NA (สด)
+S.rows.forEach(function(r){r.orig={};TASKS.forEach(function(t){r.orig[t.k]=r.cells[t.k]})});
+function apply(r){   // ตรงกับ buildQS: มี PR = Kissflow ชนะ (ขึ้น ⚠️) · ไม่มี PR + กดไม่มีงานนี้ = na
+  var conf=0;TASKS.forEach(function(t){var o=r.orig[t.k],k=r.code+"|"+t.k;if(o.s==="na"&&o.src==="qs"&&o.under)o=Object.assign({},o.under,{guess:o.guess});var c=o;
+    if(LNA[k]){if(o.pr&&o.pr.length)c=Object.assign({},o,{conflict:"QS กดไม่มีงานนี้ แต่ Kissflow มี PR",loc:1});else if(o.s!=="na")c={s:"na",src:"qs",by:LNA[k].by||"",at:LNA[k].at||"",guess:o.guess}}
+    r.cells[t.k]=c;if(c.conflict)conf++});
+  var core=TASKS.filter(function(t){return CORE[t.k]&&r.cells[t.k].s!=="nosrc"});
+  r.done=core.every(function(t){return ST[r.cells[t.k].s].done})&&core.some(function(t){return r.cells[t.k].s!=="na"})?1:0;
+  r.conflicts=conf;r.band=r.done?"done":r.left<0?"past":r.left<=14?"d14":r.left<=60?"d60":"later";
+  r.open=TASKS.filter(function(t){return CORE[t.k]&&!ST[r.cells[t.k].s].done&&r.cells[t.k].s!=="nosrc"}).length}
+S.rows.forEach(apply);
+var F={band:"",month:"",alert:""},SEL="";
+/* ---- กล่องแจ้งเตือน (4 พ.ย. จี "ทำข้อ 1"): เรื่องที่ต้องตามวันนี้ · ไม่ซ้ำการ์ด Deadline ด้านล่าง (จี: ซ้ำซ้อน) · 5 เรื่อง = แถวเดียว · นับจากสถานะช่องชุดเดียวกับตาราง (รวมที่ QS กดไม่มีงานนี้) · กดเพื่อกรองตาราง ---- */
+function cellsOf(r,f){return TASKS.filter(function(t){return f(r.cells[t.k],t)})}
+var ALERTS=[
+  {k:"ccOk",cls:"blu",ic:"📝",t:"อนุมัติราคาแล้ว แต่ยังไม่เปิด PR",d:"เปิด PR ใน Kissflow ต่อได้เลย (ไม่นับงานช่วง Construction)",who:"QS",cell:function(c,t){return c.s==="ccOk"&&t.ph!=="con"}},
+  {k:"qsSub",cls:"blu",ic:"📤",t:"QS ยังไม่ส่งขออนุมัติราคา",d:"สายงานนี้ยังไม่อยู่ในใบอนุมัติราคา (ไม่นับงานช่วง Construction)",who:"QS",cell:function(c,t){return c.s==="cc"&&/QS/.test(c.step||"")&&t.ph!=="con"}},
+  {k:"stepOver",cls:"red",ic:"⏳",t:"ขั้นอนุมัติราคาค้างเกินกำหนด",d:"Cost Manager 1 วัน · Head of Cons 1 วัน · BSA 2 วัน",who:"ผู้อนุมัติ",cell:function(c){return !!c.stepOver}},
+  {k:"prOk",cls:"amb",ic:"🛒",t:"PR อนุมัติแล้ว รอออก PO",d:"จัดซื้อออก PO",who:"จัดซื้อ",cell:function(c){return c.s==="prOk"}},
+  {k:"conf",cls:"amb",ic:"⚠️",t:"ข้อมูลขัดกัน",d:"บอกไม่มีงานนี้ แต่ Kissflow มี PR · หรือเลข PR ในชีตไม่พบใน Kissflow",who:"QS",cell:function(c){return !!c.conflict||c.s==="prx"}}
+];
+function alertHit(a,r){return a.row?a.row(r):cellsOf(r,a.cell).length>0}
+function alerts(){var base=scope(),on=[],zero=[];
+  ALERTS.forEach(function(a){var sites=base.filter(function(r){return alertHit(a,r)}),cells=a.cell?sites.reduce(function(n,r){return n+cellsOf(r,a.cell).length},0):0;
+    if(!sites.length){zero.push(a.t);return}
+    on.push('<button type="button" class="chip '+a.cls+'" data-a="'+a.k+'" aria-pressed="'+(F.alert===a.k)+'" title="'+esc(a.d+(cells?" · "+cells+" งาน":""))+'">'+a.ic+" "+esc(a.t)+' <b>'+sites.length+' สาขา</b><span class="who">· '+esc(a.who)+"</span></button>")});
+  $("alerts").innerHTML='<span class="lb">🔔 ต้องทำต่อ</span>'+(on.join("")||'<span class="ok">ไม่มีงานค้าง ✓</span>')+(zero.length?'<span class="ok">ไม่มีค้าง: '+esc(zero.join(" · "))+" ✓</span>":"");
+  [].forEach.call(ROOT.querySelectorAll(".chip[data-a]"),function(b){b.onclick=function(){var k=b.getAttribute("data-a");F.alert=F.alert===k?"":k;if(F.alert)F.band="";render()}})}
+function scope(){var o=$("fOpen").checked;return S.rows.filter(function(r){return o||!r.opened})}   // ร้านที่เปิดแล้ว (Grand opening ≤ วันนี้) ซ่อนเป็นค่าเริ่ม — ทุกตัวเลขบนหน้านับจากชุดนี้
+function opts(id,lab,vals){var cur=$(id).value;$(id).innerHTML='<option value="">'+lab+": ทั้งหมด</option>"+vals.map(function(v){return'<option value="'+esc(v[0])+'"'+(v[0]===cur?" selected":"")+">"+esc(v[1])+"</option>"}).join("")}
+function uniq(f){var o={};S.rows.forEach(function(r){var v=f(r);if(v)o[v]=1});return Object.keys(o).sort().map(function(v){return[v,v]})}
+opts("fCon","ผรม.",uniq(function(r){return r.con}));opts("fProv","จังหวัด",uniq(function(r){return r.prov}));opts("fQs","QS",uniq(function(r){return r.qs}));
+opts("fMonth","เดือนตอกเข็ม",uniq(function(r){return r.pile.slice(0,7)}).map(function(v){return[v[0],ml(v[0])]}));
+(function(){var a=S.synced_at||"",b=S.sheet_read_at||"",st=S.status||{};$("freshtx").textContent="Kissflow ดึง "+a+" · ชีต Log PR อ่าน "+b+(S.o1_read_at?" · อ.1 (Pipeline) อ่าน "+S.o1_read_at:"")+" · นับวัน ณ "+fd(S.today);
+  if(st.kf==="fail")$("fresh").className="fresh err";})();
+$("legend").innerHTML=["none","cc","ccOk","pr","prOk","poRun","po","prx","na","nosrc"].map(function(k){return'<span><i class="sw st-'+k+'"></i>'+(SHORT[k]?"<b>"+SHORT[k]+"</b> ":"")+esc(ST[k].label)+"</span>"}).join("")+
+  '<span><i class="sw" style="background:#e1f3da"></i>งานหลัก มีผลต่อ Deadline</span><span>⚠️ ชีต/QS บอกไม่มีงานนี้ แต่ Kissflow มี PR</span><span>* จับคู่ประเภท PR เอง รอ QS ยืนยัน</span>';
+function vis(){var q=$("q").value.trim().toLowerCase(),con=$("fCon").value,prov=$("fProv").value,qs=$("fQs").value,mo=$("fMonth").value||F.month,cf=$("fConf").checked;
+  var al=F.alert?ALERTS.filter(function(a){return a.k===F.alert})[0]:null;
+  var l=scope().filter(function(r){return(!al||alertHit(al,r))&&(!F.band||r.band===F.band)&&(!mo||r.pile.indexOf(mo)===0)&&(!con||r.con===con)&&(!prov||r.prov===prov)&&(!qs||r.qs===qs)&&(!cf||r.conflicts)&&(!q||[r.code,r.t,r.name,r.prov,r.con,r.qs].join(" ").toLowerCase().indexOf(q)>=0)});
+  var so=$("sort").value;l.sort(function(a,b){if(so==="seq")return a.seq-b.seq;if(so==="open")return b.open-a.open||a.deadline.localeCompare(b.deadline);return(a.done-b.done)||a.deadline.localeCompare(b.deadline)||a.seq-b.seq});return l}
+function bands(){$("bands").innerHTML=BANDS.map(function(b){var n=scope().filter(function(r){return r.band===b[0]}).length;return'<button type="button" class="band" data-b="'+b[0]+'" aria-pressed="'+(F.band===b[0])+'"><span class="l">'+esc(b[1])+'</span><span class="n">'+n+"</span></button>"}).join("");
+  [].forEach.call(ROOT.querySelectorAll(".band"),function(x){x.onclick=function(){var k=x.getAttribute("data-b");F.band=F.band===k?"":k;if(F.band)F.alert="";render()}})}
+function months(){var by={};scope().forEach(function(r){var m=r.pile.slice(0,7),x=by[m]=by[m]||{t:0,d:0,l:0};x.t++;if(r.done)x.d++;else if(r.band==="past")x.l++});
+  var cur=S.today.slice(0,7),ms=Object.keys(by).sort();
+  $("months").innerHTML='<div class="mhead"><b>สรุปตามเดือน (Plan ตอกเข็ม)</b><span>กดที่เดือนเพื่อดูรายการสาขาของเดือนนั้น</span></div><div class="mrow">'+ms.map(function(m){var x=by[m],left=x.t-x.d;
+    return'<button type="button" class="mcard'+(m===cur?" cur":"")+'" data-m="'+m+'" aria-pressed="'+(F.month===m)+'"><div class="ml">'+ml(m)+(m===cur?" (เดือนนี้)":"")+'</div><div class="mn"><b>'+x.t+'</b> สาขา</div><div class="mbar"><i style="width:'+(x.t?Math.round(x.d/x.t*100):0)+'%"></i></div><div class="ms"><span class="ok">เปิด PR ครบ '+x.d+'</span><span class="'+(left?"left":"")+'">ค้าง '+left+"</span></div>"+(x.l?'<div class="mo">เลย Deadline '+x.l+"</div>":"")+"</button>"}).join("")+"</div>";
+  [].forEach.call(ROOT.querySelectorAll(".mcard"),function(x){x.onclick=function(){var m=x.getAttribute("data-m");F.month=F.month===m?"":m;$("fMonth").value="";render()}});
+  var c=ROOT.querySelector(".mcard.cur");if(c&&!months.done){months.done=1;var row=c.parentNode;row.scrollLeft=Math.max(0,c.offsetLeft-row.offsetLeft-160)}}
+function div(i){var t=TASKS[i];if(i===0)return" divider";var p=TASKS[i-1];if(p.ph!==t.ph)return(t.ph==="con"?" divider":" subdiv");return""}
+function dueTx(r){if(r.done)return{c:"done",m:"เปิด PR ครบ",s:"Deadline "+fd(r.deadline)};return{c:r.band,m:fd(r.deadline),s:r.left<0?"เลยมา "+(-r.left)+" วัน":r.left===0?"วันนี้":"อีก "+r.left+" วัน"}}
+function tip(t,c){var s=t.label+" · "+ST[c.s].label;if(c.step&&c.step!==ST[c.s].label)s+="\n"+c.step+(c.owner?" ("+c.owner+")":"")+(c.stepDays!=null?" · ค้าง "+c.stepDays+" วัน":"");
+  if(c.pr&&c.pr.length)s+="\nPR: "+c.pr.map(function(p){return p.ref+(p.po&&p.po.length?" → PO "+p.po.map(function(o){return o.no}).join(", "):"")}).join(" · ");
+  if(c.s==="na")s+=c.src==="sheet"?"\nชีตเลือกงาน Precon: "+(c.pick||""):"\nQS กดไม่มีงานนี้ "+(c.by||"");
+  if(c.s==="nosrc")s+="\nKissflow/แท็บ PR ไม่มีประเภทงานนี้ — QS กดไม่มีงานนี้ได้";
+  if(c.conflict)s+="\n⚠️ "+c.conflict;if(t.guess)s+="\n* จับคู่กับประเภท PR \""+t.type+"\" — รอ QS ยืนยัน";return s}
+function o1Td(r){var c=r.o1st==="ได้ อ.1 แล้ว"?"#2b7a2f":r.o1st==="ได้รับอนุโลม อ.1"?"#1d4ed8":"var(--ink2)",tip=r.o1src==="pipeline"?"Pipeline (ชีต SLA อ.1)"+(r.o1got?" · ได้ "+fd(r.o1got):"")+(r.a1&&r.a1!==r.o1st?"\nชีต Log PR เขียนว่า: "+r.a1:""):"Pipeline ยังไม่มีข้อมูล อ.1 — ค่านี้จากชีต Log PR";
+  return'<td title="'+esc(tip)+'" style="color:'+c+';font-weight:600">'+esc(r.o1st||"–")+(r.o1src!=="pipeline"&&r.o1st?'<small style="display:block;color:var(--ink3);font-weight:500">(ชีต Log PR)</small>':"")+"</td>"}
+function render(){alerts();bands();months();var l=vis();$("cnt").textContent="แสดง "+l.length+" จาก "+scope().length+" สาขา"+($("fOpen").checked?"":" · ซ่อนร้านที่เปิดแล้ว "+(S.rows.length-scope().length));
+  var grp='<tr class="grp"><th colspan="7" class="sticky"></th>'+PH.map(function(p){var n=TASKS.filter(function(t){return t.ph===p.k}).length;return'<th colspan="'+n+'" class="task'+(p.k==="pr"||p.k==="con"?" divider":" subdiv")+(p.k==="pr"||p.k==="p1"?" core-h":"")+'" title="'+esc(p.long)+'">'+esc(p.label)+"</th>"}).join("")+"<th></th></tr>";
+  var hd='<tr><th class="sticky">วันยื่น อ.1<br><span style="font-weight:500">(Pipeline)</span></th><th>Deadline QS (ตอกเข็ม −14 วัน)</th><th>Plan ตอกเข็ม</th><th>Grand Opening</th><th>สาขา</th><th>ผรม.</th><th>สถานะ อ.1<br><span style="font-weight:500">(Pipeline)</span></th>'+TASKS.map(function(t,i){return'<th class="task'+div(i)+(CORE[t.k]?" core":"")+'">'+esc(t.label)+(t.guess?"*":"")+"</th>"}).join("")+"<th>QS</th></tr>";
+  var body=l.map(function(r){var d=dueTx(r),gl=r.go?Math.round((Date.parse(r.go)-Date.parse(S.today))/864e5):null;
+    return'<tr data-c="'+esc(r.code)+'"'+(r.code===SEL?' class="sel"':"")+' tabindex="0"><td class="sticky dt">'+(r.o1sub?fd(r.o1sub):'<span style="color:var(--ink4)">ยังไม่ยื่น</span>')+'</td><td><span class="due '+d.c+'">'+d.m+"<small>"+d.s+"</small></span></td>"+
+      '<td class="dt">'+fd(r.pile)+'</td><td class="dt">'+fd(r.go)+(gl!=null?"<small>"+(gl<0?"เปิดแล้ว "+(-gl)+" วัน":gl===0?"เปิดวันนี้":"อีก "+gl+" วัน")+"</small>":"")+"</td>"+
+      '<td class="name"><b>'+esc((r.t?r.t+" ":"")+r.name)+"</b><small>"+esc([r.code,r.prov,r.format,r.stage,r.opened?"เปิดร้านแล้ว":""].filter(Boolean).join(" · "))+"</small></td><td>"+esc(r.con||"–")+"</td>"+o1Td(r)+
+      TASKS.map(function(t,i){var c=r.cells[t.k];return'<td class="task'+div(i)+'"><span class="cell st-'+c.s+(c.loc?" loc":"")+'" title="'+esc(tip(t,c))+'">'+SHORT[c.s]+(c.conflict?'<span class="cf">⚠️</span>':"")+"</span></td>"}).join("")+
+      "<td>"+esc(r.qs||"–")+"</td></tr>"}).join("")||'<tr><td colspan="'+(TASKS.length+8)+'" class="empty">ไม่มีสาขาที่ตรงกับตัวกรอง</td></tr>';
+  $("mx").innerHTML="<thead>"+grp+hd+"</thead><tbody>"+body+"</tbody>";
+  [].forEach.call(ROOT.querySelectorAll("#qs-mx tbody tr[data-c]"),function(tr){tr.onclick=function(){openSite(tr.getAttribute("data-c"))};tr.onkeydown=function(e){if(e.key==="Enter")openSite(tr.getAttribute("data-c"))}});
+  var dr=S.dropped||{};$("foot").textContent="ฐาน = แถวในชีต Log PR ก่อสร้าง แท็บ หน้าหลัก ที่มี Plan วันที่ตอกเสาเข็ม (คอลัมน์แรก) "+S.rows.length+" สาขา (ร้านที่ Grand opening ถึงแล้วซ่อนไว้ ติ๊ก “แสดงร้านที่เปิดแล้ว”) · ไม่แสดง: "+Object.keys(dr).map(function(k){return k+" "+dr[k]}).join(" · ")+
+    " · งานหลักเปิด PR ครบ = ทุกช่องในเตรียมการ + อาคารหลัก + Pre-con 1 ถึงขั้นเปิด PR แล้ว หรือไม่มีงานนี้ (ช่องที่ Kissflow ไม่มีงานนี้ไม่นับ)"}
+function openSite(code){var r=S.rows.filter(function(x){return x.code===code})[0];if(!r)return;SEL=code;
+  $("dt").textContent=(r.t?r.t+" ":"")+r.name;$("ds").textContent=[r.code,r.prov,"ผรม. "+(r.con||"–"),"QS "+(r.qs||"–"),"Plan ตอกเข็ม "+fd(r.pile),"Deadline QS "+fd(r.deadline),"Grand Opening "+fd(r.go),r.stage,r.cjxv?"ใบอนุมัติราคา "+r.cjxv:""].filter(Boolean).join(" · ");
+  $("db").innerHTML=PH.map(function(p){return'<div class="ph">'+esc(p.long)+"</div>"+TASKS.filter(function(t){return t.ph===p.k}).map(function(t){var c=r.cells[t.k],o=r.orig[t.k],k=r.code+"|"+t.k,loc=!!LNA[k];
+    var det=[];if(c.step&&c.step!==ST[c.s].label)det.push(esc(c.step)+(c.owner?" · "+esc(c.owner):"")+(c.stepDays!=null?" · ค้าง "+c.stepDays+" วัน":""));
+    if(c.pr&&c.pr.length)det.push(c.pr.map(function(x){return"<code>"+esc(x.ref)+"</code> "+esc(x.step)+(x.po&&x.po.length?" · PO "+x.po.map(function(q){return esc(q.no||"(ยังไม่มีเลข)")}).join(", "):"")}).join("<br>"));
+    if(c.s==="na")det.push(c.src==="sheet"?"ชีตเลือกงาน Precon: "+esc(c.pick||""):"QS กดไม่มีงานนี้ "+esc(c.by||""));
+    if(c.s==="nosrc")det.push("Kissflow/แท็บ PR ไม่มีประเภทงานนี้");if(t.guess)det.push("* จับคู่กับประเภท PR \""+esc(t.type)+"\" — รอ QS ยืนยัน");
+    var canNA=!(o.s==="na"&&o.src==="sheet");
+    return'<div class="tk"><div class="r1"><span class="cell st-'+c.s+'">'+SHORT[c.s]+'</span><b>'+esc(t.label)+'<span style="font-weight:500;color:var(--ink2)"> · '+esc(ST[c.s].label)+"</span></b>"+
+      (canNA?'<button type="button" class="nab'+(loc?" on":"")+'" data-k="'+esc(t.k)+'">'+(loc?"✓ ไม่มีงานนี้ (กดเพื่อยกเลิก)":"ไม่มีงานนี้")+"</button>":"")+"</div>"+
+      (det.length?'<div class="r2">'+det.join("<br>")+"</div>":"")+(c.conflict?'<div class="warn">⚠️ '+esc(c.conflict)+"</div>":"")+"</div>"}).join("")}).join("");
+  [].forEach.call(ROOT.querySelectorAll(".nab"),function(b){b.onclick=function(){var task=b.getAttribute("data-k"),k=r.code+"|"+task,on=!LNA[k],prev=LNA[k];
+    if(on)LNA[k]={by:window.DPT_EMAIL||"",at:"กำลังบันทึก…"};else delete LNA[k];apply(r);render();openSite(code);b=null;
+    qsPost({code:r.code,task:task,on:on}).then(function(j){if(on)LNA[k]={by:j.by,at:j.at};apply(r);render();openSite(code);toast(on?"บันทึกแล้ว: ไม่มีงานนี้":"ยกเลิกแล้ว",true)})
+      .catch(function(e){if(prev)LNA[k]=prev;else delete LNA[k];apply(r);render();openSite(code);toast("บันทึกไม่สำเร็จ — "+(e&&e.message||e),false)})}});
+  $("drw").classList.add("on");$("dbg").classList.add("on")}
+function closeD(){$("drw").classList.remove("on");$("dbg").classList.remove("on")}
+$("dx").onclick=closeD;$("dbg").onclick=closeD;
+["q"].forEach(function(i){$(i).oninput=render});["fCon","fProv","fQs","sort","fConf","fOpen"].forEach(function(i){$(i).onchange=render});
+$("fMonth").onchange=function(){F.month="";render()};
+$("clr").onclick=function(){["q","fCon","fProv","fQs","fMonth"].forEach(function(i){$(i).value=""});$("sort").value="due";$("fConf").checked=false;$("fOpen").checked=false;F={band:"",month:"",alert:""};render()};
+$("csv").onclick=function(){var l=vis(),out=[["Site Code","รหัสสาขา","ชื่อสาขา","จังหวัด","ผรม.","QS","วันยื่น อ.1 (Pipeline)","สถานะ อ.1 (Pipeline)","Plan ตอกเข็ม","Deadline QS","Grand Opening","เหลือถึง Deadline (วัน)","งานหลักเปิด PR ครบ"].concat(TASKS.map(function(t){return t.label}))];
+  l.forEach(function(r){out.push([r.code,r.t,r.name,r.prov,r.con,r.qs,r.o1sub,r.o1st,r.pile,r.deadline,r.go,r.done?"":r.left,r.done?"ครบ":""].concat(TASKS.map(function(t){var c=r.cells[t.k];return ST[c.s].label+(c.pr&&c.pr.length?" ("+c.pr.map(function(p){return p.ref}).join(", ")+")":"")+(c.conflict?" ⚠️":"")})))});
+  var csv="﻿"+out.map(function(x){return x.map(function(v){return'"'+String(v==null?"":v).replace(/"/g,'""')+'"'}).join(",")}).join("\r\n");
+  var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="CheckList_QS_"+S.today+".csv";a.click()};
+render();
+
+  }
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && $("drw")) { $("drw").classList.remove("on"); $("dbg").classList.remove("on"); } });
+  var _st = window.showTab;
+  window.showTab = function (id) { var r = _st.apply(this, arguments); if (id === "qs" && ST.st !== "ok" && ST.st !== "loading") load(); return r; };
+  function gate() { tb.style.display = window.DPT_ROLE ? "" : "none"; }
   var gi = 0, giv = setInterval(function () { gate(); if (++gi > 60) clearInterval(giv); }, 1000);
   gate();
 })();
