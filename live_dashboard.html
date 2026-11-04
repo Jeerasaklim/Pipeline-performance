@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=171800" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=172156" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -9200,7 +9200,7 @@ function openSite(code){var r=S.rows.filter(function(x){return x.code===code})[0
       (det.length?'<div class="r2">'+det.join("<br>")+"</div>":"")+(c.conflict?'<div class="warn">⚠️ '+esc(c.conflict)+"</div>":"")+"</div>"}).join("")}).join("");
   [].forEach.call(ROOT.querySelectorAll(".nab"),function(b){b.onclick=function(){var task=b.getAttribute("data-k"),k=r.code+"|"+task,on=!LNA[k],prev=LNA[k];
     if(on)LNA[k]={by:window.DPT_EMAIL||"",at:"กำลังบันทึก…"};else delete LNA[k];apply(r);render();openSite(code);b=null;
-    qsPost({code:r.code,task:task,on:on}).then(function(j){if(on)LNA[k]={by:j.by,at:j.at};apply(r);render();openSite(code);toast(on?"บันทึกแล้ว: ไม่มีงานนี้":"ยกเลิกแล้ว",true)})
+    qsPost({code:r.code,task:task,on:on,t:r.t,name:r.name}).then(function(j){if(on)LNA[k]={by:j.by,at:j.at};apply(r);render();openSite(code);toast(on?"บันทึกแล้ว: ไม่มีงานนี้":"ยกเลิกแล้ว",true)})
       .catch(function(e){if(prev)LNA[k]=prev;else delete LNA[k];apply(r);render();openSite(code);toast("บันทึกไม่สำเร็จ — "+(e&&e.message||e),false)})}});
   $("drw").classList.add("on");$("dbg").classList.add("on")}
 function canEditQs(){var r=window.DPT_ROLE;return typeof r==="undefined"||r==="admin"||r==="qs"||r==="qs_manager"}   // จี 4 พ.ย.: แก้ได้เฉพาะ Admin / QS / QS Department Manager · คนอื่นดูอย่างเดียว (server ตรวจซ้ำใน prNaSet_)
