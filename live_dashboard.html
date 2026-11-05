@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=102617" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=104725" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -4083,7 +4083,7 @@ setTimeout(applyBoard,300);
     const sla = tabs.sla || [], out = {};
     for (let i = HEADER_ROW + 1; i < sla.length; i++) {
       const c = cell(sla[i], COL_CODE);
-      if (!c || (c in out) || !isSigned(sla[i], L)) continue;
+      if (!c || c === "Site Code" || (c in out) || !isSigned(sla[i], L)) continue;   // แถวหัวตารางที่ 2 ของ SLA ไม่ใช่สาขา
       out[c] = goPinIso(st[c] || "");
     }
     return out;
