@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=104725" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=110501" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -2884,7 +2884,7 @@ return '<div class="go-cal-title">🏪 ร้านเปิดแล้ว · '
 /*GO-DRAFT-SEAM*/
 var GO_MODE="real",GO_REAL_OV=null,GO_DRAFT_RAW={},GO_LAST_MODEL=null,GO_SHOW_DRAFT=false,GO_CM_AUTO=false,GO_TAB_ON=false,_goNoeditSaved=null;
 var GO_DRAFT_ROLES={admin:1,head_construction:1,head_site_expansion:1,head_site_negotiation:1,managing_director:1,head_business_strategy:1,construction_management:1};
-var GO_DRAFT_EDIT={admin:1,head_construction:1,head_site_expansion:1};   /* จี 30 ต.ค.: ปักร่างได้เฉพาะ Head Cons · Head Site Ex · Admin — role อื่นในรายการด้านบน = ดูอย่างเดียว */
+var GO_DRAFT_EDIT={admin:1,head_construction:1,head_site_expansion:1,construction_management:1};   /* 6 พ.ย. จี: +construction_management ปักร่างได้ */   /* จี 30 ต.ค.: ปักร่างได้เฉพาะ Head Cons · Head Site Ex · Admin — role อื่นในรายการด้านบน = ดูอย่างเดียว */
 var GO_TH_M=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 function goCanDraft(){return !!GO_DRAFT_ROLES[window.DPT_ROLE||""];}
 function goCanDraftEdit(){return !!GO_DRAFT_EDIT[window.DPT_ROLE||""];}
@@ -2910,7 +2910,7 @@ goNoedit();_goApply0(m==="draft"?goDraftState():(GO_REAL_OV||{}));}
 function goSetMode(m){if(m==="draft"&&!goCanDraft())return;if(m===GO_MODE)return;closeE();goEnter(m);}
 function setDraft(raw){GO_DRAFT_RAW=raw||{};if(window.DPT_ROLE==="construction_management"&&!GO_CM_AUTO){GO_CM_AUTO=true;goEnter("draft");return;}if(GO_MODE==="draft")goEnter("draft");else rAll();}
 function toggleDraft(){GO_SHOW_DRAFT=!GO_SHOW_DRAFT;rAll();}
-function goDraftPost(k,v){if(!goCanDraftEdit()){_goToast0("ดูวันร่างได้อย่างเดียว — ปักร่างได้เฉพาะ Head ก่อสร้าง / Head Site Ex / Admin",false);return;}v=(v==null?"":String(v));GO_DRAFT_RAW[k]=v;
+function goDraftPost(k,v){if(!goCanDraftEdit()){_goToast0("ดูวันร่างได้อย่างเดียว — ปักร่างได้เฉพาะ Head ก่อสร้าง / Head Site Ex / Construction Management / Admin",false);return;}v=(v==null?"":String(v));GO_DRAFT_RAW[k]=v;
 if(!(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL))return;
 fetch(window.DPT_GAS_URL,{method:"post",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"draft",key:k,value:v})})
 .then(function(r){return r.json();}).then(function(j){if(!j||!j.ok)_goToast0("✗ บันทึกร่างไม่สำเร็จ: "+k+((j&&j.error)?" — "+j.error:"")+" · ลองใหม่",false);})
@@ -2918,7 +2918,7 @@ fetch(window.DPT_GAS_URL,{method:"post",headers:{"Content-Type":"text/plain;char
 var _goPost0=post,_goPostSheet0=postSheet,_goSaveCb0=saveCb,_goToast0=gtoast;
 post=function(k,v){if(GO_MODE!=="draft")return _goPost0(k,v);goDraftPost(k,v);};
 postSheet=function(code,date,cb,t){if(GO_MODE!=="draft")return _goPostSheet0(code,date,cb,t);if(cb)cb(goCanDraftEdit());};
-saveCb=function(code,ok){if(GO_MODE!=="draft")return _goSaveCb0(code,ok);if(!goCanDraftEdit()){_goToast0("ดูวันร่างได้อย่างเดียว — ไม่ได้บันทึก (ปักร่างได้เฉพาะ Head ก่อสร้าง / Head Site Ex / Admin)",false);return;}_goToast0("📝 บันทึกวันร่างแล้ว (ไม่เข้าชีต · ไม่กระทบของจริง): "+code,true);};
+saveCb=function(code,ok){if(GO_MODE!=="draft")return _goSaveCb0(code,ok);if(!goCanDraftEdit()){_goToast0("ดูวันร่างได้อย่างเดียว — ไม่ได้บันทึก (ปักร่างได้เฉพาะ Head ก่อสร้าง / Head Site Ex / Construction Management / Admin)",false);return;}_goToast0("📝 บันทึกวันร่างแล้ว (ไม่เข้าชีต · ไม่กระทบของจริง): "+code,true);};
 gtoast=function(msg,ok){return _goToast0((GO_MODE==="draft"?"📝 ร่าง · ":"")+msg,ok);};
 function goGhostList(){var out=[];Object.keys(GO_DRAFT_RAW).forEach(function(k){if(k.indexOf("OPEN:")!==0)return;var c=k.slice(5),d=goPval(GO_DRAFT_RAW[k]);if(!d)return;var s=byCode[c];if(!s)return;var r=effOpen(c);if(d===r)return;out.push({s:s,d:d,r:r});});return out;}
 function goGhost(ymd){if(GO_MODE!=="real"||!GO_SHOW_DRAFT)return "";return goGhostList().filter(function(g){return g.d===ymd&&passFilt(g.s);}).map(function(g){return '<span class="go-chip go-ghost" title="วันร่าง (ก่อสร้าง) · วันจริง: '+esc(goThD(g.r))+'"><span class="go-ghost-tag">ร่าง</span> '+esc(g.s.code)+' '+esc(g.s.name||"")+' <span class="go-ghost-real">(จริง '+esc(goThD(g.r))+')</span></span>';}).join("");}
