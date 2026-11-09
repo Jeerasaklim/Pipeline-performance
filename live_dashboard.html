@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=104806" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=134144" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8300,7 +8300,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if (c.s === "prog") return { k: "prog", t: "ทะเบียนกำลังดำเนินการ" };
     return paid ? { k: "ok", t: "ตรงกัน" } : { k: "warn", t: "ทะเบียนมีวันหมดอายุ · บัญชีไม่พบการจ่าย" };
   }
-  /* 9 ต.ค. ภาษีปี 2569 ฝั่งบัญชี (ACC_tax_sign / ACC_tax_land · ไฟล์บัญชีภาษี 30 ก.ย.) — ✓ = บัญชีจ่ายแล้ว
+  /* 9 ต.ค. ภาษีปี 2569 ฝั่งบัญชี (ACC_tax_sign / ACC_tax_land · 9 พ.ย. อัปเดตจากไฟล์บัญชี ข้อมูลถึง 6 พ.ย.) — ✓ = บัญชีจ่ายแล้ว
    * กำหนด (จากไฟล์บัญชี "วิเคราะห์ความเสี่ยง"): ภาษีป้าย ยื่น ภป.1 ภายใน 31 มี.ค. (ร้านเปิดหลังจากนั้น = วันเปิด + 15 วัน) · ภาษีที่ดิน ชำระภายใน 30 มิ.ย.
    * ยังไม่จ่าย + เลยกำหนด = 🔴 · ยังไม่ถึงกำหนด = ⏳ · ร้านเปิดตั้งแต่ 1 ม.ค. 2569 = ⏳ (ภาษีที่ดินคิดจากสภาพ ณ 1 ม.ค.) · Remark ของบัญชีแสดงตามคำเดิม */
   var TAX_SIGN_DL = "2026-03-31", TAX_LAND_DL = "2026-06-30", TAX_YEAR0 = "2026-01-01";
@@ -8385,7 +8385,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var A_WORKS = ["house", "util", "license", "trash", "signtax"], B_WORKS = ["house", "license", "renew", "trash", "signtax", "landtax"];
   function labOf(coh, w) { var d = { done: "ครบ", pend: "ค้าง", none: "ยังไม่มีบันทึก" }, o = coh === "b" && WORK[w] && WORK[w].labB; return o ? { done: o.done, pend: o.pend, none: o.none } : d; }
   var SRC_A = "ที่มา: ชีต Template_งานทะเบียน (ผ่าน Tank G) · กติกาเดียวกับ After อ.1";
-  function srcB() { var m = OM(); return "ที่มา: ชีตทีมทะเบียน 0. CJx Store Document_New (ผ่าน Tank G) · บัญชี = ไฟล์ Reconcile ใบอนุญาต (9 ต.ค. 2569) + ไฟล์ภาษีป้าย/ภาษีที่ดิน (30 ก.ย. 2569) ตั้งต้น · ข้อมูล ณ " + ((m && m.stamp) || "ไม่ทราบเวลาข้อมูล"); }
+  function srcB() { var m = OM(); return "ที่มา: ชีตทีมทะเบียน 0. CJx Store Document_New (ผ่าน Tank G) · บัญชี = ไฟล์ Reconcile ใบอนุญาต (9 ต.ค. 2569) + ไฟล์ภาษีป้าย/ภาษีที่ดิน (บัญชี ณ 6 พ.ย. 2569) · ข้อมูล ณ " + ((m && m.stamp) || "ไม่ทราบเวลาข้อมูล"); }
   function keysOf(groups) { var out = []; RCOLS.forEach(function (g) { if (!groups || groups.indexOf(g[0]) >= 0) g[1].forEach(function (c) { out.push(c[0]); }); }); return out; }
   function rowState(r, keys) {
     var over = 0, pend = 0, n = 0, done = 0, overN = 0;
@@ -8919,7 +8919,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           return (x.has || x.paid) ? payTd(x.paid, x.mail, y.s, p[1]) : symTd("na", p[1] + " · ไม่มีใบประเมินส่วนนี้");
         }).join("");
       },
-      note: "ที่มา ✓/🔴: ไฟล์บัญชีภาษี (30 ก.ย. 2569) · กำหนดชำระ 30 มิ.ย. · ร้านเปิดตั้งแต่ 1 ม.ค. 2569 ยังไม่นับเลยกำหนด · – = ไม่มีใบประเมินส่วนนี้" });
+      note: "ที่มา ✓/🔴: ไฟล์บัญชีภาษีที่ดิน (ข้อมูลถึง 6 พ.ย. 2569) · กำหนดชำระ 30 มิ.ย. · ร้านเปิดตั้งแต่ 1 ม.ค. 2569 ยังไม่นับเลยกำหนด · – = ไม่มีใบประเมินส่วนนี้" });
   }
   function bSign() {
     return twoTables({ coh: "b", w: "signtax", rows: rowsB(), stat: function (r) { return bStat(r, "signtax"); },
@@ -8931,7 +8931,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           (y.s3 ? symTd("done", "ได้ ภป.3 " + y.s3) : symTd("none", "ได้ ภป.3 · ยังไม่มีบันทึกในชีตทะเบียน")) +
           (g ? payTd(g.paid, g.mail, g.s, "ภาษีป้าย 2569") : symTd("none", "ไม่อยู่ในไฟล์บัญชีภาษีป้าย"));
       },
-      note: "สถานะ = ฝั่งบัญชี (ไฟล์บัญชีภาษี 30 ก.ย. 2569) · กำหนดยื่น ภป.1 = 31 มี.ค. (ร้านเปิดหลังจากนั้น = วันเปิด + 15 วัน) · ช่องทะเบียน ☐ = ทีมทะเบียนยังไม่ได้ลงในชีต" });
+      note: "สถานะ = ฝั่งบัญชี (ไฟล์บัญชีภาษีป้าย ข้อมูลถึง 6 พ.ย. 2569) · กำหนดยื่น ภป.1 = 31 มี.ค. (ร้านเปิดหลังจากนั้น = วันเปิด + 15 วัน) · ช่องทะเบียน ☐ = ทีมทะเบียนยังไม่ได้ลงในชีต" });
   }
 
   /* ---- ประกอบหน้างาน ---- */
