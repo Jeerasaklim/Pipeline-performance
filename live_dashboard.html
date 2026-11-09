@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=153238" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=155821" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8261,20 +8261,26 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var r = REG() && REG().rows.filter(function (x) { return x.code === code; })[0];
     var u = utilRows().filter(function (x) { return x.code === code; })[0];
     var cols = (REG() && REG().cols) || {};
+    // 9 พ.ย. (จี "Popup มึงผิดทุก TAP"): ลิ้นชักสาขาใหม่โชว์เฉพาะงานของแท็บที่เปิดอยู่ (กลุ่มตาม WORK[CURV].g · แท็บน้ำ-ไฟ = เฉพาะน้ำ-ไฟ)
+    //   ภาพรวม / ตรวจข้อมูล / แท็บที่ไม่มีใน WORK = ทุกงาน · ตัวนับ "ค้าง x / y ใบ" นับเฉพาะงานที่โชว์
+    var W = WORK[CURV], G = W ? (W.g || []) : null;
+    var groups = RCOLS.filter(function (g) { return !G || G.indexOf(g[0]) >= 0; });
+    var keys = [].concat.apply([], groups.map(function (g) { return g[1].map(function (c) { return c[0]; }); }));
+    var showUtil = !W || CURV === "util";
     var h = "";
-    if (r) {
-      var s = rowState(r);
+    if (r && groups.length) {
+      var s = rowState(r, G ? keys : null);
       h += '<div class="rg-dsub">วันเปิด (ชีตทะเบียน) ' + esc(r.open || DASH) + " · " + esc(r.prov || "") + " · ค้าง " + s.pend + " / " + s.n + " ใบ" + (s.over ? ' · <span class="rg-bad">หลุด SLA</span>' : "") + "</div>" +
         '<div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เอกสาร</th><th>เดดไลน์</th><th>สถานะ</th><th>วันที่</th></tr></thead><tbody>' +
-        RCOLS.map(function (g) {
+        groups.map(function (g) {
           return g[1].map(function (c) {
             var x = r.cells[c[0]] || {};
             var stt = x.na ? '<span class="rg-na">ไม่ต้องทำ' + (x.skip ? "" : " (ตามจังหวัด)") + "</span>" : (x.v ? '<span class="rg-ok">✓ ทำแล้ว</span>' : (x.left != null && x.left < 0 ? '<span class="rg-bad">เลยมา ' + (-x.left) + " วัน</span>" : (x.left != null ? "เหลือ " + x.left + " วัน" : "ยังไม่ทำ")));
             return "<tr><td>" + esc(boxName(c[0])) + "</td><td>" + esc(x.dl || DASH) + "</td><td>" + stt + "</td><td>" + ((x.na && !x.skip) ? DASH : dateIn(cols[c[0]], x.skip ? "-" : x.v, true)) + "</td></tr>";
           }).join("");
         }).join("") + "</tbody></table></div>";
-    } else h += '<div class="rg-dsub">สาขานี้ไม่อยู่ในกลุ่มเอกสารทะเบียน (ยังไม่ยื่น อ.1 หรือเปิดแล้ว)</div>';
-    if (u) h += '<div class="section-label" style="margin-top:14px">น้ำ-ไฟ · SLA ให้ทันวันเปิด (D-0)</div><div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เรื่อง</th><th>ขั้น</th><th>เตรียม</th><th>ขอ</th><th>ได้</th></tr></thead><tbody>' +
+    } else if (!r) h += '<div class="rg-dsub">สาขานี้ไม่อยู่ในกลุ่มเอกสารทะเบียน (ยังไม่ยื่น อ.1 หรือเปิดแล้ว)</div>';
+    if (u && showUtil) h += '<div class="section-label" style="margin-top:14px">น้ำ-ไฟ · SLA ให้ทันวันเปิด (D-0)</div><div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เรื่อง</th><th>ขั้น</th><th>เตรียม</th><th>ขอ</th><th>ได้</th></tr></thead><tbody>' +
       UTRK.map(function (t) { var x = u.t[t[1]] || {}, c = UCOLS[t[1]]; return "<tr><td>" + t[0] + "</td><td>" + (x.s ? USTEP[x.s] : DASH) + "</td><td>" + dateIn(c[0], x.prep) + "</td><td>" + dateIn(c[1], x.req) + "</td><td>" + dateIn(c[2], x.got) + "</td></tr>"; }).join("") + "</tbody></table></div>";
     h += canEdit() ? '<div class="rg-savebar"><button type="button" class="sp-btn pri" id="rg-save">💾 บันทึกที่แก้</button><span class="rg-dsub">บันทึกลงชีต Template_งานทะเบียน (ชีตเดิมของทีมทะเบียน) · ตัวเลขทุกแท็บอัปเดตรอบโหลดถัดไป (~5–10 นาที) · ทุกการแก้ถูกบันทึกในประวัติ (Audit)</span></div>'
       : '<div class="rg-dsub" style="margin-top:12px">ดูอย่างเดียว — บันทึกได้เฉพาะ Admin</div>';
@@ -9104,11 +9110,12 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var y9 = (r.sign && r.sign.y69) || {}, y8 = (r.sign && r.sign.y68) || {}, ld = (r.land && r.land.y68) || {}, t = r.trash || {};
     var signEdit = canTaxReg() && !!(r.sign && r.sign.y69);
     // 9 พ.ย. (จี "Pop up ควรมีแค่ข้อมูลใน TAP"): ลิ้นชักโชว์เฉพาะส่วนของแท็บที่เปิดอยู่ · ภาพรวม/ตรวจข้อมูล/แท็บที่ไม่มีส่วนเฉพาะ = ทุกส่วน
-    var ONLY = { license: "lic", renew: "lic", house: "house", signtax: "sign", landtax: "land", trash: "trash" }[CURV], S = {};
+    var ONLY = { license: "lic", renew: "lic", house: "house", signtax: "sign", landtax: "land", trash: "trash" }[CURV] || ((CURV === "overview" || CURV === "qc") ? null : "none"), S = {};   // น้ำ-ไฟ/ประกัน: ร้านเปิดแล้วไม่มีส่วนในลิ้นชัก = ไม่โชว์ส่วนอื่น
     ["lic", "house", "sign", "land", "trash"].forEach(function (k) { S[k] = !ONLY || ONLY === k; });   // แถวต้องมีในแท็บ ภาษีป้าย@2569 (แอปไม่เพิ่มแถวเอง)
     function kv(rows) { return '<div class="table-wrap"><table class="data-table rg-dt"><tbody>' + rows.map(function (x) { return '<tr><td class="rg-muted">' + x[0] + "</td><td>" + x[1] + "</td></tr>"; }).join("") + "</tbody></table></div>"; }
     var h = '<div class="rg-dsub">' + [esc(r.prov || DASH), esc(r.org || DASH), "เปิด " + esc(fmtIso(r.open_iso) || DASH), "บัญชีจ่ายล่าสุด (ใบใดก็ได้) " + esc(fmtIso(r.accLast) || DASH)].join(" · ") +
       (r.inReg ? "" : '<br><span class="rg-badt">ร้านนี้ไม่อยู่ในชีตทะเบียน (มีแต่ในไฟล์บัญชี)</span>') + "</div>" +
+      (ONLY === "none" ? '<div class="rg-dsub">แท็บนี้ยังไม่มีข้อมูลรายร้านของร้านที่เปิดแล้วในลิ้นชัก</div>' : "") +
       (S.lic ? '<div class="section-label">📄 ใบอนุญาต · ทะเบียน × บัญชี × Oper</div><div class="table-wrap"><table class="data-table rg-dt"><thead>' + LIC_TH2 + "</thead><tbody>" + licRows(r) + "</tbody></table></div>" : "") +
       (S.house ? '<div class="section-label">🏠 ภ.พ.20</div>' + kv([["ข้อความในชีต", r.inReg ? txt(r.pp20) : '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>']]) : "") +
       (S.sign ? '<div class="section-label">🪧 ภาษีป้าย</div>' + (signEdit ? '<div class="rg-dsub">🧾 ทะเบียนกรอกได้ — บันทึกลงชีตทีมทะเบียน แท็บ ภาษีป้าย@2569</div>' : "") +
