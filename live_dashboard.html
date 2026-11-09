@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=163120" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=171450" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8743,10 +8743,22 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     return symTd("none", n + " · ยังไม่มีบันทึกในชีตทะเบียน");
   }
   var CMPI = { ok: ["✓", "done"], warn: ["⚠️", "pend"], bad: ["🔴", "over"], prog: ["⏳", "pend"], none: [SYM.none, "none"], noacc: [SYM.none, "none"] };
-  function licRows(r) {
+  // 9 พ.ย. (จี "ทำเลย ใบอนุญาตกับต่ออายุ"): ทะเบียนกรอกวันหมดอายุ หรือ สถานะ (คำเดิมในชีตเป๊ะ — ต้องตรงกับ LIC_STATUS_ ใน GO_webapp.gs)
+  var LIC_STATUS = ["1.รอดำเนินการ", "2.รอตรวจร้าน", "3.รอพิจารณา", "4.ชำระแล้ว+รอรับใบอนุญาต", "ไม่ต้องมี", "-"];
+  function licIn(fk, raw) {
+    raw = String(raw == null ? "" : raw).trim();
+    var st = LIC_STATUS.indexOf(raw) >= 0 ? raw : "", iso = st ? "" : (dmy(raw) || toIso(raw)), other = raw && !st && !iso;
+    return '<span class="rg-tw" data-k="lic" data-s="reg" data-f="' + fk + '" data-p="" data-orig="' + esc(other ? "" : (st || iso)) + '">' +
+      '<input type="date" class="rg-ld" min="2020-01-01" max="2035-12-31" value="' + esc(iso) + '"' + (st ? " disabled" : "") + "> " +
+      '<select class="rg-ls" onchange="this.previousElementSibling.disabled=!!this.value"><option value="">' + (st ? "— ใช้วันหมดอายุ —" : "— หรือเลือกสถานะ —") + "</option>" +
+      LIC_STATUS.map(function (o) { return '<option value="' + esc(o) + '"' + (o === st ? " selected" : "") + ">" + esc(o) + "</option>"; }).join("") + "</select>" +
+      (other ? '<div class="rg-d">ค่าในชีตตอนนี้: ' + esc(raw) + " (ไม่ใช่วันที่/สถานะในรายการ — แก้ได้โดยกรอกใหม่)</div>" : "") + "</span>";
+  }
+  function twVal(w) { var sl = w.querySelector(".rg-ls"); if (sl) return sl.value || w.querySelector(".rg-ld").value; return w.querySelector(".rg-in").value; }
+  function licRows(r, edit) {
     return OLIC.map(function (l) {
       var x = r.lic[l[0]], ci = CMPI[x.cmp.k] || CMPI.none;
-      var reg = !r.inReg ? '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>' : (x.raw ? esc(x.raw) + (x.exp ? '<div class="rg-d">' + (x.left < 0 ? "หมดแล้ว " + (-x.left) + " วัน" : "เหลือ " + x.left + " วัน") + (x.s === "due" ? " · ถึงรอบต่ออายุ" : "") + "</div>" : "") : '<span class="rg-muted">ยังไม่มีบันทึก</span>');
+      var reg = (edit && r.inReg) ? licIn(l[0], x.raw) + (x.exp ? '<div class="rg-d">' + (x.left < 0 ? "หมดแล้ว " + (-x.left) + " วัน" : "เหลือ " + x.left + " วัน") + "</div>" : "") : !r.inReg ? '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>' : (x.raw ? esc(x.raw) + (x.exp ? '<div class="rg-d">' + (x.left < 0 ? "หมดแล้ว " + (-x.left) + " วัน" : "เหลือ " + x.left + " วัน") + (x.s === "due" ? " · ถึงรอบต่ออายุ" : "") + "</div>" : "") : '<span class="rg-muted">ยังไม่มีบันทึก</span>');
       var acc = x.acc == null ? '<span class="rg-muted">ไม่มีข้อมูลร้านนี้</span>' : (x.acc ? esc(x.acc) : '<span class="rg-muted">' + DASH + "</span>");
       return "<tr><td>" + esc(l[1]) + '<div class="rg-d">เตือน ' + esc(OM().lead[l[0]] != null ? "D-" + OM().lead[l[0]] : DASH) + "</div></td><td>" + reg + "</td><td>" + acc + '</td><td class="rg-muted">ยังไม่เปิดใช้</td>' +
         '<td><span class="rg-st rg-st-' + ci[1] + '">' + ci[0] + " " + esc(x.cmp.t) + "</span></td></tr>";
@@ -9091,17 +9103,18 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       opts.map(function (o) { return '<option value="' + esc(o) + '"' + (o === cur ? " selected" : "") + ">" + (o ? esc(o) : "— ว่าง —") + (o && TAX_REM[k].indexOf(o) < 0 ? " (ค่าเดิม · ไม่อยู่ในรายการ)" : "") + "</option>"; }).join("") + "</select></span>";
   }
   function taxSave(code, k, btn) {
-    var ws = [].filter.call(document.querySelectorAll('#rg-drawer .rg-tw[data-k="' + k + '"]'), function (w) { return w.querySelector(".rg-in").value !== w.getAttribute("data-orig"); });
+    var ws = [].filter.call(document.querySelectorAll('#rg-drawer .rg-tw[data-k="' + k + '"]'), function (w) { return twVal(w) !== w.getAttribute("data-orig"); });
     if (!ws.length) { toast("ยังไม่มีช่องที่แก้", false); return; }
     var label = btn.textContent; btn.disabled = true; btn.textContent = "กำลังบันทึก…";
     var okN = 0, fail = [], chain = Promise.resolve();
     ws.forEach(function (w) {
       chain = chain.then(function () {
-        var sd = w.getAttribute("data-s"), f = w.getAttribute("data-f"), pt = w.getAttribute("data-p"), val = w.querySelector(".rg-in").value;
+        var sd = w.getAttribute("data-s"), f = w.getAttribute("data-f"), pt = w.getAttribute("data-p"), val = twVal(w);
         return regPost({ action: "taxSet", kind: k, side: sd, field: f, part: pt, code: code, value: val }).then(function (j) {
           okN++; w.setAttribute("data-orig", val); w.classList.remove("err"); w.classList.add("saved");
           var nv = f === "rem" ? (j.value || "") : (j.iso || "");
-          if (sd === "reg") (OPEN.d.sign69 || []).forEach(function (a) { if (a.code === code) a[f] = j.value || ""; });   // โชว์ค่าที่ชีตเก็บจริงทันที
+          if (k === "lic") (OPEN.d.lic || []).forEach(function (a) { if (a.code === code) { if (j.value) a[f] = j.value; else delete a[f]; } });   // ค่าที่ชีตเก็บจริง (dd/mm/yyyy หรือสถานะ)
+          else if (sd === "reg") (OPEN.d.sign69 || []).forEach(function (a) { if (a.code === code) a[f] = j.value || ""; });   // โชว์ค่าที่ชีตเก็บจริงทันที
           else (OPEN.d[k === "sign" ? "taxS" : "taxL"] || []).forEach(function (a) { if (a.code !== code) return; var key = k === "sign" || f === "rem" ? f : pt + (f === "mail" ? "m" : "p"); if (nv) a[key] = nv; else delete a[key]; });
         }, function (e) { fail.push((e && e.message) || String(e)); w.classList.add("err"); });
       });
@@ -9127,7 +9140,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if (!r) return;
     var y9 = (r.sign && r.sign.y69) || {}, y8 = (r.sign && r.sign.y68) || {}, ld = (r.land && r.land.y68) || {}, t = r.trash || {};
     var signEdit = canTaxReg() && !!(r.sign && r.sign.y69);
-    var gS = r.taxS, gL = r.taxL, accS = canTaxAcc() && !!gS, accL = canTaxAcc() && !!gL;   // บัญชีกรอกได้เมื่อสาขามีแถวในชีตบัญชี
+    var gS = r.taxS, gL = r.taxL, accS = canTaxAcc() && !!gS, accL = canTaxAcc() && !!gL;
+    var licEdit = canTaxReg() && r.inReg;   // ใบอนุญาต/ต่ออายุ: ทะเบียน (Registration · Head of Site Negotiation · admin) · แถวต้องอยู่ในแท็บใบอนุญาต   // บัญชีกรอกได้เมื่อสาขามีแถวในชีตบัญชี
     // 9 พ.ย. (จี "Pop up ควรมีแค่ข้อมูลใน TAP"): ลิ้นชักโชว์เฉพาะส่วนของแท็บที่เปิดอยู่ · ภาพรวม/ตรวจข้อมูล/แท็บที่ไม่มีส่วนเฉพาะ = ทุกส่วน
     var ONLY = { license: "lic", renew: "lic", house: "house", signtax: "sign", landtax: "land", trash: "trash" }[CURV] || ((CURV === "overview" || CURV === "qc") ? null : "none"), S = {};   // น้ำ-ไฟ/ประกัน: ร้านเปิดแล้วไม่มีส่วนในลิ้นชัก = ไม่โชว์ส่วนอื่น
     ["lic", "house", "sign", "land", "trash"].forEach(function (k) { S[k] = !ONLY || ONLY === k; });   // แถวต้องมีในแท็บ ภาษีป้าย@2569 (แอปไม่เพิ่มแถวเอง)
@@ -9135,7 +9149,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var h = '<div class="rg-dsub">' + [esc(r.prov || DASH), esc(r.org || DASH), "เปิด " + esc(fmtIso(r.open_iso) || DASH), "บัญชีจ่ายล่าสุด (ใบใดก็ได้) " + esc(fmtIso(r.accLast) || DASH)].join(" · ") +
       (r.inReg ? "" : '<br><span class="rg-badt">ร้านนี้ไม่อยู่ในชีตทะเบียน (มีแต่ในไฟล์บัญชี)</span>') + "</div>" +
       (ONLY === "none" ? '<div class="rg-dsub">แท็บนี้ยังไม่มีข้อมูลรายร้านของร้านที่เปิดแล้วในลิ้นชัก</div>' : "") +
-      (S.lic ? '<div class="section-label">📄 ใบอนุญาต · ทะเบียน × บัญชี × Oper</div><div class="table-wrap"><table class="data-table rg-dt"><thead>' + LIC_TH2 + "</thead><tbody>" + licRows(r) + "</tbody></table></div>" : "") +
+      (S.lic ? '<div class="section-label">📄 ใบอนุญาต · ทะเบียน × บัญชี × Oper</div><div class="table-wrap"><table class="data-table rg-dt"><thead>' + LIC_TH2 + "</thead><tbody>" + licRows(r, licEdit) + "</tbody></table></div>" + (licEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-lic" class="au-save">💾 บันทึกใบอนุญาต</button> <span class="rg-dsub">บันทึกลงชีตทะเบียน แท็บ ใบอนุญาต (วันหมดอายุ หรือ สถานะ)</span></div>' : "") : "") +
       (S.house ? '<div class="section-label">🏠 ภ.พ.20</div>' + kv([["ข้อความในชีต", r.inReg ? txt(r.pp20) : '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>']]) : "") +
       (S.sign ? '<div class="section-label">🪧 ภาษีป้าย · ปี 2569</div>' +
         (canTaxReg() && !signEdit ? '<div class="rg-dsub rg-badt">ทะเบียนกรอกไม่ได้: ไม่พบสาขานี้ในแท็บ ภาษีป้าย@2569 ของชีตทะเบียน — ให้ทีมทะเบียนเพิ่มแถวในชีตก่อน</div>' : "") +
@@ -9154,9 +9168,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         })).concat([["บัญชี · Remark", accL ? taxRemIn("land", gL.rem) : txt(gL && gL.rem)], ["ทะเบียน · สถานะปี 2568", txt(ld.st)]])) +
         (accL ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-land" class="au-save">💾 บันทึกภาษีที่ดิน</button></div>' : "") : "") +
       (S.trash ? '<div class="section-label">🗑️ เก็บขยะ</div>' + kv([["จัดเก็บขยะโดย", txt(t.by)], ["จัดหาถังขยะ", txt(t.bin)], ["รอบการจัดเก็บ", txt(t.freq)], ["ค่าขยะ", txt(t.rate)], ["เรทค่าขยะ", txt(t.band)]]) : "") +
-      '<div class="rg-dsub rg-dfoot">' + (signEdit || accS || accL ? "ช่องที่มีกล่องให้กรอก = บันทึกลงชีตจริง (ทะเบียน → ชีตทีมทะเบียน · บัญชี → ชีตบัญชี) · ส่วนอื่นดูอย่างเดียว" : "ดูอย่างเดียว") + " · " + esc(srcB()) + "</div>";
+      '<div class="rg-dsub rg-dfoot">' + (signEdit || accS || accL || (licEdit && S.lic) ? "ช่องที่มีกล่องให้กรอก = บันทึกลงชีตจริง (ทะเบียน → ชีตทีมทะเบียน · บัญชี → ชีตบัญชี) · ส่วนอื่นดูอย่างเดียว" : "ดูอย่างเดียว") + " · " + esc(srcB()) + "</div>";
     drawer(code + " · " + (r.name || ""), h);
-    ["sign", "land"].forEach(function (k) { var b = document.getElementById("rg-tsave-" + k); if (b) b.onclick = function () { taxSave(code, k, b); }; });
+    ["sign", "land", "lic"].forEach(function (k) { var b = document.getElementById("rg-tsave-" + k); if (b) b.onclick = function () { taxSave(code, k, b); }; });
   }
 
   function goWork(w, code, coh) {
