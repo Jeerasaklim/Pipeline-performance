@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=171450" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=180715" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8377,21 +8377,30 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     rows.sort(function (x, y) { return x.code < y.code ? -1 : 1; });
     return { rows: rows, lic: OLIC, lead: lead, stamp: d.stamp || "", warn: d.warn || [] };
   }
+  // 9 พ.ย.: โหลดได้ก่อนเปิดแท็บ (โหลดรอไว้ตั้งแต่เปิดแอป) → วาดเฉพาะเมื่อหน้า Registration มีอยู่
+  function safeRender() { if (document.getElementById("rg-view")) render(); }
   function loadOpen(force) {
     if (!allowed() || OPEN.st === "loading" || (OPEN.st === "ok" && !force)) return;
     var u = window.DPT_GAS_URL, tk = window.DPT_ID_TOKEN || "";
-    if (!u || !tk) { OPEN.st = "err"; OPEN.err = !u ? "ยังไม่ได้ต่อ backend (โหมดทดสอบ)" : "ยังไม่ได้เข้าสู่ระบบ"; render(); return; }
-    OPEN.st = "loading"; render();
+    if (!u || !tk) { OPEN.st = "err"; OPEN.err = !u ? "ยังไม่ได้ต่อ backend (โหมดทดสอบ)" : "ยังไม่ได้เข้าสู่ระบบ"; safeRender(); return; }
+    OPEN.st = "loading"; safeRender();
     var url = u + (u.indexOf("?") < 0 ? "?" : "&") + "action=getRegOpen&token=" + encodeURIComponent(tk);
     (typeof window.DPT_hedgedGet === "function" ? window.DPT_hedgedGet(url) : fetch(url, { redirect: "follow" }).then(function (r) { return r.json(); }))
       .then(function (j) {
         if (!j || !j.ok) throw new Error((j && j.error) || "โหลดไม่สำเร็จ");
         // 9 พ.ย.: แท็บใบอนุญาต = รายชื่อร้านที่เปิดแล้วทั้งหมด · อ่านไม่ได้ → ป้ายแดงพร้อมเหตุผล (เดิมโชว์ 0 สาขาเงียบ ๆ)
         if (!j.lic) throw new Error("อ่านแท็บ \"ใบอนุญาต\" ในชีตทะเบียนไม่ได้ — " + ((j.warn || []).join(" · ") || "ไม่ทราบสาเหตุ"));
-        OPEN.d = j; OPEN.warn = j.warn || []; OPEN.st = "ok"; OPEN.at = j.stamp || ""; window.REG_OPEN = openModel(); render();
+        OPEN.d = j; OPEN.warn = j.warn || []; OPEN.st = "ok"; OPEN.at = j.stamp || ""; freshen(); window.REG_OPEN = openModel(); safeRender();
       })
-      .catch(function (e) { OPEN.st = "err"; OPEN.err = String((e && e.message) || e); render(); });
+      .catch(function (e) { OPEN.st = "err"; OPEN.err = String((e && e.message) || e); safeRender(); });
   }
+  (function preloadOpen() {   // เริ่มโหลดทันทีที่ login เสร็จ ไม่รอให้กดแท็บ
+    var tries = 0, iv = setInterval(function () {
+      tries++;
+      if (OPEN.st !== "idle" || tries > 180) { clearInterval(iv); return; }
+      if (window.USE_GAS_BACKEND === true && window.DPT_GAS_URL && window.DPT_ID_TOKEN && allowed()) { clearInterval(iv); loadOpen(); }
+    }, 1000);
+  })();
   window.REG_OPEN_load = loadOpen;
   window.REG_OPEN_model = openModel;   // ให้หน้าจอเรียก (และใช้ตรวจในหน้าทดสอบ)
 
