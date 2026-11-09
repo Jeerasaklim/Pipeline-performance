@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=155821" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=163120" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8413,7 +8413,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var A_WORKS = ["house", "util", "license", "trash", "signtax"], B_WORKS = ["house", "license", "renew", "trash", "signtax", "landtax"];
   function labOf(coh, w) { var d = { done: "ครบ", pend: "ค้าง", none: "ยังไม่มีบันทึก" }, o = coh === "b" && WORK[w] && WORK[w].labB; return o ? { done: o.done, pend: o.pend, none: o.none } : d; }
   var SRC_A = "ที่มา: ชีต Template_งานทะเบียน (ผ่าน Tank G) · กติกาเดียวกับ After อ.1";
-  function srcB() { var m = OM(); return "ที่มา: ชีตทีมทะเบียน 0. CJx Store Document_New (ผ่าน Tank G) · บัญชี = ไฟล์ Reconcile ใบอนุญาต (9 ต.ค. 2569) + ไฟล์ภาษีป้าย/ภาษีที่ดิน (บัญชี ณ 6 พ.ย. 2569) · ข้อมูล ณ " + ((m && m.stamp) || "ไม่ทราบเวลาข้อมูล"); }
+  function srcB() { var m = OM(); return "ที่มา: ชีตทีมทะเบียน 0. CJx Store Document_New (ผ่าน Tank G) · บัญชี = ไฟล์ Reconcile ใบอนุญาต (9 ต.ค. 2569) + ชีตบัญชีภาษีป้าย/ภาษีที่ดิน (สด · แก้ในแอป) · ข้อมูล ณ " + ((m && m.stamp) || "ไม่ทราบเวลาข้อมูล"); }
   function keysOf(groups) { var out = []; RCOLS.forEach(function (g) { if (!groups || groups.indexOf(g[0]) >= 0) g[1].forEach(function (c) { out.push(c[0]); }); }); return out; }
   function rowState(r, keys) {
     var over = 0, pend = 0, n = 0, done = 0, overN = 0;
@@ -8938,7 +8938,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         LPARTS.map(function (p) { return '<th class="rg-sh">' + p[1] + "<span>&nbsp;</span></th>"; }).join("") + "</tr>", n: 6,
       row: function (r) {
         var y = r.taxL;
-        if (!y) return txCell("none", "ไม่อยู่ในไฟล์บัญชี", "ร้านนี้ไม่อยู่ในไฟล์บัญชีภาษีที่ดิน", 3);
+        if (!y) return OPEN.d.taxL === null ? txCell("over", "อ่านชีตบัญชีไม่ได้", "ดึงชีตบัญชีภาษีที่ดินไม่สำเร็จ — ดูป้ายแดงด้านบน", 3) : txCell("none", "ไม่อยู่ในชีตบัญชี", "ร้านนี้ไม่อยู่ในชีตบัญชีภาษีที่ดิน", 3);
         var wait = y.s === "over" ? "over" : "pend", on = y.parts.filter(function (q) { return q.has || q.paid; });
         // ยังไม่มีใบประเมินส่วนไหนเลย → ช่องเดียวเต็มแถว (ไม่รู้ว่าจะเป็นแบบรวมหรือแยก)
         if (!on.length) return txCell(wait, y.rem || "ยังไม่ได้เอกสาร", "ภาษีที่ดิน 2569 · " + (y.rem || "ยังไม่ได้เอกสาร") + (y.fresh ? " · ร้านเปิดปี 2569 ยังไม่นับเลยกำหนด" : ""), 3);
@@ -8953,7 +8953,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           return txCell("na", "", p[1] + " · ไม่มีใบประเมินส่วนนี้" + (sep && p[0] === "c" ? " (ประเมินแยก)" : (!sep && p[0] !== "c" ? " (ประเมินรวม)" : "")));
         }).join("");
       },
-      note: "ข้อมูล: ไฟล์บัญชีภาษีที่ดิน (ถึง 6 พ.ย. 2569) · ในช่อง = วันที่บัญชีได้รับเอกสาร / วันจ่าย · – = ไม่มีใบประเมินส่วนนี้ (ประเมินรวมหรือแยกอย่างใดอย่างหนึ่ง) · ร้านเปิดตั้งแต่ 1 ม.ค. 2569 ยังไม่นับเลยกำหนด" });
+      note: "ข้อมูล: ชีตบัญชีภาษีที่ดิน (สด) · ในช่อง = วันที่บัญชีได้รับเอกสาร / วันจ่าย · – = ไม่มีใบประเมินส่วนนี้ (ประเมินรวมหรือแยกอย่างใดอย่างหนึ่ง) · ร้านเปิดตั้งแต่ 1 ม.ค. 2569 ยังไม่นับเลยกำหนด" });
   }
   function bSign() {
     return twoTables({ coh: "b", w: "signtax", rows: rowsB(), stat: function (r) { return bStat(r, "signtax"); },
@@ -8962,7 +8962,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       row: function (r) {
         var y = (r.sign && r.sign.y69) || {}, g = r.taxS, reg = [y.s1 ? "ภป.1 " + y.s1 : "", y.s3 ? "ภป.3 " + y.s3 : ""].filter(Boolean).join(" · ");
         var h = reg ? txCell("done", reg, "ทะเบียนลงในชีตแล้ว · " + reg) : txCell("none", "ยังไม่ลงในชีต", "ทีมทะเบียนยังไม่ได้ลงวันยื่น ภป.1 / ได้ ภป.3 ในชีต (แท็บ ภาษีป้าย@2569)");
-        if (!g) return h + txCell("none", "ไม่อยู่ในไฟล์บัญชี", "ร้านนี้ไม่อยู่ในไฟล์บัญชีภาษีป้าย", 2);
+        if (!g) return h + (OPEN.d.taxS === null ? txCell("over", "อ่านชีตบัญชีไม่ได้", "ดึงชีตบัญชีภาษีป้ายไม่สำเร็จ — ดูป้ายแดงด้านบน", 2) : txCell("none", "ไม่อยู่ในชีตบัญชี", "ร้านนี้ไม่อยู่ในชีตบัญชีภาษีป้าย", 2));
         var wait = g.s === "over" ? "over" : "pend";
         h += g.mail ? txCell("done", fmtIso(g.mail), "บัญชีได้รับ E-mail " + fmtIso(g.mail)) :
           (g.paid ? txCell("done", "ไม่ระบุวัน", "จ่ายแล้วแต่ไฟล์บัญชีไม่มีวันได้รับ E-mail") : txCell(wait, g.rem || "ยังไม่ได้รับเอกสาร", "ภาษีป้าย 2569 · " + (g.rem || "ยังไม่ได้รับเอกสาร")));
@@ -8970,7 +8970,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           txCell(wait, (g.s === "over" ? "เลยกำหนด " : "กำหนด ") + fmtIso(g.dl), "ยังไม่จ่าย · กำหนด " + fmtIso(g.dl) + (g.dl !== TAX_SIGN_DL ? " (ร้านเปิดหลัง 31 มี.ค. = วันเปิด + 15 วัน)" : ""));
         return h;
       },
-      note: "ข้อมูล: ไฟล์บัญชีภาษีป้าย (ถึง 6 พ.ย. 2569) + ชีตทะเบียน · ในช่อง = วันที่จริง · กำหนดจ่าย 31 มี.ค. (ร้านเปิดหลังจากนั้น = วันเปิด + 15 วัน) · ทะเบียน “ยังไม่ลงในชีต” = ทีมทะเบียนยังไม่ได้บันทึก ภป.1/ภป.3" });
+      note: "ข้อมูล: ชีตบัญชีภาษีป้าย (สด) + ชีตทะเบียน · ในช่อง = วันที่จริง · กำหนดจ่าย 31 มี.ค. (ร้านเปิดหลังจากนั้น = วันเปิด + 15 วัน) · ทะเบียน “ยังไม่ลงในชีต” = ทีมทะเบียนยังไม่ได้บันทึก ภป.1/ภป.3" });
   }
 
   /* ---- ประกอบหน้างาน ---- */
@@ -9075,32 +9075,50 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
    * สิทธิ์ตาม role: admin = ทุกฝั่ง · Registration + Head of Site Negotiation = ทะเบียน · Accounting = บัญชี (server ส่ง OPEN.d.me.tax · ตรวจซ้ำตอนบันทึก) · บันทึกไม่สำเร็จ = toast แดง + ช่องคงค่าเดิม */
   function taxSideMe() { return (OPEN.d && OPEN.d.me && OPEN.d.me.tax) || ""; }
   function canTaxReg() { var t = taxSideMe(); return t === "all" || t === "reg"; }
-  function taxIn(f, raw) {
-    var iso = dmy(raw) || toIso(raw), bad = raw && !iso;
-    return '<span class="rg-tw" data-f="' + f + '" data-orig="' + esc(iso) + '"><input type="date" class="rg-in" min="2026-01-01" max="' + todayIso() + '" value="' + esc(iso) + '">' +
+  function canTaxAcc() { var t = taxSideMe(); return t === "all" || t === "acc"; }
+  // 9 พ.ย.: ช่องกรอก 1 ช่อง = .rg-tw (data-k ภาษี · data-s ฝั่ง · data-f ช่อง · data-p ส่วนภาษีที่ดิน · data-orig ค่าเดิม)
+  function tIso(raw) { raw = String(raw == null ? "" : raw).trim(); return dmy(raw) || toIso(raw) || (/^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : ""); }
+  function taxIn(k, sd, f, pt, raw) {
+    var iso = tIso(raw), bad = raw && !iso;
+    return '<span class="rg-tw" data-k="' + k + '" data-s="' + sd + '" data-f="' + f + '" data-p="' + (pt || "") + '" data-orig="' + esc(iso) + '"><input type="date" class="rg-in" min="2026-01-01" max="' + todayIso() + '" value="' + esc(iso) + '">' +
       (bad ? '<div class="rg-d">ค่าในชีต: ' + esc(raw) + "</div>" : "") + "</span>";
   }
-  function taxSaveSign(code) {
-    var ws = [].filter.call(document.querySelectorAll("#rg-drawer .rg-tw"), function (w) { return w.querySelector(".rg-in").value !== w.getAttribute("data-orig"); });
-    var btn = document.getElementById("rg-tsave");
+  // Remark = เลือกจากรายการ · คำเดิมของบัญชีเป๊ะ (ต้องตรงกับ TAX_REM_ ใน GO_webapp.gs)
+  var TAX_REM = { sign: ["จ่ายแล้ว", "ยังไม่ได้รับเอกสาร"], land: ["จ่ายเงินแล้ว", "ยังไม่ได้เอกสาร", "ยังไม่ได้ภาษีที่ดิน", "ยังไม่ได้ภาษีสิ่งปลูกสร้าง"] };
+  function taxRemIn(k, cur) {
+    cur = String(cur || ""); var opts = [""].concat(TAX_REM[k]); if (cur && opts.indexOf(cur) < 0) opts.push(cur);
+    return '<span class="rg-tw" data-k="' + k + '" data-s="acc" data-f="rem" data-p="" data-orig="' + esc(cur) + '"><select class="rg-in">' +
+      opts.map(function (o) { return '<option value="' + esc(o) + '"' + (o === cur ? " selected" : "") + ">" + (o ? esc(o) : "— ว่าง —") + (o && TAX_REM[k].indexOf(o) < 0 ? " (ค่าเดิม · ไม่อยู่ในรายการ)" : "") + "</option>"; }).join("") + "</select></span>";
+  }
+  function taxSave(code, k, btn) {
+    var ws = [].filter.call(document.querySelectorAll('#rg-drawer .rg-tw[data-k="' + k + '"]'), function (w) { return w.querySelector(".rg-in").value !== w.getAttribute("data-orig"); });
     if (!ws.length) { toast("ยังไม่มีช่องที่แก้", false); return; }
-    btn.disabled = true; btn.textContent = "กำลังบันทึก…";
+    var label = btn.textContent; btn.disabled = true; btn.textContent = "กำลังบันทึก…";
     var okN = 0, fail = [], chain = Promise.resolve();
     ws.forEach(function (w) {
       chain = chain.then(function () {
-        var f = w.getAttribute("data-f"), val = w.querySelector(".rg-in").value;
-        return regPost({ action: "taxSet", kind: "sign", side: "reg", field: f, code: code, value: val }).then(function (j) {
+        var sd = w.getAttribute("data-s"), f = w.getAttribute("data-f"), pt = w.getAttribute("data-p"), val = w.querySelector(".rg-in").value;
+        return regPost({ action: "taxSet", kind: k, side: sd, field: f, part: pt, code: code, value: val }).then(function (j) {
           okN++; w.setAttribute("data-orig", val); w.classList.remove("err"); w.classList.add("saved");
-          (OPEN.d.sign69 || []).forEach(function (a) { if (a.code === code) a[f] = j.value || ""; });   // โชว์ค่าที่ชีตเก็บจริงทันที
+          var nv = f === "rem" ? (j.value || "") : (j.iso || "");
+          if (sd === "reg") (OPEN.d.sign69 || []).forEach(function (a) { if (a.code === code) a[f] = j.value || ""; });   // โชว์ค่าที่ชีตเก็บจริงทันที
+          else (OPEN.d[k === "sign" ? "taxS" : "taxL"] || []).forEach(function (a) { if (a.code !== code) return; var key = k === "sign" || f === "rem" ? f : pt + (f === "mail" ? "m" : "p"); if (nv) a[key] = nv; else delete a[key]; });
         }, function (e) { fail.push((e && e.message) || String(e)); w.classList.add("err"); });
       });
     });
     chain.then(function () {
-      btn.disabled = false; btn.textContent = "💾 บันทึก ภป.1 / ภป.3";
+      btn.disabled = false; btn.textContent = label;
       if (okN) { freshen(); render(); }
       if (fail.length) toast("✗ บันทึกไม่สำเร็จ " + fail.length + " ช่อง — " + fail[0], false);
-      else toast("✓ บันทึกลงชีตทะเบียนแล้ว (แท็บ ภาษีป้าย@2569)", true);
+      else toast("✓ บันทึกลงชีตแล้ว " + okN + " ช่อง · ตารางอัปเดตตามทันที (ชีตปลายทางเก็บค่าแล้ว)", true);
     });
+  }
+  function landLine(y, x) {
+    if (!y) return '<span class="rg-muted">ไม่อยู่ในชีตบัญชี</span>';
+    if (x.paid) return "✓ จ่าย " + esc(fmtIso(x.paid)) + (x.mail ? " · ได้รับ " + esc(fmtIso(x.mail)) : "");
+    if (x.has) return "มีใบประเมิน · " + (x.mail ? "ได้รับ " + esc(fmtIso(x.mail)) : "ยังไม่ได้รับเอกสาร") + " · ยังไม่จ่าย";
+    if ((x.k === "l" && /ยังไม่ได้ภาษีที่ดิน/.test(y.rem)) || (x.k === "b" && /ยังไม่ได้ภาษีสิ่งปลูกสร้าง/.test(y.rem))) return "ยังไม่ได้เอกสาร";
+    return '<span class="rg-muted">' + DASH + " ไม่มีใบประเมินส่วนนี้</span>";
   }
 
   /* ---- หน้าต่างรายละเอียด ร้านที่เปิดแล้ว (ดูอย่างเดียว ยกเว้นช่องภาษีป้ายฝั่งทะเบียน สำหรับคนที่มีสิทธิ์ — 9 พ.ย.) ---- */
@@ -9109,6 +9127,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if (!r) return;
     var y9 = (r.sign && r.sign.y69) || {}, y8 = (r.sign && r.sign.y68) || {}, ld = (r.land && r.land.y68) || {}, t = r.trash || {};
     var signEdit = canTaxReg() && !!(r.sign && r.sign.y69);
+    var gS = r.taxS, gL = r.taxL, accS = canTaxAcc() && !!gS, accL = canTaxAcc() && !!gL;   // บัญชีกรอกได้เมื่อสาขามีแถวในชีตบัญชี
     // 9 พ.ย. (จี "Pop up ควรมีแค่ข้อมูลใน TAP"): ลิ้นชักโชว์เฉพาะส่วนของแท็บที่เปิดอยู่ · ภาพรวม/ตรวจข้อมูล/แท็บที่ไม่มีส่วนเฉพาะ = ทุกส่วน
     var ONLY = { license: "lic", renew: "lic", house: "house", signtax: "sign", landtax: "land", trash: "trash" }[CURV] || ((CURV === "overview" || CURV === "qc") ? null : "none"), S = {};   // น้ำ-ไฟ/ประกัน: ร้านเปิดแล้วไม่มีส่วนในลิ้นชัก = ไม่โชว์ส่วนอื่น
     ["lic", "house", "sign", "land", "trash"].forEach(function (k) { S[k] = !ONLY || ONLY === k; });   // แถวต้องมีในแท็บ ภาษีป้าย@2569 (แอปไม่เพิ่มแถวเอง)
@@ -9118,17 +9137,26 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       (ONLY === "none" ? '<div class="rg-dsub">แท็บนี้ยังไม่มีข้อมูลรายร้านของร้านที่เปิดแล้วในลิ้นชัก</div>' : "") +
       (S.lic ? '<div class="section-label">📄 ใบอนุญาต · ทะเบียน × บัญชี × Oper</div><div class="table-wrap"><table class="data-table rg-dt"><thead>' + LIC_TH2 + "</thead><tbody>" + licRows(r) + "</tbody></table></div>" : "") +
       (S.house ? '<div class="section-label">🏠 ภ.พ.20</div>' + kv([["ข้อความในชีต", r.inReg ? txt(r.pp20) : '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>']]) : "") +
-      (S.sign ? '<div class="section-label">🪧 ภาษีป้าย</div>' + (signEdit ? '<div class="rg-dsub">🧾 ทะเบียนกรอกได้ — บันทึกลงชีตทีมทะเบียน แท็บ ภาษีป้าย@2569</div>' : "") +
-        (canTaxReg() && !signEdit ? '<div class="rg-dsub rg-badt">กรอกไม่ได้: ไม่พบสาขานี้ในแท็บ ภาษีป้าย@2569 ของชีตทะเบียน — ให้ทีมทะเบียนเพิ่มแถวในชีตก่อน</div>' : "") +
-        kv([["ทะเบียน · ภป.1 (2569)", signEdit ? taxIn("s1", y9.s1) : txt(y9.s1)], ["ทะเบียน · ภป.3 (2569)", signEdit ? taxIn("s3", y9.s3) : txt(y9.s3)], ["ทะเบียน · ชำระ (2569)", txt(y9.paid)],
-        ["บัญชี · ส่ง E-mail (2569)", txt(r.taxS && fmtIso(r.taxS.mail))], ["บัญชี · วันจ่าย (2569)", txt(r.taxS && fmtIso(r.taxS.paid))], ["บัญชี · Remark", txt(r.taxS && r.taxS.rem)], ["ทะเบียน · สถานะปี 2568", txt(y8.st)]]) +
-        (signEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave" class="au-save">💾 บันทึก ภป.1 / ภป.3</button></div>' : "") : "") +
-      (S.land ? '<div class="section-label">🏞️ ภาษีที่ดิน</div>' + kv((r.taxL ? r.taxL.parts.filter(function (p) { return p.has || p.paid; }).map(function (p) { return ["บัญชี · " + p.n + " (2569)", "ส่ง E-mail " + txt(fmtIso(p.mail)) + " · จ่าย " + txt(fmtIso(p.paid))]; }) : [["บัญชี (2569)", '<span class="rg-muted">ไม่อยู่ในไฟล์บัญชี</span>']])
-        .concat([["บัญชี · Remark", txt(r.taxL && r.taxL.rem)], ["ทะเบียน · สถานะปี 2568", txt(ld.st)], ["ทะเบียน · วันชำระ 2568", txt(ld.paid)]])) : "") +
+      (S.sign ? '<div class="section-label">🪧 ภาษีป้าย · ปี 2569</div>' +
+        (canTaxReg() && !signEdit ? '<div class="rg-dsub rg-badt">ทะเบียนกรอกไม่ได้: ไม่พบสาขานี้ในแท็บ ภาษีป้าย@2569 ของชีตทะเบียน — ให้ทีมทะเบียนเพิ่มแถวในชีตก่อน</div>' : "") +
+        (canTaxAcc() && !accS ? '<div class="rg-dsub rg-badt">บัญชีกรอกไม่ได้: ' + (OPEN.d.taxS === null ? "อ่านชีตบัญชีไม่ได้" : "ไม่พบสาขานี้ในชีตบัญชี (ภาษีป้าย 2026) — ให้บัญชีเพิ่มแถวในชีตก่อน") + "</div>" : "") +
+        kv([["ทะเบียน · ยื่น ภป.1", signEdit ? taxIn("sign", "reg", "s1", "", y9.s1) : txt(y9.s1)], ["ทะเบียน · ได้ ภป.3", signEdit ? taxIn("sign", "reg", "s3", "", y9.s3) : txt(y9.s3)],
+          ["บัญชี · ได้รับเอกสาร (E-mail)", accS ? taxIn("sign", "acc", "mail", "", gS.mail) : txt(gS && fmtIso(gS.mail))],
+          ["บัญชี · วันจ่าย", accS ? taxIn("sign", "acc", "paid", "", gS.paid) : txt(gS && fmtIso(gS.paid))],
+          ["บัญชี · Remark", accS ? taxRemIn("sign", gS.rem) : txt(gS && gS.rem)], ["ทะเบียน · สถานะปี 2568", txt(y8.st)]]) +
+        (signEdit || accS ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-sign" class="au-save">💾 บันทึกภาษีป้าย</button></div>' : "") : "") +
+      (S.land ? '<div class="section-label">🏞️ ภาษีที่ดิน · ปี 2569 (บัญชี · กำหนดชำระ 30 มิ.ย.)</div>' +
+        (canTaxAcc() && !accL ? '<div class="rg-dsub rg-badt">บัญชีกรอกไม่ได้: ' + (OPEN.d.taxL === null ? "อ่านชีตบัญชีไม่ได้" : "ไม่พบสาขานี้ในชีตบัญชี (ภาษีที่ดินฯ) — ให้บัญชีเพิ่มแถวในชีตก่อน") + "</div>" : "") +
+        kv([].concat.apply([], [["c", "ประเมินรวม"], ["l", "ภาษีที่ดิน"], ["b", "สิ่งปลูกสร้าง"]].map(function (pp) {
+          var x = gL ? gL.parts.filter(function (q) { return q.k === pp[0]; })[0] : null;
+          return accL ? [[pp[1] + " · ได้รับเอกสาร (E-mail)", taxIn("land", "acc", "mail", pp[0], x.mail)], [pp[1] + " · วันจ่าย", taxIn("land", "acc", "paid", pp[0], x.paid)]]
+            : [[pp[1], landLine(gL, x || {})]];
+        })).concat([["บัญชี · Remark", accL ? taxRemIn("land", gL.rem) : txt(gL && gL.rem)], ["ทะเบียน · สถานะปี 2568", txt(ld.st)]])) +
+        (accL ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-land" class="au-save">💾 บันทึกภาษีที่ดิน</button></div>' : "") : "") +
       (S.trash ? '<div class="section-label">🗑️ เก็บขยะ</div>' + kv([["จัดเก็บขยะโดย", txt(t.by)], ["จัดหาถังขยะ", txt(t.bin)], ["รอบการจัดเก็บ", txt(t.freq)], ["ค่าขยะ", txt(t.rate)], ["เรทค่าขยะ", txt(t.band)]]) : "") +
-      '<div class="rg-dsub rg-dfoot">' + (signEdit ? "กรอกได้เฉพาะ ภาษีป้าย ภป.1 / ภป.3 · ส่วนอื่นดูอย่างเดียว (แก้ที่ชีตทีมทะเบียน)" : "ดูอย่างเดียว — แก้ที่ชีตทีมทะเบียน") + " · " + esc(srcB()) + "</div>";
+      '<div class="rg-dsub rg-dfoot">' + (signEdit || accS || accL ? "ช่องที่มีกล่องให้กรอก = บันทึกลงชีตจริง (ทะเบียน → ชีตทีมทะเบียน · บัญชี → ชีตบัญชี) · ส่วนอื่นดูอย่างเดียว" : "ดูอย่างเดียว") + " · " + esc(srcB()) + "</div>";
     drawer(code + " · " + (r.name || ""), h);
-    var tb = document.getElementById("rg-tsave"); if (tb) tb.onclick = function () { taxSaveSign(code); };
+    ["sign", "land"].forEach(function (k) { var b = document.getElementById("rg-tsave-" + k); if (b) b.onclick = function () { taxSave(code, k, b); }; });
   }
 
   function goWork(w, code, coh) {
