@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=141608" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=150800" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6691,6 +6691,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
             '<input id="au-email" class="au-inp" type="email" placeholder="อีเมล @'+DOMAIN+'" autocomplete="off">'+
             '<input id="au-name" class="au-inp" type="text" placeholder="ชื่อ (แสดงผล)" autocomplete="off">'+
             '<select id="au-role" class="au-sel">'+opts+'</select>'+
+            '<select id="au-tax" class="au-sel" title="สิทธิ์กรอกภาษี (แยกจากสิทธิ์หลัก)"><option value="">กรอกภาษี: ไม่มี</option><option value="reg">กรอกภาษี: ทะเบียน</option><option value="acc">กรอกภาษี: บัญชี</option></select>'+
             '<button id="au-save" class="au-save" type="button" onclick="AUsave()">บันทึก</button>'+
           '</div>'+
           '<div id="au-hint" class="au-hint">เพิ่มผู้ใช้ใหม่ หรือกด "แก้" ในตารางเพื่อเปลี่ยนสิทธิ์ · ถอนสิทธิ์ = ตั้งเป็น Member (ดูอย่างเดียว)</div>'+
@@ -6702,7 +6703,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function open_(){ build(); document.getElementById('au-modal').classList.add('open'); resetForm(); load(); }
   function close(){ var m=document.getElementById('au-modal'); if(m) m.classList.remove('open'); }
   function resetForm(){ var e=document.getElementById('au-email'),n=document.getElementById('au-name'),r=document.getElementById('au-role');
-    if(e){e.value='';e.readOnly=false;} if(n)n.value=''; if(r)r.value='Member';
+    if(e){e.value='';e.readOnly=false;} if(n)n.value=''; if(r)r.value='Member'; var tx0=document.getElementById('au-tax'); if(tx0)tx0.value='';
     var h=document.getElementById('au-hint'); if(h)h.textContent='เพิ่มผู้ใช้ใหม่ หรือกด "แก้" ในตารางเพื่อเปลี่ยนสิทธิ์ · ถอนสิทธิ์ = ตั้งเป็น Member (ดูอย่างเดียว)'; }
 
   function load(){
@@ -6723,7 +6724,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var body=rows.map(function(x){
       var key=String(x.role||'member'), m=RM[key]||[key,'#475569','#f1f5f9','#cbd5e1'];
       var disp=x.role_display||m[0];
-      var badge='<span class="au-badge" style="color:'+m[1]+';background:'+m[2]+';border:1px solid '+m[3]+'">'+esc(m[0])+'</span>';
+      var badge='<span class="au-badge" style="color:'+m[1]+';background:'+m[2]+';border:1px solid '+m[3]+'">'+esc(m[0])+'</span>'+
+        (x.tax_side==='reg'?' <span class="au-badge" style="color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe">🧾 กรอกภาษี: ทะเบียน</span>':(x.tax_side==='acc'?' <span class="au-badge" style="color:#047857;background:#ecfdf5;border:1px solid #a7f3d0">💰 กรอกภาษี: บัญชี</span>':''));
       var inact=(String(x.active).toUpperCase()==='FALSE');
       return '<tr'+(inact?' class="au-inactive"':'')+'>'+
         '<td>'+esc(x.email)+'</td><td>'+esc(x.name||'')+'</td><td>'+badge+'</td>'+
@@ -6742,13 +6744,13 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if(e){e.value=x.email;e.readOnly=true;} if(n)n.value=x.name||'';
     // preselect ต้องใช้ display จาก ROLES (ตรงกับ <option> value) — ไม่ใช่ RM ที่ member = 'ดูอย่างเดียว (Member)'
     var disp='Member', xk=String(x.role||'member'); for(var k=0;k<ROLES.length;k++){ if(ROLES[k][1]===xk){disp=ROLES[k][0];break;} }
-    if(r)r.value=disp;
+    if(r)r.value=disp; var tx1=document.getElementById('au-tax'); if(tx1)tx1.value=x.tax_side||'';
     var h=document.getElementById('au-hint'); if(h)h.textContent='กำลังแก้: '+x.email+' — เลือกสิทธิ์ใหม่แล้วกดบันทึก';
     var f=document.getElementById('au-role'); if(f)f.focus();
   }
   function save(){
     var e=document.getElementById('au-email'),n=document.getElementById('au-name'),r=document.getElementById('au-role');
-    var email=(e.value||'').toLowerCase().trim(), name=(n.value||'').trim(), roleDisp=r.value;
+    var email=(e.value||'').toLowerCase().trim(), name=(n.value||'').trim(), roleDisp=r.value, taxSide=((document.getElementById('au-tax')||{}).value)||'';
     if(!email){ toast('กรอกอีเมลก่อน',false); e.focus(); return; }
     if(email.split('@')[1]!==DOMAIN){ toast('อนุญาตเฉพาะอีเมล @'+DOMAIN,false); e.focus(); return; }
     var roleKey='member'; for(var i=0;i<ROLES.length;i++){ if(ROLES[i][0]===roleDisp){roleKey=ROLES[i][1];break;} }
@@ -6759,22 +6761,22 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var u=gurl();
     try{
       fetch(u,{method:'post',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify({token:tok(),action:'upsertUser',email:email,name:name,role:roleDisp})});
+        body:JSON.stringify({token:tok(),action:'upsertUser',email:email,name:name,role:roleDisp,tax_side:taxSide})});
     }catch(err){}
-    verify(email,roleKey,0);
+    verify(email,roleKey,0,taxSide);
   }
-  function verify(email,expectKey,tries){
+  function verify(email,expectKey,tries,expectTax){
     var u=gurl();
     fetch(u+(u.indexOf('?')<0?'?':'&')+'action=listUsers&token='+encodeURIComponent(tok()),{redirect:'follow'})
       .then(function(r){return r.json();})
       .then(function(j){
         var ok=false; if(j&&j.ok){ var arr=j.users||[];
-          for(var i=0;i<arr.length;i++){ if(String(arr[i].email||'').toLowerCase()===email){ ok=(String(arr[i].role||'')===expectKey); break; } } }
+          for(var i=0;i<arr.length;i++){ if(String(arr[i].email||'').toLowerCase()===email){ ok=(String(arr[i].role||'')===expectKey)&&(expectTax===undefined||String(arr[i].tax_side||'')===expectTax); break; } } }
         if(ok){ _users=(j.users||[]); done(true,email); }
-        else if(tries<3){ setTimeout(function(){verify(email,expectKey,tries+1);},1200); }
+        else if(tries<3){ setTimeout(function(){verify(email,expectKey,tries+1,expectTax);},1200); }
         else { done(false,email); }
       })
-      .catch(function(){ if(tries<3){ setTimeout(function(){verify(email,expectKey,tries+1);},1200); } else { done(false,email); } });
+      .catch(function(){ if(tries<3){ setTimeout(function(){verify(email,expectKey,tries+1,expectTax);},1200); } else { done(false,email); } });
   }
   function done(ok,email){
     var btn=document.getElementById('au-save'); if(btn){btn.disabled=false;btn.textContent='บันทึก';}
@@ -8211,7 +8213,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function regPost(body, retried) {
     var url = window.DPT_GAS_URL;
     if (!url) return Promise.reject(new Error("ยังไม่ได้ต่อ backend (โหมดทดสอบ)"));
-    body.action = "regSet"; body.token = window.DPT_ID_TOKEN || "";
+    body.action = body.action || "regSet"; body.token = window.DPT_ID_TOKEN || "";   // 9 พ.ย.: taxSet ใช้ท่อเดียวกัน
     return fetch(url, { method: "post", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
       .then(function (r) { return r.text(); })
       .then(function (t) { var j; try { j = JSON.parse(t); } catch (e) { throw new Error("Google ส่งผลกลับไม่ถึง — ยังไม่รู้ว่าบันทึกสำเร็จไหม ให้เปิดดูอีกครั้งหลังโหลดใหม่"); }
@@ -9065,23 +9067,60 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       '<div class="rg-src">' + src.map(esc).join("<br>") + "<br>ตัวเลขบนการ์ด = จำนวนสาขาตามตัวกรอง (ไม่รวมตัวกรองสถานะ) · ตัวกรองสถานะในหน้านี้ = งานที่แย่ที่สุดของสาขา</div>";
   }
 
-  /* ---- หน้าต่างรายละเอียด ร้านที่เปิดแล้ว (ดูอย่างเดียว — ยังไม่มีการบันทึก) ---- */
+  /* ---- 9 พ.ย. (PRD_Registration §14–16 เฟส ②): กรอกภาษีป้าย ภป.1/ภป.3 ในลิ้นชัก → GAS taxSet → ชีตทะเบียน แท็บ ภาษีป้าย@2569
+   * สิทธิ์ = admin หรือ Roles.tax_side (server ส่ง OPEN.d.me.tax · server ตรวจซ้ำตอนบันทึก) · บันทึกไม่สำเร็จ = toast แดง + ช่องคงค่าเดิม */
+  function taxSideMe() { return (OPEN.d && OPEN.d.me && OPEN.d.me.tax) || ""; }
+  function canTaxReg() { var t = taxSideMe(); return t === "all" || t === "reg"; }
+  function taxIn(f, raw) {
+    var iso = dmy(raw) || toIso(raw), bad = raw && !iso;
+    return '<span class="rg-tw" data-f="' + f + '" data-orig="' + esc(iso) + '"><input type="date" class="rg-in" min="2026-01-01" max="' + todayIso() + '" value="' + esc(iso) + '">' +
+      (bad ? '<div class="rg-d">ค่าในชีต: ' + esc(raw) + "</div>" : "") + "</span>";
+  }
+  function taxSaveSign(code) {
+    var ws = [].filter.call(document.querySelectorAll("#rg-drawer .rg-tw"), function (w) { return w.querySelector(".rg-in").value !== w.getAttribute("data-orig"); });
+    var btn = document.getElementById("rg-tsave");
+    if (!ws.length) { toast("ยังไม่มีช่องที่แก้", false); return; }
+    btn.disabled = true; btn.textContent = "กำลังบันทึก…";
+    var okN = 0, fail = [], chain = Promise.resolve();
+    ws.forEach(function (w) {
+      chain = chain.then(function () {
+        var f = w.getAttribute("data-f"), val = w.querySelector(".rg-in").value;
+        return regPost({ action: "taxSet", kind: "sign", side: "reg", field: f, code: code, value: val }).then(function (j) {
+          okN++; w.setAttribute("data-orig", val); w.classList.remove("err"); w.classList.add("saved");
+          (OPEN.d.sign69 || []).forEach(function (a) { if (a.code === code) a[f] = j.value || ""; });   // โชว์ค่าที่ชีตเก็บจริงทันที
+        }, function (e) { fail.push((e && e.message) || String(e)); w.classList.add("err"); });
+      });
+    });
+    chain.then(function () {
+      btn.disabled = false; btn.textContent = "💾 บันทึก ภป.1 / ภป.3";
+      if (okN) { freshen(); render(); }
+      if (fail.length) toast("✗ บันทึกไม่สำเร็จ " + fail.length + " ช่อง — " + fail[0], false);
+      else toast("✓ บันทึกลงชีตทะเบียนแล้ว (แท็บ ภาษีป้าย@2569)", true);
+    });
+  }
+
+  /* ---- หน้าต่างรายละเอียด ร้านที่เปิดแล้ว (ดูอย่างเดียว ยกเว้นช่องภาษีป้ายฝั่งทะเบียน สำหรับคนที่มีสิทธิ์ — 9 พ.ย.) ---- */
   function openDrawer(code) {
     var m = OM(), r = m && m.rows.filter(function (x) { return x.code === code; })[0];
     if (!r) return;
     var y9 = (r.sign && r.sign.y69) || {}, y8 = (r.sign && r.sign.y68) || {}, ld = (r.land && r.land.y68) || {}, t = r.trash || {};
+    var signEdit = canTaxReg() && !!(r.sign && r.sign.y69);   // แถวต้องมีในแท็บ ภาษีป้าย@2569 (แอปไม่เพิ่มแถวเอง)
     function kv(rows) { return '<div class="table-wrap"><table class="data-table rg-dt"><tbody>' + rows.map(function (x) { return '<tr><td class="rg-muted">' + x[0] + "</td><td>" + x[1] + "</td></tr>"; }).join("") + "</tbody></table></div>"; }
     var h = '<div class="rg-dsub">' + [esc(r.prov || DASH), esc(r.org || DASH), "เปิด " + esc(fmtIso(r.open_iso) || DASH), "บัญชีจ่ายล่าสุด (ใบใดก็ได้) " + esc(fmtIso(r.accLast) || DASH)].join(" · ") +
       (r.inReg ? "" : '<br><span class="rg-badt">ร้านนี้ไม่อยู่ในชีตทะเบียน (มีแต่ในไฟล์บัญชี)</span>') + "</div>" +
       '<div class="section-label">📄 ใบอนุญาต · ทะเบียน × บัญชี × Oper</div><div class="table-wrap"><table class="data-table rg-dt"><thead>' + LIC_TH2 + "</thead><tbody>" + licRows(r) + "</tbody></table></div>" +
       '<div class="section-label">🏠 ภ.พ.20</div>' + kv([["ข้อความในชีต", r.inReg ? txt(r.pp20) : '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>']]) +
-      '<div class="section-label">🪧 ภาษีป้าย</div>' + kv([["ทะเบียน · ภป.1 (2569)", txt(y9.s1)], ["ทะเบียน · ภป.3 (2569)", txt(y9.s3)], ["ทะเบียน · ชำระ (2569)", txt(y9.paid)],
+      '<div class="section-label">🪧 ภาษีป้าย</div>' + (signEdit ? '<div class="rg-dsub">🧾 ทะเบียนกรอกได้ — บันทึกลงชีตทีมทะเบียน แท็บ ภาษีป้าย@2569</div>' : "") +
+        (canTaxReg() && !signEdit ? '<div class="rg-dsub rg-badt">กรอกไม่ได้: ไม่พบสาขานี้ในแท็บ ภาษีป้าย@2569 ของชีตทะเบียน — ให้ทีมทะเบียนเพิ่มแถวในชีตก่อน</div>' : "") +
+        kv([["ทะเบียน · ภป.1 (2569)", signEdit ? taxIn("s1", y9.s1) : txt(y9.s1)], ["ทะเบียน · ภป.3 (2569)", signEdit ? taxIn("s3", y9.s3) : txt(y9.s3)], ["ทะเบียน · ชำระ (2569)", txt(y9.paid)],
         ["บัญชี · ส่ง E-mail (2569)", txt(r.taxS && fmtIso(r.taxS.mail))], ["บัญชี · วันจ่าย (2569)", txt(r.taxS && fmtIso(r.taxS.paid))], ["บัญชี · Remark", txt(r.taxS && r.taxS.rem)], ["ทะเบียน · สถานะปี 2568", txt(y8.st)]]) +
+        (signEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave" class="au-save">💾 บันทึก ภป.1 / ภป.3</button></div>' : "") +
       '<div class="section-label">🏞️ ภาษีที่ดิน</div>' + kv((r.taxL ? r.taxL.parts.filter(function (p) { return p.has || p.paid; }).map(function (p) { return ["บัญชี · " + p.n + " (2569)", "ส่ง E-mail " + txt(fmtIso(p.mail)) + " · จ่าย " + txt(fmtIso(p.paid))]; }) : [["บัญชี (2569)", '<span class="rg-muted">ไม่อยู่ในไฟล์บัญชี</span>']])
         .concat([["บัญชี · Remark", txt(r.taxL && r.taxL.rem)], ["ทะเบียน · สถานะปี 2568", txt(ld.st)], ["ทะเบียน · วันชำระ 2568", txt(ld.paid)]])) +
       '<div class="section-label">🗑️ เก็บขยะ</div>' + kv([["จัดเก็บขยะโดย", txt(t.by)], ["จัดหาถังขยะ", txt(t.bin)], ["รอบการจัดเก็บ", txt(t.freq)], ["ค่าขยะ", txt(t.rate)], ["เรทค่าขยะ", txt(t.band)]]) +
-      '<div class="rg-dsub rg-dfoot">ดูอย่างเดียว — ร้านที่เปิดแล้วยังบันทึกจากหน้านี้ไม่ได้ (แก้ที่ชีตทีมทะเบียน) · ' + esc(srcB()) + "</div>";
+      '<div class="rg-dsub rg-dfoot">' + (signEdit ? "กรอกได้เฉพาะ ภาษีป้าย ภป.1 / ภป.3 · ส่วนอื่นดูอย่างเดียว (แก้ที่ชีตทีมทะเบียน)" : "ดูอย่างเดียว — แก้ที่ชีตทีมทะเบียน") + " · " + esc(srcB()) + "</div>";
     drawer(code + " · " + (r.name || ""), h);
+    var tb = document.getElementById("rg-tsave"); if (tb) tb.onclick = function () { taxSaveSign(code); };
   }
 
   function goWork(w, code, coh) {
