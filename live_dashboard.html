@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=175804" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=104806" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8358,6 +8358,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     (typeof window.DPT_hedgedGet === "function" ? window.DPT_hedgedGet(url) : fetch(url, { redirect: "follow" }).then(function (r) { return r.json(); }))
       .then(function (j) {
         if (!j || !j.ok) throw new Error((j && j.error) || "โหลดไม่สำเร็จ");
+        // 9 พ.ย.: แท็บใบอนุญาต = รายชื่อร้านที่เปิดแล้วทั้งหมด · อ่านไม่ได้ → ป้ายแดงพร้อมเหตุผล (เดิมโชว์ 0 สาขาเงียบ ๆ)
+        if (!j.lic) throw new Error("อ่านแท็บ \"ใบอนุญาต\" ในชีตทะเบียนไม่ได้ — " + ((j.warn || []).join(" · ") || "ไม่ทราบสาเหตุ"));
         OPEN.d = j; OPEN.warn = j.warn || []; OPEN.st = "ok"; OPEN.at = j.stamp || ""; window.REG_OPEN = openModel(); render();
       })
       .catch(function (e) { OPEN.st = "err"; OPEN.err = String((e && e.message) || e); render(); });
