@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=135318" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=141608" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -6240,12 +6240,34 @@ setTimeout(applyBoard,300);
     if (!d || d.t !== "sm-write") return;
     if (window.DPT_ROLE === "member") return;   // RBAC §7 ชั้น 1 (UX) — server (doPost) ยัง 403 อยู่ดี
     if (window.USE_GAS_BACKEND !== true || !window.DPT_GAS_URL) return;
+    // 9 พ.ย. (จี): เดิม no-cors = ไม่รู้ผล → 5–6 พ.ย. เขียนชีต Construction Tracking ไม่ลงเงียบ ๆ · ตอนนี้อ่านผลแล้วเตือน
+    var isPrm = String(d.key || "").indexOf("PRM:") === 0 && d.key !== "PRM:__LIST__";
+    var code = isPrm ? String(d.key).slice(4) : "";
     try {
-      fetch(window.DPT_GAS_URL, { method: "post", mode: "no-cors",
+      fetch(window.DPT_GAS_URL, { method: "post",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ token: window.DPT_ID_TOKEN, action: "note", key: d.key, value: d.value }) });
-    } catch (err) {}
+        body: JSON.stringify({ token: window.DPT_ID_TOKEN, action: "note", key: d.key, value: d.value }) })
+        .then(function (r) { return r.text(); })
+        .then(function (t) {
+          var j = null; try { j = JSON.parse(t); } catch (e1) {}
+          if (!j) return smWarn("ส่งบันทึก ผรม. แล้ว แต่ Google ไม่ตอบผลกลับ — โหลดหน้าใหม่แล้วเช็กว่าชื่อขึ้นไหม");
+          if (!j.ok) return smWarn("บันทึก ผรม. ไม่สำเร็จ" + (code ? " (" + code + ")" : "") + ": " + (j.error || j.err || ("HTTP " + (j.status || "?"))));
+          if (j.sheet && !j.sheet.ok) return smWarn("แอปบันทึก ผรม. แล้ว แต่เขียนลงชีต Construction Tracking ไม่สำเร็จ (" + code + "): " + (j.sheet.err || "ไม่ทราบสาเหตุ") + " — แจ้งจี");
+        })
+        .catch(function (err) { smWarn("ส่งบันทึก ผรม. ไม่ถึงเซิร์ฟเวอร์ (" + ((err && err.message) || err) + ") — ลองใหม่อีกครั้ง"); });
+    } catch (err) { smWarn("ส่งบันทึก ผรม. ไม่สำเร็จ: " + ((err && err.message) || err)); }
   });
+  function smWarn(msg) {             // ป้ายแดงมุมล่าง ค้าง 12 วิ (กดปิดได้) — ห้ามเงียบเมื่อเขียนไม่ลง
+    var el = document.getElementById("sm-write-warn");
+    if (!el) {
+      el = document.createElement("div"); el.id = "sm-write-warn";
+      el.style.cssText = "position:fixed;right:16px;bottom:16px;max-width:min(440px,calc(100vw - 32px));z-index:9999;background:#fef2f2;color:#991b1b;border:1px solid #fca5a5;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;line-height:1.5;box-shadow:0 4px 14px rgba(0,0,0,.12);cursor:pointer";
+      el.title = "กดเพื่อปิด"; el.onclick = function () { el.style.display = "none"; };
+      document.body.appendChild(el);
+    }
+    el.textContent = "⚠️ " + msg; el.style.display = "block";
+    clearTimeout(smWarn.h); smWarn.h = setTimeout(function () { el.style.display = "none"; }, 12000);
+  }
   // The iframe loads lazily and may (re)load more than once; re-send on every load. Also try once now
   // in case it is already loaded when this model resolves.
   frame.addEventListener("load", function () {
