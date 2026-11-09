@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=150800" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=152027" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -2861,7 +2861,7 @@ var cnt=cByMonth(),ms=bMonths();var _n=new Date();var nowYM=_n.getFullYear()+"-"
 function pickYM(){var _c=cByMonth(),_m=bMonths();var _n=new Date();var _ny=_n.getFullYear()+"-"+("0"+(_n.getMonth()+1)).slice(-2);curYM=(_c[_ny]?_ny:null);if(!curYM){for(var _i2=0;_i2<_m.length;_i2++){if(_c[_m[_i2]]){curYM=_m[_i2];break;}}}if(!curYM)curYM=_m[0]||_ny;}
 function setModel(model){if(!model)return;SITES=model.sites||[];POOL=model.pool||[];VANISHED=model.vanished||[];CHANGELOG=model.changelog||[];ALLDATES=model.alldates||{};OPENED_NOW=model.opened_now||0;OPENED_2026=model.opened_2026||0;OPENED_LIST=model.opened_list||[];NEWGOT=model.newgot||[];NEWGOT_SET={};for(var _j=0;_j<NEWGOT.length;_j++)NEWGOT_SET[NEWGOT[_j]]=1;byCode={};SITES.forEach(function(s){byCode[s.code]=s;});pickYM();rAll();}
 function applyOverlay(ov){if(!ov)return;pinned=ov.pinned||{};gnote=ov.gnote||{};gstat=ov.gstat||{};gver=ov.gver||{};g2=ov.g2||{};rslog=ov.rslog||{};if(ov.rsDmgPerDay!=null&&!isNaN(+ov.rsDmgPerDay))RS_DMG_PER_DAY=+ov.rsDmgPerDay;cancelled=ov.cancelled||{};Object.keys(cancelled).forEach(function(_cc){delete pinned[_cc];if(byCode[_cc]){var _si=SITES.indexOf(byCode[_cc]);if(_si>=0)SITES.splice(_si,1);delete byCode[_cc];}for(var _pi=POOL.length-1;_pi>=0;_pi--){if(POOL[_pi].code===_cc)POOL.splice(_pi,1);}});rAll();}
-post=function(k,v){try{var _r=window.DPT_ROLE;if(_r==="member"||_r==="construction_management"||_r==="qs"||_r==="qs_manager"){if(typeof gtoast==="function")gtoast("แท็บนี้ดูอย่างเดียว — ไม่มีสิทธิ์แก้ไข",false);return;}if(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL){fetch(window.DPT_GAS_URL,{method:"post",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"note",key:k,value:v})});}}catch(e){}};postSheet=function(code,date,cb,_try){var _r2=window.DPT_ROLE;if(_r2==="member"||_r2==="construction_management"||_r2==="qs"||_r2==="qs_manager"){if(cb)cb(false);return;}if(!(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL)){if(cb)cb(true);return;}_try=_try||0;fetch(window.DPT_GAS_URL,{method:"post",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"sheet",code:code,date:date})}).then(function(r){return r.json();}).then(function(j){if(j&&j.ok){if(cb)cb(true,j);}else if(_try<2){postSheet(code,date,cb,_try+1);}else{if(cb)cb(false,j);}}).catch(function(){if(_try<2){setTimeout(function(){postSheet(code,date,cb,_try+1);},600);}else{if(cb)cb(false);}});};
+post=function(k,v){try{var _r=window.DPT_ROLE;if(_r==="member"||_r==="construction_management"||_r==="qs"||_r==="qs_manager"||_r==="registration"||_r==="accounting"){if(typeof gtoast==="function")gtoast("แท็บนี้ดูอย่างเดียว — ไม่มีสิทธิ์แก้ไข",false);return;}if(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL){fetch(window.DPT_GAS_URL,{method:"post",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"note",key:k,value:v})});}}catch(e){}};postSheet=function(code,date,cb,_try){var _r2=window.DPT_ROLE;if(_r2==="member"||_r2==="construction_management"||_r2==="qs"||_r2==="qs_manager"||_r2==="registration"||_r2==="accounting"){if(cb)cb(false);return;}if(!(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL)){if(cb)cb(true);return;}_try=_try||0;fetch(window.DPT_GAS_URL,{method:"post",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"sheet",code:code,date:date})}).then(function(r){return r.json();}).then(function(j){if(j&&j.ok){if(cb)cb(true,j);}else if(_try<2){postSheet(code,date,cb,_try+1);}else{if(cb)cb(false,j);}}).catch(function(){if(_try<2){setTimeout(function(){postSheet(code,date,cb,_try+1);},600);}else{if(cb)cb(false);}});};
 var OPENED_LIST=[],OPSHOW=null;
 function opPref(){try{return localStorage.getItem("go_opened_show")==="1";}catch(e){return false;}}
 function opToggle(){OPSHOW=!(OPSHOW===null?opPref():OPSHOW);try{localStorage.setItem("go_opened_show",OPSHOW?"1":"0");}catch(e){}if(!OPSHOW&&String(curYM).indexOf("op:")===0){pickYM();rAll();return;}rOpened();}
@@ -6605,7 +6605,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           head_site_negotiation:['Head of Site Negotiation','#047857','#d1fae5','#6ee7b7'],
           managing_director:['Managing Director','#047857','#d1fae5','#6ee7b7'],
           head_business_strategy:['Head of Business Strategy Excellent','#047857','#d1fae5','#6ee7b7'],
-          construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],
+          construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],registration:['Registration (ทีมทะเบียน)','#1d4ed8','#eff6ff','#bfdbfe'],accounting:['Accounting (ทีมบัญชี)','#047857','#ecfdf5','#a7f3d0'],
           qs:['QS','#7c3aed','#ede9fe','#c4b5fd'],qs_manager:['QS Department Manager','#7c3aed','#ede9fe','#c4b5fd'],
           member:['ดูอย่างเดียว (Member)','#475569','#f1f5f9','#cbd5e1']};
         function paintUser(){
@@ -6657,14 +6657,14 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var ROLES=[['Admin','admin'],['Head of Construction','head_construction'],
     ['Head of Site Expansion','head_site_expansion'],['Head of Site Negotiation','head_site_negotiation'],
     ['Managing Director','managing_director'],['Head of Business Strategy Excellent','head_business_strategy'],
-    ['Construction Management','construction_management'],['QS','qs'],['QS Department Manager','qs_manager'],['Member','member']];
+    ['Construction Management','construction_management'],['QS','qs'],['QS Department Manager','qs_manager'],['Registration','registration'],['Accounting','accounting'],['Member','member']];
   var RM={admin:['Admin','#1d4ed8','#dbeafe','#93c5fd'],
     head_construction:['Head of Construction','#047857','#d1fae5','#6ee7b7'],
     head_site_expansion:['Head of Site Expansion','#047857','#d1fae5','#6ee7b7'],
     head_site_negotiation:['Head of Site Negotiation','#047857','#d1fae5','#6ee7b7'],
           managing_director:['Managing Director','#047857','#d1fae5','#6ee7b7'],
           head_business_strategy:['Head of Business Strategy Excellent','#047857','#d1fae5','#6ee7b7'],
-    construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],
+    construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],registration:['Registration (ทีมทะเบียน)','#1d4ed8','#eff6ff','#bfdbfe'],accounting:['Accounting (ทีมบัญชี)','#047857','#ecfdf5','#a7f3d0'],
           qs:['QS','#7c3aed','#ede9fe','#c4b5fd'],qs_manager:['QS Department Manager','#7c3aed','#ede9fe','#c4b5fd'],
     member:['ดูอย่างเดียว (Member)','#475569','#f1f5f9','#cbd5e1']};
   var DOMAIN='cjmart.co.th';
@@ -6691,7 +6691,6 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
             '<input id="au-email" class="au-inp" type="email" placeholder="อีเมล @'+DOMAIN+'" autocomplete="off">'+
             '<input id="au-name" class="au-inp" type="text" placeholder="ชื่อ (แสดงผล)" autocomplete="off">'+
             '<select id="au-role" class="au-sel">'+opts+'</select>'+
-            '<select id="au-tax" class="au-sel" title="สิทธิ์กรอกภาษี (แยกจากสิทธิ์หลัก)"><option value="">กรอกภาษี: ไม่มี</option><option value="reg">กรอกภาษี: ทะเบียน</option><option value="acc">กรอกภาษี: บัญชี</option></select>'+
             '<button id="au-save" class="au-save" type="button" onclick="AUsave()">บันทึก</button>'+
           '</div>'+
           '<div id="au-hint" class="au-hint">เพิ่มผู้ใช้ใหม่ หรือกด "แก้" ในตารางเพื่อเปลี่ยนสิทธิ์ · ถอนสิทธิ์ = ตั้งเป็น Member (ดูอย่างเดียว)</div>'+
@@ -6703,7 +6702,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function open_(){ build(); document.getElementById('au-modal').classList.add('open'); resetForm(); load(); }
   function close(){ var m=document.getElementById('au-modal'); if(m) m.classList.remove('open'); }
   function resetForm(){ var e=document.getElementById('au-email'),n=document.getElementById('au-name'),r=document.getElementById('au-role');
-    if(e){e.value='';e.readOnly=false;} if(n)n.value=''; if(r)r.value='Member'; var tx0=document.getElementById('au-tax'); if(tx0)tx0.value='';
+    if(e){e.value='';e.readOnly=false;} if(n)n.value=''; if(r)r.value='Member';
     var h=document.getElementById('au-hint'); if(h)h.textContent='เพิ่มผู้ใช้ใหม่ หรือกด "แก้" ในตารางเพื่อเปลี่ยนสิทธิ์ · ถอนสิทธิ์ = ตั้งเป็น Member (ดูอย่างเดียว)'; }
 
   function load(){
@@ -6724,8 +6723,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var body=rows.map(function(x){
       var key=String(x.role||'member'), m=RM[key]||[key,'#475569','#f1f5f9','#cbd5e1'];
       var disp=x.role_display||m[0];
-      var badge='<span class="au-badge" style="color:'+m[1]+';background:'+m[2]+';border:1px solid '+m[3]+'">'+esc(m[0])+'</span>'+
-        (x.tax_side==='reg'?' <span class="au-badge" style="color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe">🧾 กรอกภาษี: ทะเบียน</span>':(x.tax_side==='acc'?' <span class="au-badge" style="color:#047857;background:#ecfdf5;border:1px solid #a7f3d0">💰 กรอกภาษี: บัญชี</span>':''));
+      var badge='<span class="au-badge" style="color:'+m[1]+';background:'+m[2]+';border:1px solid '+m[3]+'">'+esc(m[0])+'</span>';
       var inact=(String(x.active).toUpperCase()==='FALSE');
       return '<tr'+(inact?' class="au-inactive"':'')+'>'+
         '<td>'+esc(x.email)+'</td><td>'+esc(x.name||'')+'</td><td>'+badge+'</td>'+
@@ -6744,13 +6742,13 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if(e){e.value=x.email;e.readOnly=true;} if(n)n.value=x.name||'';
     // preselect ต้องใช้ display จาก ROLES (ตรงกับ <option> value) — ไม่ใช่ RM ที่ member = 'ดูอย่างเดียว (Member)'
     var disp='Member', xk=String(x.role||'member'); for(var k=0;k<ROLES.length;k++){ if(ROLES[k][1]===xk){disp=ROLES[k][0];break;} }
-    if(r)r.value=disp; var tx1=document.getElementById('au-tax'); if(tx1)tx1.value=x.tax_side||'';
+    if(r)r.value=disp;
     var h=document.getElementById('au-hint'); if(h)h.textContent='กำลังแก้: '+x.email+' — เลือกสิทธิ์ใหม่แล้วกดบันทึก';
     var f=document.getElementById('au-role'); if(f)f.focus();
   }
   function save(){
     var e=document.getElementById('au-email'),n=document.getElementById('au-name'),r=document.getElementById('au-role');
-    var email=(e.value||'').toLowerCase().trim(), name=(n.value||'').trim(), roleDisp=r.value, taxSide=((document.getElementById('au-tax')||{}).value)||'';
+    var email=(e.value||'').toLowerCase().trim(), name=(n.value||'').trim(), roleDisp=r.value;
     if(!email){ toast('กรอกอีเมลก่อน',false); e.focus(); return; }
     if(email.split('@')[1]!==DOMAIN){ toast('อนุญาตเฉพาะอีเมล @'+DOMAIN,false); e.focus(); return; }
     var roleKey='member'; for(var i=0;i<ROLES.length;i++){ if(ROLES[i][0]===roleDisp){roleKey=ROLES[i][1];break;} }
@@ -6761,22 +6759,22 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var u=gurl();
     try{
       fetch(u,{method:'post',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify({token:tok(),action:'upsertUser',email:email,name:name,role:roleDisp,tax_side:taxSide})});
+        body:JSON.stringify({token:tok(),action:'upsertUser',email:email,name:name,role:roleDisp})});
     }catch(err){}
-    verify(email,roleKey,0,taxSide);
+    verify(email,roleKey,0);
   }
-  function verify(email,expectKey,tries,expectTax){
+  function verify(email,expectKey,tries){
     var u=gurl();
     fetch(u+(u.indexOf('?')<0?'?':'&')+'action=listUsers&token='+encodeURIComponent(tok()),{redirect:'follow'})
       .then(function(r){return r.json();})
       .then(function(j){
         var ok=false; if(j&&j.ok){ var arr=j.users||[];
-          for(var i=0;i<arr.length;i++){ if(String(arr[i].email||'').toLowerCase()===email){ ok=(String(arr[i].role||'')===expectKey)&&(expectTax===undefined||String(arr[i].tax_side||'')===expectTax); break; } } }
+          for(var i=0;i<arr.length;i++){ if(String(arr[i].email||'').toLowerCase()===email){ ok=(String(arr[i].role||'')===expectKey); break; } } }
         if(ok){ _users=(j.users||[]); done(true,email); }
-        else if(tries<3){ setTimeout(function(){verify(email,expectKey,tries+1,expectTax);},1200); }
+        else if(tries<3){ setTimeout(function(){verify(email,expectKey,tries+1);},1200); }
         else { done(false,email); }
       })
-      .catch(function(){ if(tries<3){ setTimeout(function(){verify(email,expectKey,tries+1,expectTax);},1200); } else { done(false,email); } });
+      .catch(function(){ if(tries<3){ setTimeout(function(){verify(email,expectKey,tries+1);},1200); } else { done(false,email); } });
   }
   function done(ok,email){
     var btn=document.getElementById('au-save'); if(btn){btn.disabled=false;btn.textContent='บันทึก';}
@@ -9068,7 +9066,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
 
   /* ---- 9 พ.ย. (PRD_Registration §14–16 เฟส ②): กรอกภาษีป้าย ภป.1/ภป.3 ในลิ้นชัก → GAS taxSet → ชีตทะเบียน แท็บ ภาษีป้าย@2569
-   * สิทธิ์ = admin หรือ Roles.tax_side (server ส่ง OPEN.d.me.tax · server ตรวจซ้ำตอนบันทึก) · บันทึกไม่สำเร็จ = toast แดง + ช่องคงค่าเดิม */
+   * สิทธิ์ตาม role: admin = ทุกฝั่ง · Registration + Head of Site Negotiation = ทะเบียน · Accounting = บัญชี (server ส่ง OPEN.d.me.tax · ตรวจซ้ำตอนบันทึก) · บันทึกไม่สำเร็จ = toast แดง + ช่องคงค่าเดิม */
   function taxSideMe() { return (OPEN.d && OPEN.d.me && OPEN.d.me.tax) || ""; }
   function canTaxReg() { var t = taxSideMe(); return t === "all" || t === "reg"; }
   function taxIn(f, raw) {
