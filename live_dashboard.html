@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=152027" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=153238" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -9102,20 +9102,23 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var m = OM(), r = m && m.rows.filter(function (x) { return x.code === code; })[0];
     if (!r) return;
     var y9 = (r.sign && r.sign.y69) || {}, y8 = (r.sign && r.sign.y68) || {}, ld = (r.land && r.land.y68) || {}, t = r.trash || {};
-    var signEdit = canTaxReg() && !!(r.sign && r.sign.y69);   // แถวต้องมีในแท็บ ภาษีป้าย@2569 (แอปไม่เพิ่มแถวเอง)
+    var signEdit = canTaxReg() && !!(r.sign && r.sign.y69);
+    // 9 พ.ย. (จี "Pop up ควรมีแค่ข้อมูลใน TAP"): ลิ้นชักโชว์เฉพาะส่วนของแท็บที่เปิดอยู่ · ภาพรวม/ตรวจข้อมูล/แท็บที่ไม่มีส่วนเฉพาะ = ทุกส่วน
+    var ONLY = { license: "lic", renew: "lic", house: "house", signtax: "sign", landtax: "land", trash: "trash" }[CURV], S = {};
+    ["lic", "house", "sign", "land", "trash"].forEach(function (k) { S[k] = !ONLY || ONLY === k; });   // แถวต้องมีในแท็บ ภาษีป้าย@2569 (แอปไม่เพิ่มแถวเอง)
     function kv(rows) { return '<div class="table-wrap"><table class="data-table rg-dt"><tbody>' + rows.map(function (x) { return '<tr><td class="rg-muted">' + x[0] + "</td><td>" + x[1] + "</td></tr>"; }).join("") + "</tbody></table></div>"; }
     var h = '<div class="rg-dsub">' + [esc(r.prov || DASH), esc(r.org || DASH), "เปิด " + esc(fmtIso(r.open_iso) || DASH), "บัญชีจ่ายล่าสุด (ใบใดก็ได้) " + esc(fmtIso(r.accLast) || DASH)].join(" · ") +
       (r.inReg ? "" : '<br><span class="rg-badt">ร้านนี้ไม่อยู่ในชีตทะเบียน (มีแต่ในไฟล์บัญชี)</span>') + "</div>" +
-      '<div class="section-label">📄 ใบอนุญาต · ทะเบียน × บัญชี × Oper</div><div class="table-wrap"><table class="data-table rg-dt"><thead>' + LIC_TH2 + "</thead><tbody>" + licRows(r) + "</tbody></table></div>" +
-      '<div class="section-label">🏠 ภ.พ.20</div>' + kv([["ข้อความในชีต", r.inReg ? txt(r.pp20) : '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>']]) +
-      '<div class="section-label">🪧 ภาษีป้าย</div>' + (signEdit ? '<div class="rg-dsub">🧾 ทะเบียนกรอกได้ — บันทึกลงชีตทีมทะเบียน แท็บ ภาษีป้าย@2569</div>' : "") +
+      (S.lic ? '<div class="section-label">📄 ใบอนุญาต · ทะเบียน × บัญชี × Oper</div><div class="table-wrap"><table class="data-table rg-dt"><thead>' + LIC_TH2 + "</thead><tbody>" + licRows(r) + "</tbody></table></div>" : "") +
+      (S.house ? '<div class="section-label">🏠 ภ.พ.20</div>' + kv([["ข้อความในชีต", r.inReg ? txt(r.pp20) : '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>']]) : "") +
+      (S.sign ? '<div class="section-label">🪧 ภาษีป้าย</div>' + (signEdit ? '<div class="rg-dsub">🧾 ทะเบียนกรอกได้ — บันทึกลงชีตทีมทะเบียน แท็บ ภาษีป้าย@2569</div>' : "") +
         (canTaxReg() && !signEdit ? '<div class="rg-dsub rg-badt">กรอกไม่ได้: ไม่พบสาขานี้ในแท็บ ภาษีป้าย@2569 ของชีตทะเบียน — ให้ทีมทะเบียนเพิ่มแถวในชีตก่อน</div>' : "") +
         kv([["ทะเบียน · ภป.1 (2569)", signEdit ? taxIn("s1", y9.s1) : txt(y9.s1)], ["ทะเบียน · ภป.3 (2569)", signEdit ? taxIn("s3", y9.s3) : txt(y9.s3)], ["ทะเบียน · ชำระ (2569)", txt(y9.paid)],
         ["บัญชี · ส่ง E-mail (2569)", txt(r.taxS && fmtIso(r.taxS.mail))], ["บัญชี · วันจ่าย (2569)", txt(r.taxS && fmtIso(r.taxS.paid))], ["บัญชี · Remark", txt(r.taxS && r.taxS.rem)], ["ทะเบียน · สถานะปี 2568", txt(y8.st)]]) +
-        (signEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave" class="au-save">💾 บันทึก ภป.1 / ภป.3</button></div>' : "") +
-      '<div class="section-label">🏞️ ภาษีที่ดิน</div>' + kv((r.taxL ? r.taxL.parts.filter(function (p) { return p.has || p.paid; }).map(function (p) { return ["บัญชี · " + p.n + " (2569)", "ส่ง E-mail " + txt(fmtIso(p.mail)) + " · จ่าย " + txt(fmtIso(p.paid))]; }) : [["บัญชี (2569)", '<span class="rg-muted">ไม่อยู่ในไฟล์บัญชี</span>']])
-        .concat([["บัญชี · Remark", txt(r.taxL && r.taxL.rem)], ["ทะเบียน · สถานะปี 2568", txt(ld.st)], ["ทะเบียน · วันชำระ 2568", txt(ld.paid)]])) +
-      '<div class="section-label">🗑️ เก็บขยะ</div>' + kv([["จัดเก็บขยะโดย", txt(t.by)], ["จัดหาถังขยะ", txt(t.bin)], ["รอบการจัดเก็บ", txt(t.freq)], ["ค่าขยะ", txt(t.rate)], ["เรทค่าขยะ", txt(t.band)]]) +
+        (signEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave" class="au-save">💾 บันทึก ภป.1 / ภป.3</button></div>' : "") : "") +
+      (S.land ? '<div class="section-label">🏞️ ภาษีที่ดิน</div>' + kv((r.taxL ? r.taxL.parts.filter(function (p) { return p.has || p.paid; }).map(function (p) { return ["บัญชี · " + p.n + " (2569)", "ส่ง E-mail " + txt(fmtIso(p.mail)) + " · จ่าย " + txt(fmtIso(p.paid))]; }) : [["บัญชี (2569)", '<span class="rg-muted">ไม่อยู่ในไฟล์บัญชี</span>']])
+        .concat([["บัญชี · Remark", txt(r.taxL && r.taxL.rem)], ["ทะเบียน · สถานะปี 2568", txt(ld.st)], ["ทะเบียน · วันชำระ 2568", txt(ld.paid)]])) : "") +
+      (S.trash ? '<div class="section-label">🗑️ เก็บขยะ</div>' + kv([["จัดเก็บขยะโดย", txt(t.by)], ["จัดหาถังขยะ", txt(t.bin)], ["รอบการจัดเก็บ", txt(t.freq)], ["ค่าขยะ", txt(t.rate)], ["เรทค่าขยะ", txt(t.band)]]) : "") +
       '<div class="rg-dsub rg-dfoot">' + (signEdit ? "กรอกได้เฉพาะ ภาษีป้าย ภป.1 / ภป.3 · ส่วนอื่นดูอย่างเดียว (แก้ที่ชีตทีมทะเบียน)" : "ดูอย่างเดียว — แก้ที่ชีตทีมทะเบียน") + " · " + esc(srcB()) + "</div>";
     drawer(code + " · " + (r.name || ""), h);
     var tb = document.getElementById("rg-tsave"); if (tb) tb.onclick = function () { taxSaveSign(code); };
