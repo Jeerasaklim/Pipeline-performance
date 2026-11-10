@@ -1173,7 +1173,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=174553" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=181029" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -4113,14 +4113,19 @@ setTimeout(applyBoard,300);
     return out;
   }
   /** 5 พ.ย. 26 (จี): วันเริ่มนับค่าเช่า ต่อสาขา — เฉพาะสาขาที่ "เซ็นแล้ว" (isSigned ตัวเดียวกับ Overall) ·
-   *  ค่า = ISO จาก Site Nego AM · "" = เซ็นแล้วแต่ชีตไม่มีวันเริ่มสัญญา (หน้าปักวันเปิดบอกว่านับไม่ได้ ไม่เดา) */
+   *  ค่า = ISO จาก Pipeline Commit คอลัมน์ T (10 พ.ย.; สำรอง = Site Nego AM) · "" = เซ็นแล้วแต่ชีตไม่มีวันเริ่มสัญญา (หน้าปักวันเปิดบอกว่านับไม่ได้ ไม่เดา) */
   function rentStartMap(tabs, L) {
-    const st = lookupBy(tabs.nego || [], SIGN2_HEADER_ROW, SIGN2_COL_CODE, SIGN2_COL_RENT_START);
+    // 10 พ.ย. 26 (จี "ให้ดึงจาก T ของ Pipeline Commit Nego-2026"): tabs.pcn = [Site Code, วันที่เริ่มสัญญา] จากแท็บถัง
+    //   APP_วันเริ่มสัญญา (Pipeline Commit) (สด) · ใช้ T ก่อน · T ว่าง/แท็บอ่านไม่ได้ → Site Nego AM เดิม
+    //   (AM บางแถวดึงจาก Nego transection Q "วันเริ่มสัญญา" ที่ T ไม่มี — 6 สาขาที่ยังไม่เปิด ณ 10 พ.ย. · ไม่ทิ้งเงียบ)
+    const pcn = tabs.pcn || [];
+    const stT = pcn.length >= 10 ? lookupBy(pcn, 0, 0, 1) : {};
+    const stAM = lookupBy(tabs.nego || [], SIGN2_HEADER_ROW, SIGN2_COL_CODE, SIGN2_COL_RENT_START);
     const sla = tabs.sla || [], out = {};
     for (let i = HEADER_ROW + 1; i < sla.length; i++) {
       const c = cell(sla[i], COL_CODE);
       if (!c || c === "Site Code" || (c in out) || !isSigned(sla[i], L)) continue;   // แถวหัวตารางที่ 2 ของ SLA ไม่ใช่สาขา
-      out[c] = goPinIso(st[c] || "");
+      out[c] = goPinIso(stT[c] || stAM[c] || "");
     }
     return out;
   }
