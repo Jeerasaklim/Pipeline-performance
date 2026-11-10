@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=180715" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=093342" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8192,7 +8192,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     m = /^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/.exec(v); if (m && MON[m[2].toLowerCase()]) { var y = +m[3]; if (y < 100) y += 2000; return y + "-" + ("0" + MON[m[2].toLowerCase()]).slice(-2) + "-" + ("0" + m[1]).slice(-2); }
     return "";
   }
-  function canEdit() { return window.DPT_ROLE === "admin"; }
+  // 10 พ.ย. (จี): บันทึกสาขาใหม่ได้ = admin + ฝั่งทะเบียน (Registration · Head of Site Negotiation) — server ตรวจซ้ำใน regSet_
+  function canEdit() { var r = window.DPT_ROLE; return r === "admin" || r === "registration" || r === "head_site_negotiation"; }
   // 9 ต.ค.: ช่องกรอก 1 ช่อง = wrapper เก็บค่าเดิมในชีต (data-orig: วันที่ ISO / "-" ไม่ต้องทำ / "" ว่าง) · allowSkip = มีช่องติ๊ก "ไม่ต้องทำ"
   function dateIn(col, raw, allowSkip) {
     var skip = isNA(raw), iso = skip ? "" : toIso(raw), bad = raw && !skip && !iso, dis = canEdit() ? "" : " disabled";
@@ -8283,7 +8284,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if (u && showUtil) h += '<div class="section-label" style="margin-top:14px">น้ำ-ไฟ · SLA ให้ทันวันเปิด (D-0)</div><div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เรื่อง</th><th>ขั้น</th><th>เตรียม</th><th>ขอ</th><th>ได้</th></tr></thead><tbody>' +
       UTRK.map(function (t) { var x = u.t[t[1]] || {}, c = UCOLS[t[1]]; return "<tr><td>" + t[0] + "</td><td>" + (x.s ? USTEP[x.s] : DASH) + "</td><td>" + dateIn(c[0], x.prep) + "</td><td>" + dateIn(c[1], x.req) + "</td><td>" + dateIn(c[2], x.got) + "</td></tr>"; }).join("") + "</tbody></table></div>";
     h += canEdit() ? '<div class="rg-savebar"><button type="button" class="sp-btn pri" id="rg-save">💾 บันทึกที่แก้</button><span class="rg-dsub">บันทึกลงชีต Template_งานทะเบียน (ชีตเดิมของทีมทะเบียน) · ตัวเลขทุกแท็บอัปเดตรอบโหลดถัดไป (~5–10 นาที) · ทุกการแก้ถูกบันทึกในประวัติ (Audit)</span></div>'
-      : '<div class="rg-dsub" style="margin-top:12px">ดูอย่างเดียว — บันทึกได้เฉพาะ Admin</div>';
+      : '<div class="rg-dsub" style="margin-top:12px">ดูอย่างเดียว — บันทึกได้เฉพาะ Admin / ทีมทะเบียน</div>';
     drawer(code + " · " + ((r && r.name) || (u && u.name) || ""), h);
     var sb = document.getElementById("rg-save"); if (sb) sb.onclick = function () { saveDrawer(code); };
     [].forEach.call(document.querySelectorAll("#rg-drawer .rg-w"), function (w) {
@@ -9237,7 +9238,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var sec = document.createElement("section"); sec.id = "tab-registration"; sec.className = "tab-panel";
   sec.innerHTML =
     '<div class="page-head"><h1>📋 Registration and License <span class="page-th">งานทะเบียน · ใบอนุญาต</span></h1></div>' +
-    '<div class="rg-note">เห็นได้ทุก role (ดูอย่างเดียว · บันทึก = Admin) · หน้า ตรวจข้อมูล = Admin เท่านั้น · สาขาใหม่ = ชุดเดียวกับ Overall / After อ.1 · ร้านที่เปิดแล้ว = ชีตทะเบียน 0. CJx Store Document_New + บัญชีตั้งต้น (ดูอย่างเดียว)</div>' +
+    '<div class="rg-note">เห็นได้ทุก role · บันทึก = Admin / ทีมทะเบียน (บัญชีบันทึกภาษีฝั่งบัญชี) · หน้า ตรวจข้อมูล = Admin เท่านั้น · สาขาใหม่ = ชุดเดียวกับ Overall / After อ.1 · ร้านที่เปิดแล้ว = ชีตทะเบียน 0. CJx Store Document_New + บัญชีตั้งต้น (ดูอย่างเดียว)</div>' +
     '<div class="rg-segwrap"><div class="sp-seg" id="rg-seg">' + ORDER.map(function (k) { return '<button type="button" data-v="' + k + '"' + (k === CURV ? ' class="on"' : "") + ">" + VIEWS[k][0] + "</button>"; }).join("") + "</div></div>" +
     '<div id="rg-view"></div>';
   main.appendChild(sec);
