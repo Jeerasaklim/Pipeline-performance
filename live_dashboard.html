@@ -1170,7 +1170,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=100135" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=101228" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -5534,6 +5534,7 @@ setTimeout(applyBoard,300);
     let _bundle = null;
     /* 1 ต.ค.: เช็คข้อมูลใหม่เบื้องหลัง — เทียบ "เนื้อข้อมูล" (ไม่ใช่เวลา: warmCache สร้างใหม่ทุก 5 นาทีแม้ข้อมูลเท่าเดิม) */
     let SHOWN = null, _bgBusy = false, _lastCheck = Date.now(), _bgStarted = false;
+    let _lastSave = Promise.resolve(true);   // 10 พ.ย.: รอเซฟสำเนาเสร็จก่อนรีโหลด (กันรีโหลดวน 2–3 รอบตอนเปิด)
     const BG_EVERY = 10 * 60000;
     function sigOf(j) {
       const s = JSON.stringify([j.tabs, j.extra, j.ar, j.goState, j.overlay, j.cost]);
@@ -5551,7 +5552,16 @@ setTimeout(applyBoard,300);
         notice("hide");
         return;
       }
-      if (autoReload) { notice("reloading"); location.reload(); return; }
+      // 10 พ.ย. (จี "ต้องมารอโหลดหน้านี้อยู่เรื่อยเลย"): เดิมรีโหลดทันทีขณะสำเนา ~5MB ยังเขียนไม่เสร็จ → เปิดใหม่ได้สำเนาเก่าอีก → วน
+      //   + location.reload() คง _cb เดิม → CBUST รีโหลดซ้ำอีกรอบ · ตอนนี้: รอเซฟเสร็จ (สูงสุด 15 วิ) แล้วเปิดใหม่ด้วย _cb ใหม่ครั้งเดียว
+      if (autoReload) {
+        notice("reloading");
+        Promise.race([_lastSave, new Promise(function (r) { setTimeout(r, 15000); })]).then(function () {
+          try { const q = new URLSearchParams(location.search); q.set("_cb", Date.now()); location.replace(location.pathname + "?" + q.toString() + location.hash); }
+          catch (e) { location.reload(); }
+        });
+        return;
+      }
       notice("fresh-ready");
     }
     function bgCheck() {
@@ -5601,7 +5611,7 @@ setTimeout(applyBoard,300);
           // 7 ต.ค.: server แนบบัตร 1 วันมาเมื่อเข้าด้วย Google token → เก็บ แล้วลบออกก่อนเซฟสำเนาในเครื่อง (บัตรอยู่ที่เดียว)
           if (j.user && j.user.session) { try { if (root.DPT_setSession) root.DPT_setSession(j.user.session); } catch (e) {} }
           if (j.user) { delete j.user.session; delete j.user.sessionExp; }
-          if (email) cacheSave(email, j);
+          if (email) _lastSave = cacheSave(email, j);
           return j;
         });
       }
