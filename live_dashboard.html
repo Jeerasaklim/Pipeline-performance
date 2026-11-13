@@ -1173,7 +1173,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=130956" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=162355" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -3693,6 +3693,12 @@ setTimeout(applyBoard,300);
     }
     return { got, wai, sub, gotDate };
   }
+  /** o1Rows — 13 พ.ย. 69 (จีสั่ง): สถานะ อ.1 อ่านจากแท็บ SLA ในถัง G (tabs.sla = gid 0) แทน published CSV
+   *  (ตรวจแล้ว 13 พ.ย.: ได้ 246/246 · อนุโลม 168/168 · ยื่น 278/278 รายสาขา วันตรงทุกตัว · คอลัมน์ AH33/AI34/AU46 เดียวกัน).
+   *  extra.slaO1 ใช้เฉพาะช่วงเปลี่ยนผ่าน = GAS ตัวเก่ายังส่งมา (และ whitelist sla ยังไม่มีคอลัมน์ 46) · GAS ใหม่ไม่ส่งแล้ว. */
+  function o1Rows(tabs, extra) {
+    return (extra && extra.slaO1 && extra.slaO1.length) ? extra.slaO1 : ((tabs && tabs.sla) || []);
+  }
   /** Parse registry Template sheet -> {open:{}, owner:{}, name:{}, row:{}} (build_after:404-407,556
    *  and build_grandopen name_of/owner_of :1203-1204). `name` (col B/index1) is Grand-Opening-only;
    *  After ignores it. Additive. */
@@ -3813,7 +3819,7 @@ setTimeout(applyBoard,300);
     const cohort = afterCohort(tabs.sla || [], L);
     const clut = afConstrLookup(tabs.constr || []);
     const handover = afHandover(tabs.sla || []);
-    const o1 = afParseO1(extra.slaO1 || []);
+    const o1 = afParseO1(o1Rows(tabs, extra));
     const regNf = afParseRegNf(extra.regNf || []);
     // de-dup (payload chunk A): the GAS bundle drops extra.ratkit (byte-identical to tabs.ratkit);
     // fall back to tabs.ratkit so the popup note (col24) still resolves. CSV mode still supplies
@@ -4165,7 +4171,7 @@ setTimeout(applyBoard,300);
     const mstart = _isoStr(new Date(today.getFullYear(), today.getMonth(), 1));
     const slaSt = slaStatusOf(tabs.sla || []);   // 2 ต.ค.: "เปิดแล้ว" ชุดเดียว
     const constr = tabs.constr || [];
-    const o1 = afParseO1(extra.slaO1 || []);
+    const o1 = afParseO1(o1Rows(tabs, extra));
     const reg = afParseRegNf(extra.regNf || []);
     // Handover {code: SLA col AG}. Default = afHandover (export-CSV: header-detected, non-blank
     // wins) — the correct reader for the live app. `extra.hoOf` lets a caller supply a
@@ -5260,7 +5266,7 @@ setTimeout(applyBoard,300);
     afterCohort, assignAfterBuckets, buildAfterModel, computeAfterSla, formatAfterCounts,
     // Grand Opening tab (calendar-based open-date planner) — client-computable model
     // + the 3 cross-day pure engines the daily GAS mirrors (SPEC §GO / GO-2).
-    buildGrandOpenModel, goSuggest, goIsoOpen, goPinIso, goThDateToEn, afParseO1, goOpenDates, rentStartMap,   // afParseO1: 4 พ.ย. ให้หน้า Check List QS (PR-Alert) อ่าน อ.1 ชุดเดียวกับ Grand Opening
+    buildGrandOpenModel, goSuggest, goIsoOpen, goPinIso, goThDateToEn, afParseO1, o1Rows, goOpenDates, rentStartMap,   // afParseO1: 4 พ.ย. ให้หน้า Check List QS (PR-Alert) อ่าน อ.1 ชุดเดียวกับ Grand Opening
     goWipUpdate, goSnapshotDiff, goChangelogAppend,
     // Site Management map model (chunk 2) — merges GO model + Construction + AR coords.
     buildSiteMgmtModel, smCleanPrm, SM_PROV_REGION,
@@ -5374,7 +5380,7 @@ setTimeout(applyBoard,300);
 
   /* ---- After อ.1 tab: 3 extra published sources (SPEC §5.6) --------------
    * These live outside the 8 main tabs:
-   *   slaO1  : SLA sheet gid=238646031, published CSV (อ.1 submit/got/waiver dates)
+   *   (slaO1 เลิกใช้ 13 พ.ย. 69 → สถานะ อ.1 อ่านจากแท็บ sla ชุดหลัก)
    *   regNf  : registry Template — a DIFFERENT spreadsheet (SHEET_NF), export CSV
    *   ratkit : รัฐกิจ daily-note, published CSV (popup note only; not counts)
    * All read-only.  Same loud-fail guard as SheetExportRepo (no fake short page).
@@ -5382,7 +5388,7 @@ setTimeout(applyBoard,300);
   const AFTER_SHEET_NF = "18gVIl2NztRw-HUgpSbpjXNO5I_tj7Yuci5Zp9YskCAo";
   const AFTER_NF_GID = "1656848721";
   const AFTER_SOURCES = {
-    slaO1: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSTGFYU9PHIek5uAK_vtT6knOAjSLzOREyffUc0s5fipxbiPK3lzg_bxzxCCS0oZWW-OrvKv8ZWyiGK/pub?output=csv&gid=238646031",
+    // slaO1 (pub gid 238646031) เลิกใช้ 13 พ.ย. 69 — สถานะ อ.1 อ่านจาก tabs.sla (CalcEngine.o1Rows)
     regNf: "https://docs.google.com/spreadsheets/d/" + AFTER_SHEET_NF + "/export?format=csv&gid=" + AFTER_NF_GID,
     ratkit: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQUJHYbkRQeludCnbLks5JVdaZV6hsAnJDhLi5iX6Yqo3-8SWnxZVxPoleVMbTKri8w3Q6zAFjoAvp/pub?output=csv",
   };
