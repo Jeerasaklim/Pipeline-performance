@@ -1173,7 +1173,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=111024" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=112604" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8351,8 +8351,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function newExpSection(r, groups) {
     var fks = [].concat.apply([], groups.map(function (g) { return NEW_EXP[g[0]] || []; }));
     var hasPP = groups.some(function (g) { return g[0] === "ภ.พ.09"; });   // 13 พ.ย. (จีเลือก "เพิ่มช่องกรอก"): ภพ.20 สาขาใหม่ = แท็บทะเบียนบ้าน+สรรพากร
-    if (!fks.length && !hasPP) return "";
-    var hd = '<div class="section-label" style="margin-top:14px">' + (fks.length ? "📅 วันหมดอายุใบอนุญาต (หลังได้ใบ)" : "🏠 ภ.พ.20") + "</div>";
+    var hasLq = groups.some(function (g) { return g[0] === "สุรา+อาหารสัตว์"; });   // สรรพสามิต = สุรา/ยาสูบ
+    // 13 พ.ย. (จี "ไม่มี Note ให้ใส่"): ทุกแท็บมีหมายเหตุสาขา (คอลัมน์หมายเหตุ แท็บใบอนุญาต แถว T###)
+    var hd = '<div class="section-label" style="margin-top:14px">' + (fks.length ? "📅 วันหมดอายุใบอนุญาต (หลังได้ใบ) · หมายเหตุ" : (hasPP ? "🏠 ภ.พ.20 · หมายเหตุ" : "📝 หมายเหตุสาขา")) + "</div>";
     if (!r.tcode) return hd + '<div class="rg-dsub rg-badt">ยังกรอกไม่ได้: สาขานี้ยังไม่มีรหัสร้าน T### ในชีต SLA (คอลัมน์ Tcode) — แอปจึงหาแถวในแท็บใบอนุญาตไม่ได้</div>';
     if (OPEN.st !== "ok") return hd + '<div class="rg-dsub">' + (OPEN.st === "err" ? '<span class="rg-badt">โหลดข้อมูลชีตทะเบียนไม่สำเร็จ — ' + esc(OPEN.err) + "</span>" : "กำลังโหลดข้อมูลชีตทะเบียน… ปิดแล้วเปิดลิ้นชักนี้ใหม่อีกครั้ง") + "</div>";
     var lic = (OPEN.d.lic || []).filter(function (a) { return a.code === r.tcode; })[0];
@@ -8364,10 +8365,12 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       return "<tr><td>" + esc(PLAB[fk]) + "</td><td>" + (ed ? licIn(fk, raw) : txt(raw)) + left + "</td></tr>";
     }).join("") +
       (hasPP ? "<tr><td>ภ.พ.20</td><td>" + (ed ? pp20In(lic.pp20) : txt(lic.pp20)) + "</td></tr>" : "") +
-      (fks.length ? "<tr><td>ค่าปรับเอกสารทะเบียน</td><td>" + (ed ? fineIn(lic.fine) : money(lic.fine)) + "</td></tr><tr><td>สำนักงานสรรพสามิตพื้นที่</td><td>" + txt(lic.excise) + "</td></tr>" : "");
-    return hd + '<div class="rg-dsub">ชีตทะเบียน แท็บ ใบอนุญาต · แถว ' + esc(r.tcode) + " " + esc(lic.name || "") + (fks.length ? " · กรอกวันหมดอายุ หรือเลือกสถานะ" : " · เลือกสถานะ ภ.พ.20") + "</div>" +
+      (fks.length ? "<tr><td>ค่าปรับเอกสารทะเบียน</td><td>" + (ed ? fineIn(lic.fine) : money(lic.fine)) + "</td></tr>" : "") +
+      (hasLq ? "<tr><td>สำนักงานสรรพสามิตพื้นที่</td><td>" + (ed ? exciseIn(lic.excise) : txt(lic.excise)) + "</td></tr>" : "") +
+      "<tr><td>หมายเหตุสาขา</td><td>" + (ed ? noteIn("lic", lic.note, 500) : txt(lic.note)) + "</td></tr>";
+    return hd + '<div class="rg-dsub">ชีตทะเบียน แท็บ ใบอนุญาต · แถว ' + esc(r.tcode) + " " + esc(lic.name || "") + (fks.length ? " · กรอกวันหมดอายุ หรือเลือกสถานะ" : (hasPP ? " · เลือกสถานะ ภ.พ.20" : "")) + "</div>" +
       '<div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เรื่อง</th><th>ค่าในชีต / กรอก</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
-      (ed ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-lic" class="au-save">💾 บันทึก' + (fks.length ? "วันหมดอายุ" : " ภ.พ.20") + "</button>" + ' <span class="rg-dsub">บันทึกลงชีต 0. CJx Store Document_New แท็บ ใบอนุญาต (ปุ่มนี้แยกจากปุ่มบันทึกวันยื่น/ได้ด้านล่าง)</span></div>' : "");
+      (ed ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-lic" class="au-save">💾 บันทึก' + (fks.length ? "วันหมดอายุ / หมายเหตุ" : (hasPP ? " ภ.พ.20 / หมายเหตุ" : "หมายเหตุ")) + "</button>" + ' <span class="rg-dsub">บันทึกลงชีต 0. CJx Store Document_New แท็บ ใบอนุญาต (ปุ่มนี้แยกจากปุ่มบันทึกวันยื่น/ได้ด้านล่าง)</span></div>' : "");
   }
   function siteDrawer(code) {
     var r = REG() && REG().rows.filter(function (x) { return x.code === code; })[0];
@@ -8881,7 +8884,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       LIC_STATUS.map(function (o) { return '<option value="' + esc(o) + '"' + (o === st ? " selected" : "") + ">" + esc(o) + "</option>"; }).join("") + "</select>" +
       (other ? '<div class="rg-d">ค่าในชีตตอนนี้: ' + esc(raw) + " (ไม่ใช่วันที่/สถานะในรายการ — แก้ได้โดยกรอกใหม่)</div>" : "") + "</span>";
   }
-  function twVal(w) { var sl = w.querySelector(".rg-ls"); if (sl) return sl.value || w.querySelector(".rg-ld").value; var v = w.querySelector(".rg-in").value; return w.getAttribute("data-f") === "note" ? v.trim() : (w.getAttribute("data-f") === "fine" ? v.replace(/[,\s]/g, "") : v); }
+  function twVal(w) { var sl = w.querySelector(".rg-ls"); if (sl) return sl.value || w.querySelector(".rg-ld").value; var v = w.querySelector(".rg-in").value, f = w.getAttribute("data-f"); return (f === "note" || f === "excise") ? v.trim() : (f === "fine" ? v.replace(/[,\s]/g, "") : v); }
   function licRows(r, edit) {
     return OLIC.map(function (l) {
       var x = r.lic[l[0]], ci = CMPI[x.cmp.k] || CMPI.none;
@@ -8902,7 +8905,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var PHAVE = { ok: 1, soon: 1, due: 1, crit: 1, over: 1 };
   var PLAB = { l1: "ขายสุรา ป.1 (ค้าส่ง)", l2: "ขายสุรา ป.2 (ค้าปลีก)", l3: "ขายยาสูบ ป.2", l4: "ค้าซากสัตว์", l5: "ขายอาหารสัตว์",
     l6: "สถานที่สะสมอาหาร", l7: "สถานที่จำหน่ายอาหาร", l8: "กิจการอันตราย — ยาฆ่าแมลง", l9: "กิจการอันตราย — แก๊ส" };
-  var PF = { fs: "", fl: "", fv: "", so: "code" }, RF = { rf: "any", rl: "", rs: "w" };
+  var PF = { fs: "", fl: "", fv: "", so: "code" }, RF = { rf: "any", rl: "", rs: "w", re: "" };
   function pRows() { return rowsB().filter(function (r) { return r.inReg; }); }
   function pNoReg() { return rowsB().length - pRows().length; }
   function pst(r, l) {
@@ -8998,6 +9001,30 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     return h;
   }
 
+  /* 13 พ.ย. (ทีมทะเบียน "ใบอนุญาตสุรายาสูบ … ว่าเป็นสำนักงานสรรพสามิตไหน เพื่อตอนต่ออายุจะถึงต่อรวมแต่ละสาขาในสรรพสามิตพื้นที่นั้น ๆ")
+   * จัดกลุ่มร้านตามคอลัมน์ "สำนักงานสรรพสามิตพื้นที่" (ชีตทะเบียน แท็บใบอนุญาต) · นับเฉพาะใบที่สรรพสามิตออก = สุรา ป.1 / ป.2 / ยาสูบ (l1–l3)
+   * กดแถว = กรองตารางรายสาขาด้านล่างเฉพาะสำนักงานนั้น (ยื่นต่อรวมรอบเดียว) · ชื่อสำนักงานว่าง = "(ไม่ระบุ)" ให้ทีมกรอกในลิ้นชัก */
+  var EXL = ["l1", "l2", "l3"];
+  function exKey(x) { x = String(x || "").replace(/\s+/g, " ").trim(); return x || "(ไม่ระบุ)"; }
+  function exShort(x) { x = exKey(x); return x.replace(/^สำนักงานสรรพสามิตพื้นที่\s*/, "") || x; }
+  function exciseGroups(list) {
+    var G = {};
+    list.forEach(function (x) {
+      var r = x.r, k = exKey(r.excise), g = G[k] = G[k] || { k: k, n: 0, over: 0, crit: 0, due: 0, soon: 0, first: "", shops: [] }, hit = 0;
+      EXL.forEach(function (fk, i) { var s0 = x.st[OLIC.map(function (l) { return l[0]; }).indexOf(fk)], c = r.lic[fk]; if (!c || !c.exp) return; hit = 1;
+        if (s0 in g) g[s0]++; if (c.left >= 0 && (!g.first || c.exp < g.first)) g.first = c.exp; });
+      if (hit) { g.n++; if (EXL.some(function (fk) { var s0 = x.st[OLIC.map(function (l) { return l[0]; }).indexOf(fk)]; return s0 === "over" || s0 === "crit" || s0 === "due"; })) g.shops.push(r.code); }
+    });
+    var arr = Object.keys(G).map(function (k) { return G[k]; }).filter(function (g) { return g.n; });
+    arr.sort(function (a, b) { return (b.over + b.crit) - (a.over + a.crit) || b.due - a.due || ((a.first || "9") < (b.first || "9") ? -1 : 1); });
+    var body = arr.map(function (g) {
+      return '<tr><td>' + esc(exShort(g.k)) + '</td><td class="c">' + g.n + '</td><td class="c">' + (g.over ? '<b class="rgp-r">' + g.over + "</b>" : "·") + '</td><td class="c">' + (g.crit ? '<b class="rgp-r">' + g.crit + "</b>" : "·") + '</td><td class="c">' + (g.due ? '<b class="rgp-a">' + g.due + "</b>" : "·") + '</td><td class="c">' + (g.soon || "·") +
+        '</td><td class="c">' + (g.first ? esc(fmtIso(g.first)) : DASH) + '</td><td style="font-size:12px;font-weight:500">' + (g.shops.length ? esc(g.shops.join(" · ")) : '<span class="rg-muted">ยังไม่มีร้านถึงรอบ</span>') +
+        '</td><td class="c"><button type="button" class="rgp-clr rgp-go' + (RF.re === g.k ? " on" : "") + '" data-rfe="' + esc(g.k) + '">' + (RF.re === g.k ? "เลิกกรอง" : "ดูร้าน ›") + "</button></td></tr>";
+    }).join("");
+    return details("ren-exc", '<div class="card rgp-card"><div class="rgp-tw"><table class="rgp-t"><tr><th>สำนักงานสรรพสามิตพื้นที่</th><th class="c">ร้าน</th><th class="c">🔴 หมดแล้ว<br><span class="rgp-thn">(ใบ)</span></th><th class="c">🔴 อีก ≤30 วัน<br><span class="rgp-thn">(ใบ)</span></th><th class="c">🟡 ถึงรอบต่อ<br><span class="rgp-thn">(ใบ)</span></th><th class="c">อีก ≤30 วัน<br><span class="rgp-thn">ถึงรอบ (ใบ)</span></th><th class="c">หมดอายุ<br>ใบถัดไป</th><th>ร้านที่ต่อรวมได้รอบนี้ (หมด/ใกล้หมด/ถึงรอบ)</th><th></th></tr>' + body + "</table></div>" +
+      '<div class="rgp-f">นับเฉพาะใบที่สรรพสามิตออก: ขายสุรา ป.1 / ป.2 · ขายยาสูบ ป.2 · ที่มา: ชีตทะเบียน แท็บใบอนุญาต คอลัมน์ "สำนักงานสรรพสามิตพื้นที่" (ร้านที่ยังไม่ระบุ = แก้ในลิ้นชักหน้าใบอนุญาต) · กด "ดูร้าน" = กรองตารางรายสาขาด้านล่าง</div></div>', "🏛️ ต่ออายุสุรา/ยาสูบ แยกตามสำนักงานสรรพสามิต");
+  }
   function bRenew() {
     var rows = pRows(), C = {}, sR = { over: {}, crit: {}, due: {}, soon: {} }, tot = { over: 0, crit: 0, due: 0, soon: 0 };
     OLIC.forEach(function (l) { C[l[0]] = { over: 0, crit: 0, due: 0, soon: 0, ok: 0 }; });
@@ -9015,9 +9042,11 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     }).join("");
     h += details("ren-sum", '<div class="card rgp-card"><div class="rgp-tw"><table class="rgp-t"><tr><th>ใบอนุญาต</th><th class="c">🔴 หมดแล้ว</th><th class="c">🔴 อีก ≤30 วันจะหมด</th><th class="c">🟡 ถึงรอบต่อ<br><span class="rgp-thn">(เหลือ >30 วัน)</span></th><th class="c">อีก ≤30 วัน<br><span class="rgp-thn">ถึงรอบ</span></th><th class="c">ยังไม่ถึงรอบ</th><th class="c">ต่อล่วงหน้าได้</th></tr>' + lt + "</table></div>" +
       '<div class="rgp-f">นับเฉพาะช่องที่ชีตมีวันหมดอายุ · ช่องที่เป็นข้อความ (กำลังขอ/รอชำระ) ดูที่หน้า 📄 ใบอนุญาต</div>' + pNote() + "</div>", "📄 รายใบอนุญาต");
+    h += exciseGroups(list);
     var li = RF.rl === "" ? null : +RF.rl;
     var shown = list.filter(function (x) {
       if (!pTopSt(x.r, x.st)) return false;
+      if (RF.re && exKey(x.r.excise) !== RF.re) return false;
       var sts = li == null ? x.st : [x.st[li]];
       if (RF.rf === "any") return sts.some(function (s) { return s === "over" || s === "crit" || s === "due" || s === "soon"; });
       return !RF.rf || sts.indexOf(RF.rf) >= 0;
@@ -9025,7 +9054,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     shown.sort(function (a, b) { return (RF.rs === "w" ? a.w - b.w : 0) || (a.r.code < b.r.code ? -1 : 1); });
     var body = shown.map(function (x) {
       var r = x.r;
-      return '<tr class="rg-orow" data-ocode="' + esc(r.code) + '" tabindex="0"><td class="rgp-st"><b>' + esc(r.code) + "</b> " + esc(r.name) + "</td>" + OLIC.map(function (l, i) {
+      return '<tr class="rg-orow" data-ocode="' + esc(r.code) + '" tabindex="0"><td class="rgp-st"><b>' + esc(r.code) + "</b> " + esc(r.name) + '<div class="rg-d">🏛️ ' + esc(exShort(r.excise)) + "</div></td>" + OLIC.map(function (l, i) {
         var v = r.lic[l[0]], s = x.st[i];
         if (v.exp) return '<td class="rgp-m rgp-rn-' + s + '" title="' + esc(pTip(l, v, s)) + '">' + (s === "over" ? "หมด " + (-v.left) + " วัน" : (s === "crit" || s === "due" || s === "soon") ? "เหลือ " + v.left + " วัน" : esc(pEx(v.exp))) + "</td>";
         var k = s === "na" || s === "zn" ? "na" : (s === "prog" ? "prog" : "none");
@@ -9035,7 +9064,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     h += details("ren-site", '<div class="card rgp-card">' +
       '<div class="rgp-leg"><span class="rgp-rn-over">หมด N วัน = หมดอายุแล้ว</span><span class="rgp-rn-crit">เหลือ ≤30 วัน = ใกล้หมดอายุ</span><span class="rgp-rn-due">เหลือ N วัน = ถึงรอบต่อ (เหลือ >30 วัน)</span><span class="rgp-rn-soon">เหลือ N วัน = อีก ≤30 วันถึงรอบ</span><span class="rgp-rn-ok">วันที่ = ยังไม่ถึงรอบ</span><span class="rgp-rn-prog">ข้อความในชีต</span> · กดแถวเพื่อดูรายละเอียดร้าน</div>' +
       '<div class="rgp-flt">' + pSel("rf", RF.rf, [["any", "แสดง: เฉพาะร้านที่ต้องต่อ / ใกล้ถึงรอบ"], ["over", "🔴 มีใบหมดอายุแล้ว"], ["crit", "🔴 มีใบอีก ≤30 วันจะหมด"], ["due", "🟡 มีใบถึงรอบต่อ (เหลือ >30 วัน)"], ["soon", "มีใบอีก ≤30 วันถึงรอบ"], ["", "ทุกร้าน"]]) +
-      pSel("rl", RF.rl, pLicOpts("ใบอนุญาต: ทุกใบ")) + pSel("rs", RF.rs, [["w", "เรียง: หมดก่อนขึ้นก่อน"], ["code", "เรียง: รหัสสาขา"]]) +
+      pSel("rl", RF.rl, pLicOpts("ใบอนุญาต: ทุกใบ")) + pSel("re", RF.re, [["", "สรรพสามิต: ทุกสำนักงาน"]].concat(exciseList().map(function (x) { return [exKey(x), exShort(x)]; })).concat([["(ไม่ระบุ)", "สรรพสามิต: ยังไม่ระบุ"]])) + pSel("rs", RF.rs, [["w", "เรียง: หมดก่อนขึ้นก่อน"], ["code", "เรียง: รหัสสาขา"]]) +
       '<button type="button" class="rgp-clr" id="rgp-csv">⬇ Export CSV</button><button type="button" class="rgp-clr" data-pfclr="renew">ล้างตัวกรอง</button><span class="rgp-cnt">แสดง ' + shown.length + " จาก " + rows.length + " ร้าน</span></div>" +
       '<div class="rgp-tw rgp-scroll"><table class="rgp-t rgp-rx"><thead><tr><th>สาขา</th>' + pTh() + "</tr></thead><tbody>" + body + "</tbody></table></div>" +
       '<div class="rgp-f">ชี้ที่ช่อง = วันหมดอายุ · เหลือ/เลยกี่วัน · ต่อล่วงหน้าได้กี่วัน · ที่มา: ชีตทะเบียน แท็บ ใบอนุญาต</div></div>', "🏪 รายสาขา <span class=\"rg-dsub2\">· แสดง " + shown.length + " จาก " + rows.length + " ร้าน</span>");
@@ -9045,11 +9074,11 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var PCSV = [];
   function pCsv() {
     var SW = { over: "หมดอายุแล้ว", crit: "อีก ≤30 วันจะหมดอายุ", due: "ถึงรอบต่ออายุ (เหลือ >30 วัน)", soon: "อีก ≤30 วันถึงรอบ", ok: "ยังไม่ถึงรอบ" }, li = RF.rl === "" ? null : +RF.rl, m = OM();
-    var out = [["Code", "สาขา", "ใบอนุญาต", "สถานะ", "วันหมดอายุ", "เหลือ/เลย (วัน)", "ยื่นต่อได้ตั้งแต่"]];
+    var out = [["Code", "สาขา", "สำนักงานสรรพสามิตพื้นที่", "ใบอนุญาต", "สถานะ", "วันหมดอายุ", "เหลือ/เลย (วัน)", "ยื่นต่อได้ตั้งแต่"]];
     PCSV.forEach(function (x) { OLIC.forEach(function (l, i) {
       var v = x.r.lic[l[0]], s = x.st[i]; if (!v.exp || (li != null && i !== li)) return;
       if (RF.rf === "any" && !/^(over|crit|due|soon)$/.test(s)) return; if (RF.rf && RF.rf !== "any" && s !== RF.rf) return;
-      out.push([x.r.code, x.r.name, PLAB[l[0]], SW[s] || s, fmtIso(v.exp), v.left < 0 ? "เลย " + (-v.left) : "เหลือ " + v.left, m.lead[l[0]] != null ? fmtIso(addDays(v.exp, -m.lead[l[0]])) : ""]);
+      out.push([x.r.code, x.r.name, x.r.excise || "", PLAB[l[0]], SW[s] || s, fmtIso(v.exp), v.left < 0 ? "เลย " + (-v.left) : "เหลือ " + v.left, m.lead[l[0]] != null ? fmtIso(addDays(v.exp, -m.lead[l[0]])) : ""]);
     }); });
     var csv = "﻿" + out.map(function (r) { return r.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(","); }).join("\r\n");
     var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = "ต่ออายุใบอนุญาต_" + todayIso() + ".csv"; a.click();
@@ -9434,7 +9463,15 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
   // 13 พ.ย. (คำขอทีมทะเบียน): หมายเหตุ (ข้อความ ≤300) · ภพ.20 (เลือกจากคำในชีต) · ค่าปรับ (บาท) — ต้องตรงกับ TAX_TEXT_FIELDS_ / PP20_STATUS_ ใน GO_webapp.gs
   var PP20 = ["เอกสารครบ", "รอรับเอกสาร"];
-  function noteIn(k, raw) { raw = String(raw || ""); return '<span class="rg-tw" data-k="' + k + '" data-s="reg" data-f="note" data-p="" data-orig="' + esc(raw) + '"><textarea class="rg-in rg-note-in" rows="2" maxlength="300" placeholder="หมายเหตุ (ไม่เกิน 300 ตัวอักษร)">' + esc(raw) + "</textarea></span>"; }
+  function noteIn(k, raw, max) { raw = String(raw || ""); max = max || 300; return '<span class="rg-tw" data-k="' + k + '" data-s="reg" data-f="note" data-p="" data-orig="' + esc(raw.trim()) + '"><textarea class="rg-in rg-note-in" rows="2" maxlength="' + max + '" placeholder="หมายเหตุ (ไม่เกิน ' + max + ' ตัวอักษร)">' + esc(raw) + "</textarea></span>"; }
+  // 13 พ.ย.: หมายเหตุสาขา (ทุกหน้าที่ไม่ใช่ภาษี) = คอลัมน์ "หมายเหตุ" เดิมของแท็บใบอนุญาต · สรรพสามิต = พิมพ์ได้ + เลือกจากชื่อที่มีในชีตแล้ว
+  function licNoteRow(edit, raw) { return ["หมายเหตุสาขา <span class=\"rg-d\">(ชีตทะเบียน แท็บใบอนุญาต คอลัมน์หมายเหตุ)</span>", edit ? noteIn("lic", raw, 500) : txt(raw)]; }
+  function exciseList() { var o = {}; ((OPEN.d && OPEN.d.lic) || []).forEach(function (a) { var x = String(a.excise || "").trim(); if (x) o[x] = (o[x] || 0) + 1; }); return Object.keys(o).sort(); }
+  function exciseIn(raw) {
+    raw = String(raw || "").trim();
+    return '<span class="rg-tw" data-k="lic" data-s="reg" data-f="excise" data-p="" data-orig="' + esc(raw) + '"><input type="text" class="rg-in rg-exc-in" list="rg-exc-dl" maxlength="150" placeholder="พิมพ์หรือเลือก เช่น สำนักงานสรรพสามิตพื้นที่นครปฐม 1" value="' + esc(raw) + '">' +
+      '<datalist id="rg-exc-dl">' + exciseList().map(function (x) { return '<option value="' + esc(x) + '">'; }).join("") + "</datalist></span>";
+  }
   function pp20In(raw) {
     raw = String(raw || "").trim(); var o = [""].concat(PP20); if (raw && o.indexOf(raw) < 0) o.push(raw);
     return '<span class="rg-tw" data-k="lic" data-s="reg" data-f="pp20" data-p="" data-orig="' + esc(raw) + '"><select class="rg-in">' + o.map(function (x) { return '<option value="' + esc(x) + '"' + (x === raw ? " selected" : "") + ">" + (x ? esc(x) : "— ว่าง —") + (x && PP20.indexOf(x) < 0 ? " (ค่าเดิม · ไม่อยู่ในรายการ)" : "") + "</option>"; }).join("") + "</select></span>";
@@ -9491,10 +9528,10 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       (r.inReg ? "" : '<br><span class="rg-badt">ร้านนี้ไม่อยู่ในชีตทะเบียน (มีแต่ในไฟล์บัญชี)</span>') + "</div>" +
       (ONLY === "none" ? '<div class="rg-dsub">แท็บนี้ยังไม่มีข้อมูลรายร้านของร้านที่เปิดแล้วในลิ้นชัก</div>' : "") +
       (S.lic ? '<div class="section-label">📄 ใบอนุญาต · ทะเบียน × บัญชี × Oper</div><div class="table-wrap"><table class="data-table rg-dt"><thead>' + LIC_TH2 + "</thead><tbody>" + licRows(r, licEdit) + "</tbody></table></div>" +
-        kv([["สำนักงานสรรพสามิตพื้นที่", txt(r.excise)], ["ค่าปรับเอกสารทะเบียน", licEdit ? fineIn(r.fine) : money(r.fine)]]) +
+        kv([["สำนักงานสรรพสามิตพื้นที่ <span class=\"rg-d\">(ใช้จัดกลุ่มต่ออายุสุรา/ยาสูบ)</span>", licEdit ? exciseIn(r.excise) : txt(r.excise)], ["ค่าปรับเอกสารทะเบียน", licEdit ? fineIn(r.fine) : money(r.fine)], licNoteRow(licEdit, r.note)]) +
         (licEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-lic" class="au-save">💾 บันทึกใบอนุญาต</button> <span class="rg-dsub">บันทึกลงชีตทะเบียน แท็บ ใบอนุญาต (วันหมดอายุ หรือ สถานะ)</span></div>' : "") : "") +
-      (S.house ? '<div class="section-label">🏠 ภ.พ.20</div>' + kv([["ภ.พ.20", !r.inReg ? '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>' : (licEdit ? pp20In(r.pp20) : txt(r.pp20))]]) +
-        (licEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-lic2" class="au-save">💾 บันทึก ภ.พ.20</button> <span class="rg-dsub">ชีตทะเบียน แท็บ ใบอนุญาต คอลัมน์ ภพ.20</span></div>' : "") : "") +
+      (S.house ? '<div class="section-label">🏠 ภ.พ.20</div>' + kv([["ภ.พ.20", !r.inReg ? '<span class="rg-muted">ไม่อยู่ในชีตทะเบียน</span>' : (licEdit ? pp20In(r.pp20) : txt(r.pp20))]].concat(S.lic || !r.inReg ? [] : [licNoteRow(licEdit, r.note)])) +
+        (licEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-lic2" class="au-save">💾 บันทึก ภ.พ.20 / หมายเหตุ</button> <span class="rg-dsub">ชีตทะเบียน แท็บ ใบอนุญาต</span></div>' : "") : "") +
       (S.sign ? '<div class="section-label">🪧 ภาษีป้าย · ปี 2569</div>' +
         (canTaxReg() && !signEdit ? '<div class="rg-dsub rg-badt">ทะเบียนกรอกไม่ได้: ไม่พบสาขานี้ในแท็บ ภาษีป้าย@2569 ของชีตทะเบียน — ให้ทีมทะเบียนเพิ่มแถวในชีตก่อน</div>' : "") +
         (canTaxAcc() && !accS ? '<div class="rg-dsub rg-badt">บัญชีกรอกไม่ได้: ' + (OPEN.d.taxS === null ? "อ่านชีตบัญชีไม่ได้" : "ไม่พบสาขานี้ในชีตบัญชี (ภาษีป้าย 2026) — ให้บัญชีเพิ่มแถวในชีตก่อน") + "</div>" : "") +
@@ -9522,11 +9559,12 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           ["ทะเบียน · ได้รับใบแจ้งประเมิน", !lr ? '<span class="rg-muted">ไม่อยู่ในแท็บ ภาษีที่ดิน@2569 ของชีตทะเบียน</span>' : (landRegEdit ? taxIn("land", "reg", "got", "", lr.got) : txt(lr.got))],
           ["ทะเบียน · หมายเหตุ", !lr ? '<span class="rg-muted">' + DASH + "</span>" : (landRegEdit ? noteIn("land", lr.note) : txt(lr.note))], ["ทะเบียน · สถานะปี 2568", txt(ld.st)]])) +
         (accL || landRegEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-land" class="au-save">💾 บันทึกภาษีที่ดิน</button></div>' : "") : "") +
-      (S.trash ? '<div class="section-label">🗑️ เก็บขยะ</div>' + kv([["จัดเก็บขยะโดย", txt(t.by)], ["จัดหาถังขยะ", txt(t.bin)], ["รอบการจัดเก็บ", txt(t.freq)], ["ค่าขยะ", txt(t.rate)], ["เรทค่าขยะ", txt(t.band)]]) : "") +
-      '<div class="rg-dsub rg-dfoot">' + (signEdit || sign70Edit || landRegEdit || accS || accL || (licEdit && (S.lic || S.house)) ? "ช่องที่มีกล่องให้กรอก = บันทึกลงชีตจริง (ทะเบียน → ชีตทีมทะเบียน · บัญชี → ชีตบัญชี) · ส่วนอื่นดูอย่างเดียว" : "ดูอย่างเดียว") + " · " + esc(srcB()) + "</div>";
+      (S.trash ? '<div class="section-label">🗑️ เก็บขยะ</div>' + kv([["จัดเก็บขยะโดย", txt(t.by)], ["จัดหาถังขยะ", txt(t.bin)], ["รอบการจัดเก็บ", txt(t.freq)], ["ค่าขยะ", txt(t.rate)], ["เรทค่าขยะ", txt(t.band)]].concat(S.lic || S.house || !r.inReg ? [] : [licNoteRow(licEdit, r.note)])) +
+        (licEdit && !S.lic && !S.house ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-lic3" class="au-save">💾 บันทึกหมายเหตุ</button></div>' : "") : "") +
+      '<div class="rg-dsub rg-dfoot">' + (signEdit || sign70Edit || landRegEdit || accS || accL || (licEdit && (S.lic || S.house || S.trash)) ? "ช่องที่มีกล่องให้กรอก = บันทึกลงชีตจริง (ทะเบียน → ชีตทีมทะเบียน · บัญชี → ชีตบัญชี) · ส่วนอื่นดูอย่างเดียว" : "ดูอย่างเดียว") + " · " + esc(srcB()) + "</div>";
     drawer(code + " · " + (r.name || ""), h);
     ["sign", "land", "lic", "sign70"].forEach(function (k) { var b = document.getElementById("rg-tsave-" + k); if (b) b.onclick = function () { taxSave(code, k, b); }; });
-    var b2 = document.getElementById("rg-tsave-lic2"); if (b2) b2.onclick = function () { taxSave(code, "lic", b2); };
+    ["rg-tsave-lic2", "rg-tsave-lic3"].forEach(function (id) { var b2 = document.getElementById(id); if (b2) b2.onclick = function () { taxSave(code, "lic", b2); }; });
   }
 
   function goWork(w, code, coh) {
@@ -9558,7 +9596,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var rt = v.querySelector("#rg-retry"); if (rt) rt.onclick = function () { loadOpen(); };
     [].forEach.call(v.querySelectorAll("select[data-pf]"), function (el) { el.onchange = function () { var k = el.getAttribute("data-pf"); (k in PF ? PF : (k in TF ? TF : RF))[k] = el.value; PG = {}; render(); }; });
     [].forEach.call(v.querySelectorAll("[data-tf]"), function (b) { b.onclick = function () { var k = b.getAttribute("data-tf"), val = b.getAttribute("data-tv"); TF[k] = k === "yr" ? val : (TF[k] === val ? "" : val); PG = {}; render(); }; });
-    [].forEach.call(v.querySelectorAll("[data-pfclr]"), function (b) { b.onclick = function () { if (b.getAttribute("data-pfclr") === "lic") PF = { fs: "", fl: "", fv: "", so: "code" }; else RF = { rf: "any", rl: "", rs: "w" }; render(); }; });
+    [].forEach.call(v.querySelectorAll("[data-pfclr]"), function (b) { b.onclick = function () { if (b.getAttribute("data-pfclr") === "lic") PF = { fs: "", fl: "", fv: "", so: "code" }; else RF = { rf: "any", rl: "", rs: "w", re: "" }; render(); }; });
+    [].forEach.call(v.querySelectorAll("[data-rfe]"), function (b) { b.onclick = function () { RF.re = RF.re === b.getAttribute("data-rfe") ? "" : b.getAttribute("data-rfe"); render(); var t = document.querySelector('details[data-det="ren-site"]'); if (t && RF.re) t.scrollIntoView({ behavior: "smooth" }); }; });
     var cv = v.querySelector("#rgp-csv"); if (cv) cv.onclick = pCsv;
   }
 
