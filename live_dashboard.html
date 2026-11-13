@@ -1173,7 +1173,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=105531" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=111024" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8184,6 +8184,11 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ".rgp-leg .rgp-rn-over{background:#fdecec;color:#b91c1c}.rgp-leg .rgp-rn-due{background:#fef9e1;color:#a16207}.rgp-leg .rgp-rn-crit{background:#fdecec;color:#b91c1c}.rgp-leg .rgp-rn-soon{background:#f1f4f8;color:#475569}.rgp-leg .rgp-rn-ok{background:#f1f4f8;color:#4c586b}.rgp-leg .rgp-rn-prog{background:#fffbeb;color:#92400e}",
     "@media (max-width:820px){.rgp-bar{width:60px}}",
     "#rg-drawer textarea.rg-in{width:100%;min-width:260px;box-sizing:border-box;font:inherit;font-size:12.5px;padding:4px 6px;border:1px solid var(--border2,#cbd5e1);border-radius:7px;resize:vertical}#rg-drawer select.rg-in{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--border2,#cbd5e1);border-radius:7px}",
+    "button.rgd-row{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(150px,210px) 1fr minmax(170px,auto);gap:12px;align-items:center;width:100%;padding:7px 8px;border-radius:8px;cursor:pointer}button.rgd-row:hover{background:var(--bbg,#eef2ff)}button.rgd-row:focus-visible{outline:2px solid var(--blue)}",
+    ".rgd-lab{font-size:13px;font-weight:700}.rgd-bar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:#eef1f6;gap:2px}.rgd-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;min-width:3px}",
+    ".rgd-num{font-size:12.5px;white-space:nowrap;text-align:right}.rgd-r{color:#b91c1c}.rgd-a{color:#92400e}.rgd-u{color:#475569}.rgd-ok{color:#15803d;font-weight:700}",
+    ".rgd-leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--t2);margin:0 0 8px}.rgd-leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px}",
+    "@media (max-width:760px){button.rgd-row{grid-template-columns:1fr}.rgd-num{text-align:left}}",
     "button.rgp-go{height:28px;font-weight:700;color:var(--blue,#2563eb)}button.rgp-go.on{border-color:var(--blue,#2563eb);box-shadow:0 0 0 2px var(--bmid,#bfdbfe)}",
   ].join("");
   document.head.appendChild(css);
@@ -9305,6 +9310,66 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       (red ? line("over", "🔴 " + red, T.over) : "") + line("pend", "⏳ " + L.pend, T.pend) + (T.none ? line("none", SYM.none + " " + L.none, T.none) : "") +
       '<div class="rg-wc-go">ดูหน้างาน →</div></button>';
   }
+  /* ===== 13 พ.ย. (ทีมทะเบียน "ทำ TAP Dashboard" · จี "สรุปภาพรวมในแต่ละ Tap เอาไว้ไล่งาน ทำเป็นกราฟก็ได้หรือตาราง summary เอาให้ดูง่ายๆ")
+   * ไม่ซ้ำการ์ดหน้า ภาพรวมรายสาขา: หน้านี้ = กราฟแท่ง 1 แถว/ประเภทงาน (แยกสาขาใหม่ กับ ร้านที่เปิดแล้ว · ห้ามรวมเป็นแท่งเดียว) + รายการเรื่องด่วนที่ต้องไล่
+   * ตัวเลขทุกตัว = ฟังก์ชันสถานะตัวเดียวกับหน้างาน (aStat / bStat / pst / s7Step) · กดแถว = ไปหน้างานนั้น */
+  var DSEG = [["over", "🔴", "#dc2626"], ["pend", "⏳", "#f59e0b"], ["none", "?", "#94a3b8"], ["done", "✓", "#16a34a"]];
+  function dRow(coh, w, T) {
+    var L = labOf(coh, w), red = redWord(coh, w), lab = { done: "✓ " + L.done, pend: "⏳ " + L.pend, over: "🔴 " + (red || "เลยกำหนด"), none: "? " + L.none };
+    var seg = T.n ? DSEG.filter(function (d) { return T[d[0]]; }).map(function (d) {
+      var pc = T[d[0]] * 100 / T.n;
+      return '<span class="rgd-seg" style="width:' + pc + "%;background:" + d[2] + '" title="' + esc(lab[d[0]] + " " + T[d[0]] + " สาขา") + '">' + (pc >= 7 ? T[d[0]] : "") + "</span>";
+    }).join("") : "";
+    return '<button type="button" class="rgd-row" data-dgo="' + w + '" data-coh="' + coh + '"><span class="rgd-lab">' + WORK[w].t + "</span>" +
+      '<span class="rgd-bar">' + (seg || '<span class="rg-muted" style="font-size:12px">ไม่มีสาขาที่มีงานนี้</span>') + "</span>" +
+      '<span class="rgd-num">' + (T.n ? (T.over ? '<b class="rgd-r">🔴 ' + T.over + "</b> " : "") + (T.pend ? '<b class="rgd-a">⏳ ' + T.pend + "</b> " : "") + (T.none ? '<b class="rgd-u">? ' + T.none + "</b> " : "") + '<span class="rgd-ok">✓ ' + T.done + "/" + T.n + "</span>" : DASH) + "</span></button>";
+  }
+  function dLegend() { return '<div class="rgd-leg">' + DSEG.map(function (d) { return '<span><i style="background:' + d[2] + '"></i>' + { over: "🔴 เลยกำหนด / หลุด SLA / หมดอายุ", pend: "⏳ ค้าง (ยังไม่ถึงกำหนด)", none: "? ยังไม่มีบันทึก", done: "✓ ครบ / ใช้ได้" }[d[0]] + "</span>"; }).join("") + "<span>หน่วย = สาขา · กดแถวเพื่อไปหน้างาน</span></div>"; }
+  function dUrgent(items) {
+    items = items.filter(function (x) { return x.n; });
+    if (!items.length) return '<div class="rg-empty">✓ ไม่มีเรื่องด่วนตามตัวกรองนี้</div>';
+    return '<table class="rgp-t"><tr><th>เรื่องที่ต้องไล่</th><th class="c">จำนวน</th><th>ตัวอย่างสาขา</th><th></th></tr>' + items.map(function (x) {
+      return '<tr><td><b class="' + (x.red ? "rgd-r" : "rgd-a") + '">' + (x.red ? "🔴 " : "⏳ ") + "</b>" + esc(x.t) + '</td><td class="c"><b>' + x.n + "</b> " + esc(x.u) + '</td><td style="font-weight:500;font-size:12.5px">' + esc(x.ex.slice(0, 4).join(" · ")) + (x.ex.length > 4 ? " …" : "") +
+        '</td><td class="c"><button type="button" class="rgp-clr rgp-go" data-dgo="' + x.w + '" data-coh="' + x.coh + '"' + (x.yr ? ' data-yr="' + x.yr + '"' : "") + ">ไปหน้างาน ›</button></td></tr>";
+    }).join("") + "</table>";
+  }
+  function dashView() {
+    freshen();
+    var sh = grpShow(), h = filterBar(), urg = [];
+    h += '<div class="rg-note rg-note2">หน้านี้ไว้ไล่งาน: แท่งละ 1 ประเภทงาน (ไม่รวมกัน) · ตัวเลขชุดเดียวกับในแต่ละหน้างาน · การ์ดรายงานละเอียดอยู่ที่หน้า 📋 ภาพรวมรายสาขา</div>';
+    if (sh.a) {
+      if (!ready()) h += '<div class="rg-coh">' + cohHead("a", null) + waitMsg() + "</div>";
+      else {
+        var ra = rowsA();
+        h += '<div class="rg-coh">' + cohHead("a", ra.length) + '<div class="card rgp-card">' + dLegend() +
+          A_WORKS.map(function (w) { return dRow("a", w, tally(w === "util" ? rowsU() : ra, function (r) { return aStat(r, w); })); }).join("") + "</div></div>";
+        A_WORKS.forEach(function (w) {
+          var base = w === "util" ? rowsU() : ra, bad = base.filter(function (r) { return aStat(r, w).st === "over"; });
+          urg.push({ t: "สาขาใหม่ · " + WORK[w].t.replace(/^\S+\s/, "") + " — หลุด SLA", n: bad.length, u: "สาขา", ex: bad.map(function (r) { return r.code + " " + (r.name || ""); }), w: w, coh: "a", red: 1 });
+        });
+      }
+    }
+    if (sh.b) {
+      var g = bGate();
+      if (g) h += '<div class="rg-coh">' + cohHead("b", null) + g + "</div>";
+      else {
+        var rb = rowsB();
+        h += '<div class="rg-coh">' + cohHead("b", rb.length) + warnBox() + '<div class="card rgp-card">' + dLegend() +
+          B_WORKS.map(function (w) { return dRow("b", w, tally(rb, function (r) { return bStat(r, w); })); }).join("") + "</div></div>";
+        var pr = pRows(), ov = [], cr = [], nov = 0, ncr = 0;
+        pr.forEach(function (r) { var o = 0, c = 0; OLIC.forEach(function (l) { var s0 = pst(r, l); if (s0 === "over") o++; if (s0 === "crit") c++; }); nov += o; ncr += c; if (o) ov.push(r.code + " " + r.name + " (" + o + " ใบ)"); if (c) cr.push(r.code + " " + r.name + " (" + c + " ใบ)"); });
+        urg.push({ t: "ใบอนุญาตหมดอายุแล้ว", n: nov, u: "ใบ · " + ov.length + " ร้าน", ex: ov, w: "renew", coh: "b", red: 1 });
+        urg.push({ t: "ใบอนุญาตอีก ≤30 วันจะหมดอายุ", n: ncr, u: "ใบ · " + cr.length + " ร้าน", ex: cr, w: "renew", coh: "b", red: 1 });
+        var so = rb.filter(function (r) { return r.taxS && r.taxS.s === "over"; }), lo = rb.filter(function (r) { return r.taxL && r.taxL.s === "over"; });
+        urg.push({ t: "ภาษีป้าย 2569 เลยกำหนด ยังไม่จ่าย (บัญชี)", n: so.length, u: "ร้าน", ex: so.map(function (r) { return r.code + " " + r.name; }), w: "signtax", coh: "b", red: 1, yr: "2569" });
+        urg.push({ t: "ภาษีที่ดิน 2569 เลยกำหนด 30 มิ.ย. ยังไม่จ่าย (บัญชี)", n: lo.length, u: "ร้าน", ex: lo.map(function (r) { return r.code + " " + r.name; }), w: "landtax", coh: "b", red: 1 });
+        var s7 = rb.filter(function (r) { var k = s7Step(r); return k.y && k.st.s1 !== "done"; }), left = dayDiff(TAX_SIGN_DL70, todayIso());
+        urg.push({ t: "ภาษีป้าย 2570 ยังไม่ยื่น ภป.1 · " + (left >= 0 ? "อีก " + left + " วันถึง 31 มี.ค. 2570" : "เลยกำหนดแล้ว " + (-left) + " วัน"), n: s7.length, u: "ร้าน", ex: s7.map(function (r) { return r.code + " " + r.name; }), w: "signtax", coh: "b", red: left <= 30 ? 1 : 0, yr: "2570" });
+      }
+    }
+    h += '<div class="section-label">⚡ เรื่องด่วนที่ต้องไล่</div><div class="card rgp-card">' + dUrgent(urg) + "</div>";
+    return h + '<div class="rg-src">ตัวเลข = ตามตัวกรองด้านบน (ไม่รวมตัวกรองสถานะ) · สาขาใหม่ = ชุดเดียวกับ Overall / After อ.1 · ร้านที่เปิดแล้ว = ชีตทะเบียน + ชีตบัญชี (สด)</div>';
+  }
   function offCard(w, msg) { return '<div class="kpi-card rg-wc rg-wc-off"><div class="kpi-label">' + WORK[w].t + '</div><div class="rg-wc-sub">' + msg + "</div></div>"; }
   function ovTable(coh, rows) {
     var works = coh === "a" ? A_WORKS : B_WORKS, fn = coh === "a" ? aStat : bStat;
@@ -9486,6 +9551,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     [].forEach.call(v.querySelectorAll(".rg-det"), function (d) { d.ontoggle = function () { DET[d.getAttribute("data-det")] = d.open; }; });
     [].forEach.call(v.querySelectorAll(".rg-qcl"), function (k) { k.onclick = function () { goWork("qc", "", "b"); }; });
     [].forEach.call(v.querySelectorAll(".rg-wc[data-go]"), function (k) { k.onclick = function () { goWork(k.getAttribute("data-go"), "", k.getAttribute("data-coh")); }; });
+    [].forEach.call(v.querySelectorAll("[data-dgo]"), function (k) { k.onclick = function () { if (k.getAttribute("data-yr")) TF.yr = k.getAttribute("data-yr"); goWork(k.getAttribute("data-dgo"), "", k.getAttribute("data-coh")); }; });
     [].forEach.call(v.querySelectorAll(".rg-cb"), function (k) { k.onclick = function () { goWork(k.getAttribute("data-go"), k.getAttribute("data-code"), k.getAttribute("data-coh")); }; });
     [].forEach.call(v.querySelectorAll("tr.rg-orow"), function (tr) { tr.onclick = function () { openDrawer(tr.getAttribute("data-ocode")); }; });
     [].forEach.call(v.querySelectorAll("tr.rg-row,tr.rg-orow"), function (tr) { tr.onkeydown = function (e) { if (e.key === "Enter") tr.click(); }; });
@@ -9497,6 +9563,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
 
   var VIEWS = {
+    dash: ["📊 Dashboard", function () { return dashView(); }],
     overview: ["📋 ภาพรวมรายสาขา", function () { return overviewView(); }],
     qc: ["🔎 ตรวจข้อมูล", function () { return qcView(); }],
     house: [WORK.house.t, function () { return workView("house"); }],
@@ -9515,7 +9582,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         details("ins-site", table(["Site Code", "ชื่อสาขา", "จังหวัด", "บริษัทประกัน", "เลขที่กรมธรรม์", "ความคุ้มครอง", "ทุนประกัน", "เบี้ยประกัน", "วันเริ่ม", "วันหมดอายุ", "สถานะ", "หมายเหตุ", "บันทึก"]), "รายสาขา");
     }]
   };
-  var ORDER = ["overview", "license", "renew", "house", "util", "trash", "signtax", "landtax", "insure", "qc"], CURV = "overview";   // 4 พ.ย. (จี): ภาพรวม → ใบอนุญาต → ต่ออายุ ขึ้นก่อน · ตรวจข้อมูลไว้หลังสุด
+  var ORDER = ["dash", "overview", "license", "renew", "house", "util", "trash", "signtax", "landtax", "insure", "qc"], CURV = "dash";   // 13 พ.ย. (จี "โอเค ทำเลย"): Dashboard เป็นแท็บแรก   // 4 พ.ย. (จี): ภาพรวม → ใบอนุญาต → ต่ออายุ ขึ้นก่อน · ตรวจข้อมูลไว้หลังสุด
 
   var sec = document.createElement("section"); sec.id = "tab-registration"; sec.className = "tab-panel";
   sec.innerHTML =
@@ -9526,7 +9593,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   main.appendChild(sec);
   function render() {
     var v = document.getElementById("rg-view");
-    if (CURV === "qc" && !isAdminUser()) CURV = "overview";
+    if (CURV === "qc" && !isAdminUser()) CURV = "dash";
     [].forEach.call(document.querySelectorAll('#rg-seg button[data-v="qc"]'), function (b) { b.style.display = isAdminUser() ? "" : "none"; });
     v.innerHTML = VIEWS[CURV][1]();
     [].forEach.call(document.querySelectorAll("#rg-seg button"), function (b) { b.classList.toggle("on", b.getAttribute("data-v") === CURV); });
