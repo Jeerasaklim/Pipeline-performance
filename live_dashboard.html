@@ -1173,7 +1173,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=162355" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=164335" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -9865,6 +9865,384 @@ render();
   function gate() { tb.style.display = window.DPT_ROLE ? "" : "none"; if (window.DPT_ROLE && window.DPT_ID_TOKEN && window.DPT_GAS_URL && !pre) { pre = setTimeout(function () { if (ST.st === "idle") load(); }, 3000); } }
   var gi = 0, giv = setInterval(function () { gate(); if (++gi > 120) clearInterval(giv); }, 1000);
   gate();
+})();
+
+</script>
+<script>/*O1-TAB*/
+/* ============================================================================
+ * o1-tab.js — แท็บ อ.1 · รัฐกิจ (13 พ.ย. 2569 · จี "ทำแท็บ อ.1 ต่อเลย" → "ทำเลย")
+ * ไล่งานขอใบอนุญาตก่อสร้าง (อ.1) ต่อจากหน้า Overall:
+ *   ขั้นงาน   = กล่องรัฐกิจในหน้า Overall (contract_final → ready_o1) + กล่อง ยื่น/ได้/อนุโลม ของ After อ.1
+ *               อ่านจาก window.STEP_DETAILS ชุดเดียวกับ 2 แท็บนั้น (ห้ามคิดกติกาใหม่ — กฎ "same logic as Overall")
+ *   บันทึกงาน = AppSheet ทีมรัฐกิจ (ชีต Nego-Transection › CJX_GRTransactions) ผ่าน Tank G › APP_GR_Log
+ *               โหลดด้วย GAS action=getGrLog · ยื่น / สั่งแก้ (ตีกลับ) / ยื่นแบบแก้ไข / อนุโลม / ส่ง อ.1 / ทางเชื่อม / เชื่อมท่อ
+ *   ⛔ ไม่มีช่องกรอกงานใหม่ (ทีมกรอกใน AppSheet อยู่แล้ว ห้ามกรอก 2 ที่) · มีแค่ 📝 หมายเหตุ (regNote key "<code>|o1…")
+ *   สถานะทางการ (ยื่น/ได้/อนุโลม) = ชีต SLA เหมือน After อ.1 · ถ้า AppSheet บอกไม่ตรง = ขึ้น ⚠ ให้เห็น ไม่เลือกเองเงียบ ๆ
+ * ========================================================================== */
+(function () {
+  "use strict";
+  var nav = document.querySelector("nav.tabs"), main = document.querySelector("main");
+  if (!nav || !main) return;
+
+  var css = document.createElement("style");
+  css.textContent = "#tab-o1 .o1-sub{color:var(--t3);font-size:13px;margin:2px 0 12px}" +
+    "#tab-o1 .o1-fresh{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--t2);margin-bottom:12px}" +
+    "#tab-o1 .o1-fresh b{color:var(--t1)}" +
+    ":is(#tab-o1,#o1-drw) .o1-red{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:12px}" +
+    ":is(#tab-o1,#o1-drw) .o1-amb{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:8px 12px;font-size:12px;margin-bottom:12px}" +
+    "#tab-o1 .o1-steps td,#tab-o1 .o1-steps th{padding:7px 10px;font-size:13px;border-bottom:1px solid var(--border)}" +
+    "#tab-o1 .o1-steps td.num{text-align:right;font-variant-numeric:tabular-nums}" +
+    "#tab-o1 .o1-steps tr.ph td{background:var(--surface2,#f7f8fa);font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.02em}" +
+    "#tab-o1 .o1-n{border:0;background:none;color:#1d4ed8;font-weight:700;cursor:pointer;font-size:13px;padding:0 2px;text-decoration:underline}" +
+    "#tab-o1 .o1-n.over{color:#b42318}#tab-o1 .o1-n.zero{color:var(--t3);text-decoration:none;cursor:default;font-weight:400}" +
+    "#tab-o1 .o1-n.on{background:#dbeafe;border-radius:4px}" +
+    "#tab-o1 .o1-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}" +
+    "#tab-o1 .o1-bar input[type=search],#tab-o1 .o1-bar select{font:inherit;font-size:13px;padding:6px 9px;border:1px solid var(--border2,#c8cdd9);border-radius:8px;background:var(--surface)}" +
+    "#tab-o1 .o1-bar input[type=search]{min-width:220px}#tab-o1 .o1-bar label{font-size:13px;display:inline-flex;gap:5px;align-items:center}" +
+    "#tab-o1 .o1-cnt{font-size:12px;color:var(--t3);margin-left:auto}" +
+    "#tab-o1 .o1-tw{overflow:auto;max-height:70vh;border:1px solid var(--border);border-radius:10px}" +
+    "#tab-o1 table.o1-t{border-collapse:collapse;width:100%;min-width:1180px}" +
+    "#tab-o1 table.o1-t th{position:sticky;top:0;background:var(--surface);z-index:1;font-size:11px;font-weight:600;color:var(--t3);text-align:left;padding:8px;border-bottom:1px solid var(--border2,#c8cdd9);white-space:nowrap}" +
+    "#tab-o1 table.o1-t td{font-size:12.5px;padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top}" +
+    "#tab-o1 table.o1-t tr.r:hover td{background:#f8fafc;cursor:pointer}" +
+    "#tab-o1 .o1-code{font-weight:700;white-space:nowrap}#tab-o1 .o1-nm{color:var(--t2);font-size:12px}" +
+    ":is(#tab-o1,#o1-drw) .o1-chip{display:inline-block;font-size:11px;border:1px solid #c4b5fd;background:#f5f3ff;color:#5b21b6;border-radius:999px;padding:1px 7px;margin:1px 3px 1px 0;white-space:nowrap}" +
+    ":is(#tab-o1,#o1-drw) .o1-chip.post{border-color:#93c5fd;background:#eff6ff;color:#1e40af}:is(#tab-o1,#o1-drw) .o1-chip.ok{border-color:#86efac;background:#f0fdf4;color:#166534}" +
+    ":is(#tab-o1,#o1-drw) .o1-over{color:#b42318;font-weight:700;white-space:nowrap}:is(#tab-o1,#o1-drw) .o1-mute{color:var(--t3)}" +
+    ":is(#tab-o1,#o1-drw) .o1-fix{color:#b42318;font-weight:600}:is(#tab-o1,#o1-drw) .o1-clip{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-width:300px}" +
+    ":is(#tab-o1,#o1-drw) .o1-warn{color:#b45309;font-weight:700;cursor:help}" +
+    "#tab-o1 textarea.o1-tn{font:inherit;font-size:12px;width:190px;min-height:30px;border:1px solid var(--border2,#c8cdd9);border-radius:6px;padding:4px 6px;resize:vertical}" +
+    "#tab-o1 textarea.o1-tn.dirty{border-color:#f59e0b;background:#fffbeb}" +
+    "#tab-o1 .o1-save{position:sticky;bottom:0;display:none;gap:10px;align-items:center;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 12px;margin-top:8px;font-size:13px}" +
+    "#tab-o1 .o1-save.on{display:flex}:is(#tab-o1,#o1-drw) .o1-btn{font:inherit;font-size:13px;font-weight:600;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer}" +
+    ":is(#tab-o1,#o1-drw) .o1-btn.ghost{background:var(--surface);color:#1d4ed8}:is(#tab-o1,#o1-drw) .o1-btn:disabled{opacity:.5;cursor:default}" +
+    "#o1-dbg{position:fixed;inset:0;background:rgba(15,23,42,.35);display:none;z-index:900}#o1-dbg.on{display:block}" +
+    "#o1-drw{position:fixed;top:0;right:0;bottom:0;width:min(640px,100vw);background:var(--surface,#fff);box-shadow:-8px 0 24px rgba(0,0,0,.15);transform:translateX(105%);transition:transform .18s;z-index:901;overflow:auto;padding:18px 20px 40px}" +
+    "#o1-drw.on{transform:none}#o1-drw h3{margin:0 0 4px;font-size:17px}#o1-drw .o1-x{position:absolute;top:12px;right:14px;border:0;background:none;font-size:22px;cursor:pointer;color:var(--t3)}" +
+    "#o1-drw .o1-dsec{margin-top:16px}#o1-drw .o1-dh{font-size:12px;font-weight:700;color:var(--t3);margin-bottom:6px}" +
+    "#o1-drw .o1-kv{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:13px}#o1-drw .o1-kv div:nth-child(odd){color:var(--t3)}" +
+    "#o1-drw .o1-ev{border-left:3px solid #e5e7eb;padding:4px 0 8px 10px;font-size:13px}#o1-drw .o1-ev .t{font-size:11px;color:var(--t3)}" +
+    "#o1-drw .o1-ev.fix{border-left-color:#f87171}#o1-drw .o1-ev.sub{border-left-color:#60a5fa}#o1-drw .o1-ev.ok{border-left-color:#4ade80}" +
+    "#o1-drw .o1-ev .b{white-space:pre-wrap;color:var(--t1)}#o1-drw textarea.o1-tn{width:100%;min-height:54px}" +
+    "#tab-o1 .o1-src,#o1-drw .o1-src{font-size:11px;color:var(--t3);margin-top:8px}" +
+    ".o1-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#14532d;color:#fff;border-radius:10px;padding:9px 16px;font-size:13px;z-index:950;display:none}.o1-toast.bad{background:#991b1b}.o1-toast.on{display:block}";
+  document.head.appendChild(css);
+
+  var tb = document.createElement("button"); tb.className = "tab-btn"; tb.setAttribute("data-tab", "o1"); tb.style.display = "none";
+  tb.onclick = function () { showTab("o1"); };
+  tb.innerHTML = '<span class="tab-ico">🏛</span><span class="tab-txt"><span class="tab-primary">อ.1</span><span class="tab-sub">รัฐกิจ · ขอใบอนุญาตก่อสร้าง</span></span>';
+  var before = nav.querySelector('.tab-btn[data-tab="registry"]');   // จี 13 พ.ย.: แท็บหลัก วางระหว่าง Site Negotiation กับ After อ.1
+  nav.insertBefore(tb, before || null);
+
+  var sec = document.createElement("section"); sec.id = "tab-o1"; sec.className = "tab-panel";
+  sec.innerHTML = '<div class="page-head"><h1>🏛 อ.1 <span class="page-th">รัฐกิจ · ไล่งานขอใบอนุญาตก่อสร้าง</span></h1></div>' +
+    '<div class="o1-sub">ขั้นงานชุดเดียวกับหน้า Overall และ After อ.1 · รายละเอียด ยื่น / ถูกสั่งแก้ / ยื่นแบบแก้ไข / อนุโลม / ทางเชื่อม / เชื่อมท่อ ดึงจาก AppSheet ที่ทีมรัฐกิจกรอก (แก้ข้อมูลที่ AppSheet) · 📝 หมายเหตุพิมพ์ได้ในแอป</div>' +
+    '<div id="o1-fresh" class="o1-fresh"></div><div id="o1-alert"></div>' +
+    '<div class="section-label">ขั้นตอน อ.1</div><div class="card" style="padding:0;overflow:auto"><table class="o1-steps" id="o1-steps" style="width:100%;border-collapse:collapse"></table></div>' +
+    '<div class="section-label" style="margin-top:18px">รายสาขา</div><div class="card">' +
+    '<div class="o1-bar"><input type="search" id="o1-q" placeholder="ค้นหา รหัส / ชื่อสาขา / ข้อความในบันทึก"><select id="o1-staff"></select>' +
+    '<select id="o1-st"><option value="">สถานะใน AppSheet: ทั้งหมด</option><option value="fix">🔁 ถูกสั่งแก้ · ยังไม่ยื่นแบบแก้ไข</option><option value="resub">ยื่นแบบแก้ไขแล้ว · รอผล</option><option value="everfix">เคยถูกสั่งแก้ (ทุกสาขา)</option><option value="nolog">ยังไม่มีบันทึกใน AppSheet</option><option value="warn">⚠ AppSheet กับชีต SLA ไม่ตรงกัน</option><option value="link">ทางเชื่อม / เชื่อมท่อ ยังรอคำตอบ</option></select>' +
+    '<select id="o1-sort"><option value="over">เรียง: เกิน SLA มากสุด</option><option value="last">เรียง: บันทึกล่าสุดเก่าสุด</option><option value="code">เรียง: รหัส</option></select>' +
+    '<label><input type="checkbox" id="o1-got"> รวมที่ได้ อ.1 แล้ว</label><button type="button" class="o1-btn ghost" id="o1-clr">ล้างตัวกรอง</button><span class="o1-cnt" id="o1-cnt"></span></div>' +
+    '<div class="o1-tw"><table class="o1-t" id="o1-t"></table></div>' +
+    '<div class="o1-save" id="o1-save"><span id="o1-savemsg"></span><button type="button" class="o1-btn" id="o1-savebtn">📝 บันทึกหมายเหตุ</button></div>' +
+    '<div class="o1-src" id="o1-src"></div></div>';
+  main.appendChild(sec);
+  var dbg = document.createElement("div"); dbg.id = "o1-dbg"; document.body.appendChild(dbg);
+  var drw = document.createElement("aside"); drw.id = "o1-drw"; document.body.appendChild(drw);
+  var tst = document.createElement("div"); tst.className = "o1-toast"; document.body.appendChild(tst);
+
+  function $(i) { return document.getElementById("o1-" + i); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  var TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  var MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+  function fd(iso) {
+    var m = /^(\d{1,2})-([A-Za-z]{3})-(\d{2}|\d{4})$/.exec(String(iso || "").trim());   // ชีต SLA ส่งมาแบบ 8-Jul-26
+    if (m && MON[m[2].toLowerCase()]) { var y = +m[3]; if (y < 100) y += 2000; iso = y + "-" + ("0" + MON[m[2].toLowerCase()]).slice(-2) + "-" + ("0" + m[1]).slice(-2); }
+    if (!iso || !/^\d{4}-\d{2}-\d{2}/.test(iso)) return iso || "–"; var a = iso.slice(0, 10).split("-"); return (+a[2]) + " " + TH[+a[1] - 1] + " " + String(+a[0] + 543).slice(2); }
+  function ago(iso) { if (!iso) return null; var d = new Date(iso.slice(0, 10) + "T00:00:00"), t = new Date(); t.setHours(0, 0, 0, 0); return Math.round((t - d) / 864e5); }
+  function toast(t, ok) { tst.textContent = t; tst.className = "o1-toast on" + (ok ? "" : " bad"); clearTimeout(toast.h); toast.h = setTimeout(function () { tst.className = "o1-toast"; }, 4000); }
+
+  /* ---- ขั้นงาน: ป้าย/กล่อง = ตามหน้า Overall + After อ.1 เป๊ะ (ห้ามแปลงคำ) ---- */
+  var PRE = [
+    ["contract_final", "สัญญา Final", ""],
+    ["permit7", "แบบขออนุญาต Final", ""],
+    ["gotn4", "รอคัด น.4", "10 วันทำการ จากวันอนุมัติรถตู้"],
+    ["n4n2", "เอกสาร น.2+น.4 Final", ""],
+    ["wait_o1", "เตรียมเอกสาร ยื่น อ.1", "3 วันทำการ จาก max(สแกนสัญญา/ยื่นแบบ/ส่งรัฐกิจ)"],
+    ["ready_o1", "รอยื่น อ.1", "5 วันทำการ จากวันส่งเอกสารให้รัฐกิจ"]];
+  var S2_GOT = "ได้ อ.1 แล้ว", S2_WAI = "ได้รับอนุโลม อ.1";
+  // หลังยื่น: กล่อง d_wait_o1 ของ After อ.1 แยก 2 แถวไม่ให้นับซ้ำ (อนุโลมอยู่ใน d_wait_o1 ด้วย — LOGIC_INDEX กับดัก #1)
+  var POST = [
+    ["post_wait", "ยื่นแล้ว · รอใบอนุญาต อ.1", "ต่างจังหวัด 45 / กทม. 60 วันปฏิทิน จากวันยื่น"],
+    ["post_wai", "ได้รับอนุโลม อ.1 (เข้าก่อสร้างได้ · รอใบจริง)", ""],
+    ["post_got", "ได้ อ.1 แล้ว", ""]];
+  var LAB = {}; PRE.concat(POST).forEach(function (s) { LAB[s[0]] = s[1]; });
+
+  /* ---- ประเภทงานใน AppSheet (ชื่องานที่ทำ) — ตามที่ทีมกรอกจริง (นับ 13 พ.ย.) ---- */
+  var E_SUB = "ยื่นเอกสารอ.1", E_RESUB = "ยื่นเอกสารอ.1 (แบบแก้ไข)", E_FIX = "สั่งแก้รายละเอียดแบบ",
+      E_WAI = "รัฐกิจยืนยันเข้างานก่อสร้าง", E_GOT = "ส่ง อ.1", E_FOL = "ติดตาม อ.1";
+  function evCls(t) { return t === E_FIX ? "fix" : (t === E_SUB || t === E_RESUB) ? "sub" : (t === E_GOT || t === E_WAI) ? "ok" : ""; }
+
+  var GR = { st: "idle", err: "", d: null, by: {} }, NOTES = {}, CAN = false, F = { step: "" }, RENDERED = false;
+
+  function det(k) { var s = window.STEP_DETAILS; return s && Array.isArray(s[k]) ? s[k] : null; }
+  function ready() { return !!(det("ready_o1") && det("d_wait_o1") && det("d_got_o1")); }
+
+  /* ---- รวมสาขา: 1 สาขา = 1 แถว · อยู่หลายกล่องพร้อมกันได้ (ท่อขนานเหมือนหน้า Overall) ---- */
+  function sites() {
+    var by = {}, order = [];
+    function get(r) { var c = String(r.code || "").trim(); if (!c) return null; if (!by[c]) { by[c] = { code: c, name: r.name || "", steps: [], over: null, prov: "", s2: "", submit: "", pic: "" }; order.push(c); } var s = by[c]; if (!s.name && r.name) s.name = r.name; if (r.site_pic && !s.pic) s.pic = r.site_pic; return s; }
+    function ov(s, v) { var n = parseFloat(String(v || "").replace("+", "")); if (String(v || "").charAt(0) === "+" && !isNaN(n) && (s.over == null || n > s.over)) s.over = n; }
+    PRE.forEach(function (st) { (det(st[0]) || []).forEach(function (r) { var s = get(r); if (!s) return; s.steps.push(st[0]); ov(s, r.sla_over); }); });
+    (det("d_wait_o1") || []).forEach(function (r) {
+      var s = get(r); if (!s) return; s.s2 = r.cstatus || ""; s.submit = r.submit_o1 || ""; s.prov = r.prov || "";
+      if (s.s2 === S2_WAI) s.steps.push("post_wai"); else { s.steps.push("post_wait"); ov(s, r.sla_over); }
+      s.aging = r.aging;
+    });
+    (det("d_got_o1") || []).forEach(function (r) { var s = get(r); if (!s) return; s.s2 = S2_GOT; s.submit = r.submit_o1 || ""; s.steps.push("post_got"); });
+    return order.map(function (c) { return by[c]; });
+  }
+
+  /* ---- สรุปบันทึก AppSheet รายสาขา ---- */
+  function grIndex(d) {
+    var by = {};
+    (d.rows || []).forEach(function (r) {
+      var e = { code: r[0], ts: r[1], t: d.types[r[2]] || "", note: r[3], conf: r[4], exp: r[5], link: r[6], linkN: r[7], pipe: r[8], pipeN: r[9], who: r[10] };
+      (by[e.code] = by[e.code] || []).push(e);
+    });
+    Object.keys(by).forEach(function (c) {
+      var ev = by[c].sort(function (a, b) { return a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0; }), g = { ev: ev, fix: [], sub: null, resub: null, wai: null, got: null, last: ev[ev.length - 1], who: "", link: "", linkN: "", pipe: "", pipeN: "", exp: "" };
+      ev.forEach(function (e) {
+        if (e.t === E_SUB && !g.sub) g.sub = e;
+        if (e.t === E_RESUB) g.resub = e;
+        if (e.t === E_SUB || e.t === E_RESUB) g.lastSub = e;
+        if (e.t === E_FIX) g.fix.push(e);
+        if (e.t === E_WAI && !g.wai) g.wai = e;
+        if (e.t === E_GOT) g.got = e;
+        if (e.who) g.who = e.who;
+        if (e.link) { g.link = e.link; g.linkN = e.linkN || g.linkN; } else if (e.linkN) g.linkN = e.linkN;
+        if (e.pipe) { g.pipe = e.pipe; g.pipeN = e.pipeN || g.pipeN; } else if (e.pipeN) g.pipeN = e.pipeN;
+        if (e.exp) g.exp = e.exp;
+      });
+      // สถานะ = ดูลำดับเวลา: สั่งแก้ล่าสุด เทียบกับ การยื่นล่าสุด (ยื่นเอกสารอ.1 หรือ แบบแก้ไข) · ได้ อ.1 แล้ว = ไม่นับค้างแก้
+      var lf = g.fix.length ? g.fix[g.fix.length - 1] : null, ls = g.lastSub || null;
+      g.lastFix = lf;
+      g.state = (!lf || (g.got && g.got.ts > lf.ts)) ? "" : (!ls || ls.ts < lf.ts) ? "fix" : "resub";
+      by[c] = g;
+    });
+    return by;
+  }
+  function warnOf(s, g) {   // AppSheet vs ชีต SLA (สถานะทางการ) — โชว์ให้เห็น ไม่ตัดสินแทน
+    var w = [];
+    if (!g) return w;
+    if (g.got && s.s2 !== S2_GOT) w.push("AppSheet มี 'ส่ง อ.1' (" + fd(g.got.ts) + ") แต่ชีต SLA ยังไม่ลง 'ได้ อ.1'");
+    if (g.wai && s.s2 !== S2_WAI && s.s2 !== S2_GOT) w.push("AppSheet มี 'รัฐกิจยืนยันเข้างานก่อสร้าง' (" + fd(g.wai.ts) + ") แต่ชีต SLA ยังไม่ลงวันอนุโลม");
+    if (g.sub && !s.s2 && s.steps.every(function (k) { return k.indexOf("post_") < 0; })) w.push("AppSheet มี 'ยื่นเอกสารอ.1' (" + fd(g.sub.ts) + ") แต่ชีต SLA ยังไม่ลงวันยื่น");
+    return w;
+  }
+  function linkWait(g) { return !!g && (/รอ/.test(g.link) || /รอ/.test(g.pipe)); }
+
+  function tnKey(code, item) { return code + "|" + item; }
+  function tnHtml(code, item, ph) {
+    var n = NOTES[tnKey(code, item)], raw = n ? n.t : "", tip = n ? "แก้ล่าสุด " + n.at + " · " + n.by : "";
+    if (!CAN) return raw ? '<span title="' + esc(tip) + '">📝 ' + esc(raw) + "</span>" : '<span class="o1-mute">–</span>';
+    return '<textarea class="o1-tn" maxlength="500" data-key="' + esc(tnKey(code, item)) + '" data-orig="' + esc(raw) + '" title="' + esc(tip) + '" placeholder="' + esc(ph || "📝 หมายเหตุ") + '">' + esc(raw) + "</textarea>";
+  }
+
+  var LIST = [];
+  function build() { LIST = sites(); LIST.forEach(function (s) { s.g = GR.by[s.code] || null; s.warn = warnOf(s, s.g); }); }
+
+  function stepsHtml() {
+    var cnt = {}, ov = {};
+    LIST.forEach(function (s) { s.steps.forEach(function (k) { cnt[k] = (cnt[k] || 0) + 1; }); });
+    // เกิน SLA นับตามแถวของกล่องนั้นเอง (ค่า sla_over ของกล่อง) — ไม่ใช้ค่าสูงสุดของสาขา
+    PRE.forEach(function (p) { if (p[2]) ov[p[0]] = (det(p[0]) || []).filter(function (r) { return String(r.sla_over || "").charAt(0) === "+"; }).length; });
+    ov.post_wait = (det("d_wait_o1") || []).filter(function (r) { return r.cstatus !== S2_WAI && String(r.sla_over || "").charAt(0) === "+"; }).length;
+    var fixN = {}; LIST.forEach(function (s) { if (s.g && s.g.state === "fix") s.steps.forEach(function (k) { fixN[k] = (fixN[k] || 0) + 1; }); });
+    function btn(k, n, mode, cls) { if (!n) return '<span class="o1-n zero">0</span>'; var on = F.step === k && (F.mode || "") === (mode || ""); return '<button type="button" class="o1-n ' + (cls || "") + (on ? " on" : "") + '" data-k="' + k + '" data-m="' + (mode || "") + '">' + n + "</button>"; }
+    function row(st) { var k = st[0]; return "<tr><td>" + esc(st[1]) + '</td><td class="o1-mute" style="font-size:12px">' + (st[2] ? "SLA " + esc(st[2]) : "—") + '</td><td class="num">' + btn(k, cnt[k] || 0) + '</td><td class="num">' + (st[2] ? btn(k, ov[k] || 0, "over", "over") : '<span class="o1-mute">—</span>') + '</td><td class="num">' + (k === "post_got" ? '<span class="o1-mute">—</span>' : btn(k, fixN[k] || 0, "fix", "over")) + "</td></tr>"; }
+    return '<tr><th style="text-align:left">ขั้นตอน (ป้ายตามหน้า Overall / After อ.1)</th><th style="text-align:left">SLA</th><th class="num">สาขา</th><th class="num">เกิน SLA</th><th class="num" title="AppSheet: มี สั่งแก้รายละเอียดแบบ หลังการยื่นครั้งล่าสุด">🔁 ถูกสั่งแก้ · ยังไม่ยื่นใหม่</th></tr>' +
+      '<tr class="ph"><td colspan="5">ก่อนยื่น อ.1 · กล่องรัฐกิจในหน้า Overall</td></tr>' + PRE.map(row).join("") +
+      '<tr class="ph"><td colspan="5">หลังยื่น อ.1 · กล่องในหน้า After อ.1 (สถานะจากชีต SLA)</td></tr>' + POST.map(row).join("");
+  }
+
+  function vis() {
+    var q = $("q").value.trim().toLowerCase(), who = $("staff").value, st = $("st").value, got = $("got").checked || F.step === "post_got";
+    var l = LIST.filter(function (s) {
+      if (!got && s.steps.length === 1 && s.steps[0] === "post_got") return false;
+      if (F.step && s.steps.indexOf(F.step) < 0) return false;
+      if (F.mode === "over") { var rs = F.step.indexOf("post_") === 0 ? (det("d_wait_o1") || []).filter(function (r) { return r.code === s.code && r.cstatus !== S2_WAI; }) : (det(F.step) || []).filter(function (r) { return r.code === s.code; }); if (!rs.some(function (r) { return String(r.sla_over || "").charAt(0) === "+"; })) return false; }
+      if (F.mode === "fix" && !(s.g && s.g.state === "fix")) return false;
+      if (who && (!s.g || s.g.who !== who)) return false;
+      if (st === "fix" && !(s.g && s.g.state === "fix")) return false;
+      if (st === "resub" && !(s.g && s.g.state === "resub")) return false;
+      if (st === "everfix" && !(s.g && s.g.fix.length)) return false;
+      if (st === "nolog" && s.g) return false;
+      if (st === "warn" && !s.warn.length) return false;
+      if (st === "link" && !linkWait(s.g)) return false;
+      if (q) { var hay = (s.code + " " + s.name + " " + (s.g ? s.g.ev.map(function (e) { return e.t + " " + e.note; }).join(" ") : "")).toLowerCase(); if (hay.indexOf(q) < 0) return false; }
+      return true;
+    });
+    var so = $("sort").value;
+    l.sort(function (a, b) {
+      if (so === "code") return a.code < b.code ? -1 : 1;
+      if (so === "last") { var x = a.g ? a.g.last.ts : "", y = b.g ? b.g.last.ts : ""; return x < y ? -1 : x > y ? 1 : 0; }
+      var oa = a.over == null ? -1 : a.over, ob = b.over == null ? -1 : b.over; return ob - oa || (a.code < b.code ? -1 : 1);
+    });
+    return l;
+  }
+
+  function tableHtml(l) {
+    var h = '<thead><tr><th>สาขา</th><th>ขั้นที่ค้าง</th><th>เกิน SLA</th><th>รัฐกิจ</th><th>ยื่น อ.1</th><th>ถูกสั่งแก้ (ตีกลับ)</th><th>ยื่นแบบแก้ไข</th><th>อนุโลม / ได้ อ.1</th><th>บันทึกล่าสุด (AppSheet)</th><th>ทางเชื่อม / เชื่อมท่อ</th><th>📝 หมายเหตุ</th></tr></thead><tbody>';
+    if (!l.length) return h + '<tr><td colspan="11" class="o1-mute" style="padding:18px;text-align:center">ไม่มีสาขาตามตัวกรองนี้</td></tr></tbody>';
+    l.forEach(function (s) {
+      var g = s.g, chips = s.steps.map(function (k) { return '<span class="o1-chip' + (k === "post_got" ? " ok" : k.indexOf("post_") === 0 ? " post" : "") + '">' + esc(LAB[k]) + "</span>"; }).join("");
+      var sub = s.submit ? fd(s.submit) + ' <span class="o1-mute">(SLA)</span>' : (g && g.sub ? fd(g.sub.ts) + ' <span class="o1-mute">(AppSheet)</span>' : '<span class="o1-mute">–</span>');
+      var fix = g && g.fix.length ? '<span class="o1-fix">' + g.fix.length + " ครั้ง</span> · ล่าสุด " + fd(g.lastFix.ts) + (g.lastFix.note ? '<div class="o1-clip">' + esc(g.lastFix.note) + "</div>" : "") : '<span class="o1-mute">–</span>';
+      var rs = g && g.resub ? fd(g.resub.ts) + (g.state === "fix" ? ' <div class="o1-fix">ยังไม่ยื่นหลังสั่งแก้ล่าสุด</div>' : "") : (g && g.state === "fix" ? '<span class="o1-fix">ยังไม่ยื่นแบบแก้ไข</span>' : '<span class="o1-mute">–</span>');
+      var wg = s.s2 === S2_GOT ? "✅ ได้ อ.1" + (g && g.got ? " " + fd(g.got.ts) : "") : s.s2 === S2_WAI ? "🟦 อนุโลม" + (g && g.wai ? " " + fd(g.wai.ts) : "") : (g && g.exp ? '<span class="o1-mute">คาดว่าได้ ' + esc(fd(g.exp)) + "</span>" : '<span class="o1-mute">–</span>');
+      var la = g ? fd(g.last.ts) + ' <span class="o1-mute">(' + ago(g.last.ts) + " วันก่อน)</span><div>" + esc(g.last.t) + '</div><div class="o1-clip o1-mute">' + esc(g.last.note || g.last.conf || "") + "</div>" : '<span class="o1-mute">ยังไม่มีบันทึก</span>';
+      var lk = g && (g.link || g.pipe) ? (g.link ? "ทาง: " + esc(g.link) : "") + (g.link && g.pipe ? "<br>" : "") + (g.pipe ? "ท่อ: " + esc(g.pipe) : "") : '<span class="o1-mute">–</span>';
+      h += '<tr class="r" data-c="' + esc(s.code) + '"><td><div class="o1-code">' + esc(s.code) + (s.warn.length ? ' <span class="o1-warn" title="' + esc(s.warn.join("\n")) + '">⚠</span>' : "") + '</div><div class="o1-nm">' + esc(s.name) + "</div></td><td>" + chips + "</td><td>" + (s.over != null ? '<span class="o1-over">+' + s.over + " วัน</span>" : '<span class="o1-mute">–</span>') + "</td><td>" + esc((g && g.who) || s.pic || "–") + "</td><td>" + sub + "</td><td>" + fix + "</td><td>" + rs + "</td><td>" + wg + "</td><td>" + la + "</td><td>" + lk + '</td><td class="nt">' + tnHtml(s.code, "o1") + "</td></tr>";
+    });
+    return h + "</tbody>";
+  }
+
+  function render() {
+    if (!ready()) {
+      $("steps").innerHTML = '<tr><td style="padding:14px" class="o1-mute"><b>กำลังโหลดข้อมูลชุดเดียวกับแท็บ Overall และ After อ.1…</b> ถ้าค้างนาน แปลว่าสองแท็บนั้นยังโหลดไม่เสร็จ/โหลดไม่สำเร็จ — ตัวเลขที่นี่จะยังไม่ขึ้น (ไม่ใช่ไม่มีงาน)</td></tr>';
+      $("t").innerHTML = ""; fresh(); return;
+    }
+    build(); fresh();
+    $("steps").innerHTML = stepsHtml();
+    var whos = {}; LIST.forEach(function (s) { if (s.g && s.g.who) whos[s.g.who] = 1; });
+    var cw = $("staff").value; $("staff").innerHTML = '<option value="">รัฐกิจ: ทุกคน</option>' + Object.keys(whos).sort().map(function (w) { return '<option' + (w === cw ? " selected" : "") + ">" + esc(w) + "</option>"; }).join("");
+    var l = vis(); $("t").innerHTML = tableHtml(l);
+    var nAct = LIST.filter(function (s) { return !(s.steps.length === 1 && s.steps[0] === "post_got"); }).length;
+    $("cnt").textContent = "แสดง " + l.length + " จาก " + nAct + " สาขาที่ยังไม่ได้ อ.1" + (F.step ? " · กรอง: " + LAB[F.step] + (F.mode === "over" ? " (เกิน SLA)" : F.mode === "fix" ? " (ถูกสั่งแก้)" : "") : "");
+    $("src").innerHTML = "ที่มา: ขั้นงาน = กติกาเดียวกับหน้า Overall (กล่องสีม่วง รัฐกิจ) และ After อ.1 (ยื่น / ได้ / อนุโลม จากชีต SLA คอลัมน์ AH / AI / AU) · บันทึกงาน = AppSheet ทีมรัฐกิจ (ชีต Nego-Transection แท็บ CJX_GRTransactions → Tank G แท็บ APP_GR_Log) · " +
+      "\"ถูกสั่งแก้\" = รายการ สั่งแก้รายละเอียดแบบ (ไม่นับ \"เพิ่มเติมไม่เกี่ยวกับอ.1\") · \"ยื่นแบบแก้ไข\" = ยื่นเอกสารอ.1 (แบบแก้ไข) · ⚠ = AppSheet กับชีต SLA บอกไม่ตรงกัน (ให้ทีมแก้ต้นทาง) · ยื่นแล้วแต่ได้อนุโลม ไม่นับเกิน SLA ในแถวรอใบ";
+    bindRows(); RENDERED = true;
+  }
+  function fresh() {
+    var h = '<span>ขั้นงาน: <b>' + (ready() ? "โหลดแล้ว (ชุดเดียวกับ Overall)" : "กำลังโหลด…") + "</b></span>";
+    if (GR.st === "ok") h += "<span>บันทึก AppSheet: <b>ณ " + esc(GR.d.stamp) + "</b>" + (GR.d.cached ? " (เตรียมไว้ล่วงหน้า · อัปเดตทุก ~5 นาที)" : "") + " · " + GR.d.rows.length.toLocaleString() + " รายการ</span>";
+    else if (GR.st === "loading") h += "<span>บันทึก AppSheet: <b>กำลังโหลด…</b></span>";
+    $("fresh").innerHTML = h;
+    var a = "";
+    if (GR.st === "err") a += '<div class="o1-red"><b>🔴 โหลดบันทึกจาก AppSheet รัฐกิจไม่สำเร็จ</b> — คอลัมน์ ยื่น / ถูกสั่งแก้ / ยื่นแบบแก้ไข / ทางเชื่อม ด้านล่าง<b>ว่างเพราะโหลดไม่ได้ ไม่ใช่ไม่มีงาน</b><br>' + esc(GR.err) + ' <button type="button" class="o1-btn ghost" id="o1-retry">ลองโหลดอีกครั้ง</button></div>';
+    if (GR.st === "ok" && GR.notesErr) a += '<div class="o1-amb">อ่านหมายเหตุไม่สำเร็จรอบนี้ — ช่องหมายเหตุที่ว่างอาจมีข้อความอยู่แล้ว อย่าเพิ่งพิมพ์ทับ ให้โหลดใหม่ก่อน</div>';
+    if (GR.st === "ok" && GR.d.noTs) a += '<div class="o1-amb">มี ' + GR.d.noTs + ' รายการใน AppSheet ที่อ่านวันที่ไม่ได้ — ยังแสดงในไทม์ไลน์ แต่ไม่มีวัน</div>';
+    $("alert").innerHTML = a;
+    var rb = $("retry"); if (rb) rb.onclick = function () { GR.st = "idle"; load(); };
+  }
+
+  /* ---- ลิ้นชักรายสาขา: ไทม์ไลน์ AppSheet ทั้งหมด ---- */
+  function openSite(code) {
+    var s = LIST.filter(function (x) { return x.code === code; })[0]; if (!s) return;
+    var g = s.g, h = '<button type="button" class="o1-x" id="o1-dx">×</button><h3>' + esc(s.code) + " · " + esc(s.name) + "</h3>";
+    h += '<div>' + s.steps.map(function (k) { return '<span class="o1-chip' + (k.indexOf("post_") === 0 ? " post" : "") + '">' + esc(LAB[k]) + "</span>"; }).join("") + "</div>";
+    if (s.warn.length) h += '<div class="o1-amb" style="margin-top:10px">⚠ ' + s.warn.map(esc).join("<br>⚠ ") + "<br>สถานะในแอปยึดชีต SLA (เหมือนแท็บ After อ.1) — ให้ทีมแก้ต้นทางที่ไม่ตรง</div>";
+    h += '<div class="o1-dsec"><div class="o1-dh">สรุป</div><div class="o1-kv">' +
+      "<div>สถานะทางการ (ชีต SLA)</div><div>" + esc(s.s2 || "ยังไม่ยื่น อ.1") + (s.submit ? " · ยื่น " + fd(s.submit) : "") + "</div>" +
+      "<div>รัฐกิจ</div><div>" + esc((g && g.who) || s.pic || "–") + "</div>" +
+      "<div>ยื่นครั้งแรก (AppSheet)</div><div>" + (g && g.sub ? fd(g.sub.ts) : "–") + "</div>" +
+      "<div>ถูกสั่งแก้</div><div>" + (g && g.fix.length ? g.fix.length + " ครั้ง" : "–") + "</div>" +
+      "<div>ยื่นแบบแก้ไขล่าสุด</div><div>" + (g && g.resub ? fd(g.resub.ts) : "–") + "</div>" +
+      "<div>วันที่คาดว่าจะได้ อ.1</div><div>" + (g && g.exp ? esc(fd(g.exp)) : "–") + "</div></div></div>";
+    h += '<div class="o1-dsec"><div class="o1-dh">ทางเชื่อม / เชื่อมท่อ (ค่าล่าสุดใน AppSheet)</div><div class="o1-kv">' +
+      "<div>ทางเชื่อม</div><div>" + esc((g && g.link) || "–") + (g && g.linkN ? '<div class="o1-mute" style="white-space:pre-wrap">' + esc(g.linkN) + "</div>" : "") + '<div style="margin-top:4px">' + tnHtml(s.code, "o1_link", "📝 หมายเหตุทางเชื่อม") + "</div></div>" +
+      "<div>เชื่อมท่อ</div><div>" + esc((g && g.pipe) || "–") + (g && g.pipeN ? '<div class="o1-mute" style="white-space:pre-wrap">' + esc(g.pipeN) + "</div>" : "") + '<div style="margin-top:4px">' + tnHtml(s.code, "o1_pipe", "📝 หมายเหตุเชื่อมท่อ") + "</div></div></div></div>";
+    h += '<div class="o1-dsec"><div class="o1-dh">📝 หมายเหตุงาน อ.1</div>' + tnHtml(s.code, "o1") + (CAN ? '<div style="margin-top:8px"><button type="button" class="o1-btn" id="o1-dsave">📝 บันทึกหมายเหตุ</button> <span class="o1-mute" style="font-size:12px">เก็บในชีตของแอป (แท็บ REG_Note) · ไม่แตะ AppSheet</span></div>' : "") + "</div>";
+    h += '<div class="o1-dsec"><div class="o1-dh">ไทม์ไลน์ AppSheet (เก่า → ใหม่)</div>';
+    if (GR.st === "err") h += '<div class="o1-red">โหลดบันทึกไม่สำเร็จ — ไทม์ไลน์ว่างเพราะโหลดไม่ได้</div>';
+    else if (!g) h += '<div class="o1-mute">ยังไม่มีบันทึกของสาขานี้ใน AppSheet</div>';
+    else h += g.ev.map(function (e) { var b = [e.note, e.conf].filter(function (x) { return x && x !== "-"; }).join("\n"); return '<div class="o1-ev ' + evCls(e.t) + '"><div class="t">' + (e.ts ? fd(e.ts) + " " + esc(e.ts.slice(11)) : "ไม่มีวันที่") + (e.who ? " · " + esc(e.who) : "") + "</div><div><b>" + esc(e.t) + "</b></div>" + (b ? '<div class="b">' + esc(b) + "</div>" : "") + "</div>"; }).join("");
+    h += '</div><div class="o1-src">ที่มา: AppSheet ทีมรัฐกิจ (Nego-Transection › CJX_GRTransactions) · แก้/เพิ่มบันทึกที่ AppSheet</div>';
+    drw.innerHTML = h; drw.classList.add("on"); dbg.classList.add("on");
+    document.getElementById("o1-dx").onclick = closeD;
+    bindNotes(drw);
+    var ds = document.getElementById("o1-dsave"); if (ds) ds.onclick = function () { saveNotes(drw, ds); };
+  }
+  function closeD() { drw.classList.remove("on"); dbg.classList.remove("on"); }
+  dbg.onclick = closeD;
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeD(); });
+
+  /* ---- หมายเหตุ (regNote เดิมของแท็บ Registration · key <code>|o1 / o1_link / o1_pipe) ---- */
+  function dirtyIn(root) { return [].filter.call(root.querySelectorAll("textarea.o1-tn"), function (t) { return t.value.trim() !== t.getAttribute("data-orig"); }); }
+  function bindNotes(root) {
+    [].forEach.call(root.querySelectorAll("textarea.o1-tn"), function (t) {
+      t.onclick = function (e) { e.stopPropagation(); };
+      t.oninput = function () { t.classList.toggle("dirty", t.value.trim() !== t.getAttribute("data-orig")); if (root === sec) saveBar(); };
+    });
+  }
+  function saveBar() { var n = dirtyIn(sec).length; $("save").classList.toggle("on", n > 0); $("savemsg").textContent = n ? "แก้หมายเหตุแล้ว " + n + " ช่อง ยังไม่ได้บันทึก" : ""; }
+  function post(body, retried) {
+    var url = window.DPT_GAS_URL; if (!url) return Promise.reject(new Error("ยังไม่ได้ต่อ backend"));
+    body.token = window.DPT_ID_TOKEN || "";
+    return fetch(url, { method: "post", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.text(); })
+      .then(function (t) { var j; try { j = JSON.parse(t); } catch (e) { throw new Error("Google ส่งผลกลับไม่ถึง — ยังไม่รู้ว่าบันทึกสำเร็จไหม ให้เปิดดูอีกครั้งหลังโหลดใหม่"); }
+        if (!j || !j.ok) { var e2 = new Error((j && j.error) || "บันทึกไม่สำเร็จ"); e2.code = j && j.status; throw e2; } return j; })
+      .catch(function (err) {
+        if (err && err.code === 401 && !retried && typeof window.DPT_reauth === "function") { toast("การเข้าสู่ระบบหมดอายุ — กด Sign in ด้านบน แล้วจะบันทึกต่อให้เอง", false); return window.DPT_reauth().then(function () { return post(body, true); }); }
+        throw err;
+      });
+  }
+  function saveNotes(root, btn) {
+    var ws = dirtyIn(root); if (!ws.length) { toast("ยังไม่มีหมายเหตุที่แก้", false); return; }
+    btn.disabled = true; var ok = 0, fail = [], chain = Promise.resolve();
+    ws.forEach(function (t) {
+      chain = chain.then(function () {
+        var key = t.getAttribute("data-key"), val = t.value.trim();
+        return post({ action: "regNote", key: key, value: val }).then(function (j) {
+          ok++; if (val) NOTES[key] = { t: val, at: j.at, by: j.by }; else delete NOTES[key];
+          t.setAttribute("data-orig", val); t.classList.remove("dirty");
+        }).catch(function (e) { fail.push(key.split("|")[0] + ": " + ((e && e.message) || e)); });
+      });
+    });
+    chain.then(function () {
+      btn.disabled = false;
+      if (fail.length) toast("บันทึกได้ " + ok + " · ไม่สำเร็จ " + fail.length + " — " + fail[0], false); else toast("✓ บันทึกหมายเหตุแล้ว " + ok + " ช่อง", true);
+      if (root === sec) saveBar(); else { var keep = dirtyIn(sec).length; if (!keep) render(); }
+    });
+  }
+  function bindRows() {
+    [].forEach.call($("t").querySelectorAll("tr.r"), function (tr) { tr.onclick = function () { openSite(tr.getAttribute("data-c")); }; });
+    bindNotes(sec); saveBar();
+  }
+  $("savebtn").onclick = function () { saveNotes(sec, $("savebtn")); };
+  function guard(fn) { return function () { if (dirtyIn(sec).length && !confirm("มีหมายเหตุที่ยังไม่ได้บันทึก — เปลี่ยนตัวกรองแล้วข้อความที่พิมพ์จะหาย ไปต่อไหม?")) return; fn(); }; }
+  $("steps").onclick = function (e) { var b = e.target.closest("button.o1-n"); if (!b) return; guard(function () { var k = b.getAttribute("data-k"), m = b.getAttribute("data-m"); if (F.step === k && (F.mode || "") === m) { F.step = ""; F.mode = ""; } else { F.step = k; F.mode = m; } render(); })(); };
+  $("q").oninput = guard(render); ["staff", "st", "sort", "got"].forEach(function (i) { $(i).onchange = guard(render); });
+  $("clr").onclick = guard(function () { $("q").value = ""; $("staff").value = ""; $("st").value = ""; $("sort").value = "over"; $("got").checked = false; F = { step: "" }; render(); });
+
+  /* ---- โหลดบันทึก AppSheet (GAS getGrLog) ---- */
+  function load() {
+    if (GR.st === "loading") return;
+    var u = window.DPT_GAS_URL, tk = window.DPT_ID_TOKEN || "";
+    if (!u || !tk) { GR.st = "err"; GR.err = "ยังไม่ได้เข้าสู่ระบบ — เข้าสู่ระบบด้านบนแล้วเปิดแท็บนี้ใหม่"; render(); return; }
+    GR.st = "loading"; fresh();
+    var url = u + (u.indexOf("?") < 0 ? "?" : "&") + "action=getGrLog&token=" + encodeURIComponent(tk);
+    (typeof window.DPT_hedgedGet === "function" ? window.DPT_hedgedGet(url) : fetch(url, { redirect: "follow" }).then(function (r) { return r.json(); }))
+      .then(function (j) {
+        if (!j || !j.ok || !j.rows) throw new Error((j && j.error) || "โหลดไม่สำเร็จ");
+        GR.d = j; GR.by = grIndex(j); GR.st = "ok"; GR.notesErr = j.notes == null; NOTES = j.notes || {}; CAN = !!(j.me && j.me.note);
+        render();
+      })
+      .catch(function (e) { GR.st = "err"; GR.err = String((e && e.message) || e); GR.by = {}; render(); });
+  }
+
+  var _st = window.showTab;
+  window.showTab = function (id) { var r = _st.apply(this, arguments); if (id === "o1") { if (GR.st === "idle") load(); render(); } return r; };
+  // ขั้นงานมาพร้อมข้อมูลหลักของแอป — รอจนพร้อมแล้ววาดใหม่ (ถ้าเปิดแท็บค้างไว้)
+  var wasReady = false, pre = 0;
+  setInterval(function () {
+    tb.style.display = window.DPT_ROLE ? "" : "none";
+    if (window.DPT_ROLE && window.DPT_ID_TOKEN && window.DPT_GAS_URL && !pre) pre = setTimeout(function () { if (GR.st === "idle") load(); }, 6000);
+    var r = ready(); if (r && !wasReady && sec.classList.contains("active") && !dirtyIn(sec).length) render(); wasReady = r;
+  }, 1000);
 })();
 
 </script>
