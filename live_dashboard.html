@@ -1173,7 +1173,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=112604" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=112755" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8396,6 +8396,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         }).join("") + "</tbody></table></div>";
       h += newExpSection(r, groups);
     } else if (!r) h += '<div class="rg-dsub">สาขานี้ไม่อยู่ในกลุ่มเอกสารทะเบียน (ยังไม่ยื่น อ.1 หรือเปิดแล้ว)</div>';
+    if (r && !groups.length) h += newExpSection(r, []);   // 13 พ.ย. (จี "หมายเหตุต้องมีทุกหน้า"): แท็บน้ำ-ไฟ = หมายเหตุสาขาอย่างเดียว
     if (u && showUtil) h += '<div class="section-label" style="margin-top:14px">น้ำ-ไฟ · SLA ให้ทันวันเปิด (D-0)</div><div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เรื่อง</th><th>ขั้น</th><th>เตรียม</th><th>ขอ</th><th>ได้</th></tr></thead><tbody>' +
       UTRK.map(function (t) { var x = u.t[t[1]] || {}, c = UCOLS[t[1]]; return "<tr><td>" + t[0] + "</td><td>" + (x.s ? USTEP[x.s] : DASH) + "</td><td>" + dateIn(c[0], x.prep) + "</td><td>" + dateIn(c[1], x.req) + "</td><td>" + dateIn(c[2], x.got) + "</td></tr>"; }).join("") + "</tbody></table></div>";
     h += canEdit() ? '<div class="rg-savebar"><button type="button" class="sp-btn pri" id="rg-save">💾 บันทึกที่แก้</button><span class="rg-dsub">บันทึกลงชีต Template_งานทะเบียน (ชีตเดิมของทีมทะเบียน) · ตัวเลขทุกแท็บอัปเดตรอบโหลดถัดไป (~5–10 นาที) · ทุกการแก้ถูกบันทึกในประวัติ (Audit)</span></div>'
@@ -9526,7 +9527,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     function kv(rows) { return '<div class="table-wrap"><table class="data-table rg-dt"><tbody>' + rows.map(function (x) { return '<tr><td class="rg-muted">' + x[0] + "</td><td>" + x[1] + "</td></tr>"; }).join("") + "</tbody></table></div>"; }
     var h = '<div class="rg-dsub">' + [esc(r.prov || DASH), esc(r.org || DASH), "เปิด " + esc(fmtIso(r.open_iso) || DASH), "บัญชีจ่ายล่าสุด (ใบใดก็ได้) " + esc(fmtIso(r.accLast) || DASH)].join(" · ") +
       (r.inReg ? "" : '<br><span class="rg-badt">ร้านนี้ไม่อยู่ในชีตทะเบียน (มีแต่ในไฟล์บัญชี)</span>') + "</div>" +
-      (ONLY === "none" ? '<div class="rg-dsub">แท็บนี้ยังไม่มีข้อมูลรายร้านของร้านที่เปิดแล้วในลิ้นชัก</div>' : "") +
+      (ONLY === "none" ? '<div class="section-label">📝 หมายเหตุสาขา</div>' + (r.inReg ? kv([licNoteRow(licEdit, r.note)]) + (licEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-lic3" class="au-save">💾 บันทึกหมายเหตุ</button></div>' : "") : '<div class="rg-dsub rg-badt">ร้านนี้ไม่อยู่ในชีตทะเบียน — ยังใส่หมายเหตุไม่ได้</div>') : "") +
       (S.lic ? '<div class="section-label">📄 ใบอนุญาต · ทะเบียน × บัญชี × Oper</div><div class="table-wrap"><table class="data-table rg-dt"><thead>' + LIC_TH2 + "</thead><tbody>" + licRows(r, licEdit) + "</tbody></table></div>" +
         kv([["สำนักงานสรรพสามิตพื้นที่ <span class=\"rg-d\">(ใช้จัดกลุ่มต่ออายุสุรา/ยาสูบ)</span>", licEdit ? exciseIn(r.excise) : txt(r.excise)], ["ค่าปรับเอกสารทะเบียน", licEdit ? fineIn(r.fine) : money(r.fine)], licNoteRow(licEdit, r.note)]) +
         (licEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-lic" class="au-save">💾 บันทึกใบอนุญาต</button> <span class="rg-dsub">บันทึกลงชีตทะเบียน แท็บ ใบอนุญาต (วันหมดอายุ หรือ สถานะ)</span></div>' : "") : "") +
@@ -9561,7 +9562,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         (accL || landRegEdit ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-land" class="au-save">💾 บันทึกภาษีที่ดิน</button></div>' : "") : "") +
       (S.trash ? '<div class="section-label">🗑️ เก็บขยะ</div>' + kv([["จัดเก็บขยะโดย", txt(t.by)], ["จัดหาถังขยะ", txt(t.bin)], ["รอบการจัดเก็บ", txt(t.freq)], ["ค่าขยะ", txt(t.rate)], ["เรทค่าขยะ", txt(t.band)]].concat(S.lic || S.house || !r.inReg ? [] : [licNoteRow(licEdit, r.note)])) +
         (licEdit && !S.lic && !S.house ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-lic3" class="au-save">💾 บันทึกหมายเหตุ</button></div>' : "") : "") +
-      '<div class="rg-dsub rg-dfoot">' + (signEdit || sign70Edit || landRegEdit || accS || accL || (licEdit && (S.lic || S.house || S.trash)) ? "ช่องที่มีกล่องให้กรอก = บันทึกลงชีตจริง (ทะเบียน → ชีตทีมทะเบียน · บัญชี → ชีตบัญชี) · ส่วนอื่นดูอย่างเดียว" : "ดูอย่างเดียว") + " · " + esc(srcB()) + "</div>";
+      '<div class="rg-dsub rg-dfoot">' + (signEdit || sign70Edit || landRegEdit || accS || accL || (licEdit && (S.lic || S.house || S.trash || ONLY === "none")) ? "ช่องที่มีกล่องให้กรอก = บันทึกลงชีตจริง (ทะเบียน → ชีตทีมทะเบียน · บัญชี → ชีตบัญชี) · ส่วนอื่นดูอย่างเดียว" : "ดูอย่างเดียว") + " · " + esc(srcB()) + "</div>";
     drawer(code + " · " + (r.name || ""), h);
     ["sign", "land", "lic", "sign70"].forEach(function (k) { var b = document.getElementById("rg-tsave-" + k); if (b) b.onclick = function () { taxSave(code, k, b); }; });
     ["rg-tsave-lic2", "rg-tsave-lic3"].forEach(function (id) { var b2 = document.getElementById(id); if (b2) b2.onclick = function () { taxSave(code, "lic", b2); }; });
