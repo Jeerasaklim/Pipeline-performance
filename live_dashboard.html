@@ -1173,7 +1173,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=192122" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=103656" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -3915,6 +3915,9 @@ setTimeout(applyBoard,300);
     //   d25 = กลุ่มเดียวกับกล่อง d_reg_ready · เพิ่มสาขาที่ยังไม่เปิดแต่ไกลกว่า D-25 ไว้ให้ตัวกรองเลือกดู (ไม่กระทบตัวเลขกล่อง)
     const regRows = [];
     const afNewNm = slaNameMap(tabs.sla || []);
+    // 13 พ.ย. (จี "ขาดที่ต้องใส่วันอายุ"): รหัสร้าน T### ของสาขาใหม่ = ชีต SLA คอลัมน์ B (Tcode) → ใช้หาแถวในชีตทะเบียน แท็บ ใบอนุญาต
+    const afTcode = {};
+    (tabs.sla || []).forEach(function (r) { const c = cell(r, COL_CODE).trim(), t = cell(r, COL_TCODE).trim().toUpperCase(); if (c && /^T\d{3,}$/.test(t)) afTcode[c] = t; });
     records.forEach(function (rec) {
       const opPlan = afPdate(rec.open_date);
       const opD = afPdate(rec.open_date_raw);
@@ -3932,7 +3935,7 @@ setTimeout(applyBoard,300);
         cells[key] = { v: filled ? val : "", dl: dl ? fmtDMY2(dl) : "", left: (!filled && dl) ? daysBetween(today, dl) : null };
       }
       regRows.push({ code: rec.code, name: (afNewNm[rec.code] || rec.name), name_old: ((afNewNm[rec.code] && afNewNm[rec.code] !== rec.name) ? rec.name : undefined), prov: prov, open: op ? fmtDMY2(op) : "", open_iso: op ? (op.getFullYear() + "-" + _pad2(op.getMonth() + 1) + "-" + _pad2(op.getDate())) : "",
-        d25: !!(opPlan && daysBetween(today, opPlan) <= 25), cells: cells });
+        d25: !!(opPlan && daysBetween(today, opPlan) <= 25), cells: cells, tcode: afTcode[rec.code] || "" });
     });
     return { counts: counts, buckets: buckets, sla: sla, reg: { keys: AF_EXTRA.map(function (x) { return x[0]; }), cols: AF_EXTRA.reduce(function (o, x) { o[x[0]] = x[1]; return o; }, {}), sla: AF_REG_SLA, rows: regRows } };
   }
@@ -8170,16 +8173,17 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ".rgp-card{margin-bottom:14px}.rgp-h2{font-size:15px;font-weight:700;margin:0 0 12px}.rgp-tw{overflow-x:auto}.rgp-scroll{max-height:72vh;overflow:auto}",
     ".rgp-t{border-collapse:collapse;width:100%;font-size:13px}.rgp-t th,.rgp-t td{border-bottom:1px solid var(--border,#e3e6ed);padding:9px 10px;text-align:left}.rgp-t th{color:var(--t3,#8a93a8);font-weight:600;font-size:11px;border-bottom-color:#c8cdd9;background:var(--surface,#fff)}.rgp-t td{font-weight:600}",
     ".rgp-t td.c,.rgp-t th.c{text-align:center}.rgp-thn{font-weight:400}.rgp-bar{display:inline-block;width:160px;height:8px;background:#eef1f6;border-radius:6px;overflow:hidden;vertical-align:middle;margin-right:6px}.rgp-bar span{display:block;height:100%}",
-    "b.rgp-pg{color:#92400e;cursor:help}.rgp-pgs{font-size:10.5px;color:#92400e;line-height:1.3;white-space:nowrap}b.rgp-r{color:#b91c1c}b.rgp-a{color:#c2410c}b.rgp-u{color:#1d4ed8}span.rgp-zn{color:#9f1239;font-weight:700}td.rgp-tot{font-weight:700;border-left:2px solid #cbd5e1}",
+    "b.rgp-pg{color:#92400e;cursor:help}.rgp-pgs{font-size:10.5px;color:#92400e;line-height:1.3;white-space:nowrap}b.rgp-r{color:#b91c1c}b.rgp-a{color:#a16207}b.rgp-u{color:#1d4ed8}span.rgp-zn{color:#9f1239;font-weight:700}td.rgp-tot{font-weight:700;border-left:2px solid #cbd5e1}",
     ".rgp-f{color:#8791a3;font-size:12px;margin-top:8px}.rgp-mx,.rgp-rx{min-width:900px}.rgp-mx thead th,.rgp-rx thead th{position:sticky;top:0;z-index:1}th.rgp-v{font-size:11px;min-width:84px}th.rgp-v span{display:block;font-size:10px;font-weight:500}td.rgp-st{white-space:nowrap}",
     ".rgp-t tr.rg-orow{cursor:pointer}.rgp-t tr.rg-orow:hover td.rgp-st{color:var(--blue,#2563eb)}td.rgp-m{text-align:center;font-weight:700}.rgp-mx td.rgp-prog{font-size:10.5px;font-weight:600;line-height:1.25;white-space:normal}",
-    "td.rgp-ok,td.rgp-soon{background:#e8f6ee;color:#15803d}td.rgp-due{background:#fff1e6;color:#c2410c}td.rgp-over{background:#fdecec;color:#b91c1c}td.rgp-prog{background:#fffbeb;color:#92400e}td.rgp-none{background:#eaf0ff;color:#1d4ed8}td.rgp-na{background:#f1f4f8;color:#64748b}td.rgp-zn{background:#fff1f2;color:#9f1239}",
+    "td.rgp-ok,td.rgp-soon{background:#e8f6ee;color:#15803d}td.rgp-due{background:#fef9e1;color:#a16207}td.rgp-crit{background:#fdecec;color:#b91c1c}td.rgp-over{background:#fdecec;color:#b91c1c}td.rgp-prog{background:#fffbeb;color:#92400e}td.rgp-none{background:#eaf0ff;color:#1d4ed8}td.rgp-na{background:#f1f4f8;color:#64748b}td.rgp-zn{background:#fff1f2;color:#9f1239}",
     "td.rgp-od{white-space:nowrap;font-size:12.5px;color:#4c586b}td.rgp-od.rgp-new{color:#b45309;font-weight:700;background:#fff7ed}td.rgp-rn{color:#b91c1c;font-weight:700}td.rgp-pn{color:#92400e}td.rgp-un{color:#1d4ed8}",
-    ".rgp-leg{font-size:12.5px;margin:0 0 8px}.rgp-leg span{display:inline-block;padding:1px 8px;border-radius:6px;margin:2px 4px 2px 0}.rgp-leg .rgp-ok{background:#e8f6ee;color:#15803d}.rgp-leg .rgp-due{background:#fff1e6;color:#c2410c}.rgp-leg .rgp-over{background:#fdecec;color:#b91c1c}.rgp-leg .rgp-prog{background:#fffbeb;color:#92400e}.rgp-leg .rgp-none{background:#eaf0ff;color:#1d4ed8}.rgp-leg .rgp-na{background:#f1f4f8;color:#64748b}.rgp-leg .rgp-zn{background:#fff1f2;color:#9f1239}.rgp-leg .rgp-nw{background:#fff7ed;color:#b45309}",
+    ".rgp-leg{font-size:12.5px;margin:0 0 8px}.rgp-leg span{display:inline-block;padding:1px 8px;border-radius:6px;margin:2px 4px 2px 0}.rgp-leg .rgp-ok{background:#e8f6ee;color:#15803d}.rgp-leg .rgp-due{background:#fef9e1;color:#a16207}.rgp-leg .rgp-crit{background:#fdecec;color:#b91c1c}.rgp-leg .rgp-over{background:#fdecec;color:#b91c1c}.rgp-leg .rgp-prog{background:#fffbeb;color:#92400e}.rgp-leg .rgp-none{background:#eaf0ff;color:#1d4ed8}.rgp-leg .rgp-na{background:#f1f4f8;color:#64748b}.rgp-leg .rgp-zn{background:#fff1f2;color:#9f1239}.rgp-leg .rgp-nw{background:#fff7ed;color:#b45309}",
     ".rgp-flt{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}.rgp-flt select,.rgp-clr{height:34px;box-sizing:border-box;padding:0 10px;border:1px solid var(--border2,#cbd5e1);border-radius:10px;background:var(--surface,#fff);font:inherit;font-size:13px}.rgp-clr{cursor:pointer;color:#475569}.rgp-cnt{font-size:12.5px;color:#4c586b}",
-    ".rgp-rx td.rgp-m{font-size:12px;font-weight:600;white-space:nowrap}td.rgp-rn-over{background:#fdecec;color:#b91c1c}td.rgp-rn-due{background:#fff1e6;color:#c2410c}td.rgp-rn-soon{background:#fef9e1;color:#a16207}td.rgp-rn-ok{color:#4c586b}.rgp-rx td.rgp-rn-prog{color:#92400e;font-size:11px;font-weight:500;white-space:normal;max-width:110px}td.rgp-rn-none,td.rgp-rn-na{color:#b8bece}",
-    ".rgp-leg .rgp-rn-over{background:#fdecec;color:#b91c1c}.rgp-leg .rgp-rn-due{background:#fff1e6;color:#c2410c}.rgp-leg .rgp-rn-soon{background:#fef9e1;color:#a16207}.rgp-leg .rgp-rn-ok{background:#f1f4f8;color:#4c586b}.rgp-leg .rgp-rn-prog{background:#fffbeb;color:#92400e}",
+    ".rgp-rx td.rgp-m{font-size:12px;font-weight:600;white-space:nowrap}td.rgp-rn-over{background:#fdecec;color:#b91c1c}td.rgp-rn-due{background:#fef9e1;color:#a16207}td.rgp-rn-crit{background:#fdecec;color:#b91c1c}td.rgp-rn-soon{background:#f1f4f8;color:#475569}td.rgp-rn-ok{color:#4c586b}.rgp-rx td.rgp-rn-prog{color:#92400e;font-size:11px;font-weight:500;white-space:normal;max-width:110px}td.rgp-rn-none,td.rgp-rn-na{color:#b8bece}",
+    ".rgp-leg .rgp-rn-over{background:#fdecec;color:#b91c1c}.rgp-leg .rgp-rn-due{background:#fef9e1;color:#a16207}.rgp-leg .rgp-rn-crit{background:#fdecec;color:#b91c1c}.rgp-leg .rgp-rn-soon{background:#f1f4f8;color:#475569}.rgp-leg .rgp-rn-ok{background:#f1f4f8;color:#4c586b}.rgp-leg .rgp-rn-prog{background:#fffbeb;color:#92400e}",
     "@media (max-width:820px){.rgp-bar{width:60px}}",
+    "button.rgp-go{height:28px;font-weight:700;color:var(--blue,#2563eb)}button.rgp-go.on{border-color:var(--blue,#2563eb);box-shadow:0 0 0 2px var(--bmid,#bfdbfe)}",
   ].join("");
   document.head.appendChild(css);
 
@@ -8335,6 +8339,27 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       render();
     });
   }
+  /* 13 พ.ย. (จี "ขาดที่ต้องใส่วันอายุ"): สาขาใหม่ได้ใบแล้ว → กรอกวันหมดอายุ ลงชีตทะเบียน แท็บ ใบอนุญาต (แถว T### ที่ทีมสร้างรอไว้)
+   *   ใบที่ Template รวมกัน แตกเป็นวันหมดอายุทีละใบ (คอลัมน์ชีตใบอนุญาต) · ท่อบันทึกเดียวกับร้านที่เปิดแล้ว (taxSet kind=lic · code=T###) */
+  var NEW_EXP = { "สุรา+อาหารสัตว์": ["l1", "l2", "l3", "l5"], "ค้าซากสัตว์": ["l4"], "สะสม+จำหน่าย": ["l6", "l7"], "ยาฆ่าแมลง": ["l8"], "แก็ซ": ["l9"] };
+  function newExpSection(r, groups) {
+    var fks = [].concat.apply([], groups.map(function (g) { return NEW_EXP[g[0]] || []; }));
+    if (!fks.length) return "";
+    var hd = '<div class="section-label" style="margin-top:14px">📅 วันหมดอายุใบอนุญาต (หลังได้ใบ)</div>';
+    if (!r.tcode) return hd + '<div class="rg-dsub rg-badt">ยังกรอกไม่ได้: สาขานี้ยังไม่มีรหัสร้าน T### ในชีต SLA (คอลัมน์ Tcode) — แอปจึงหาแถวในแท็บใบอนุญาตไม่ได้</div>';
+    if (OPEN.st !== "ok") return hd + '<div class="rg-dsub">' + (OPEN.st === "err" ? '<span class="rg-badt">โหลดข้อมูลชีตทะเบียนไม่สำเร็จ — ' + esc(OPEN.err) + "</span>" : "กำลังโหลดข้อมูลชีตทะเบียน… ปิดแล้วเปิดลิ้นชักนี้ใหม่อีกครั้ง") + "</div>";
+    var lic = (OPEN.d.lic || []).filter(function (a) { return a.code === r.tcode; })[0];
+    if (!lic) return hd + '<div class="rg-dsub rg-badt">ยังกรอกไม่ได้: ไม่พบแถว ' + esc(r.tcode) + " ในแท็บ ใบอนุญาต ของชีต 0. CJx Store Document_New — ให้ทีมทะเบียนเพิ่มแถวก่อน</div>";
+    var ed = canTaxReg(), lead = OM() ? OM().lead : {};
+    var rows = fks.map(function (fk) {
+      var raw = lic[fk] || "", c = licCell(raw, lead[fk], todayIso());
+      var left = c.exp ? '<div class="rg-d">หมดอายุ ' + esc(fmtIso(c.exp)) + " (วัน/เดือน/ปี) · " + (c.left < 0 ? "หมดแล้ว " + (-c.left) + " วัน" : "เหลือ " + c.left + " วัน") + "</div>" : "";
+      return "<tr><td>" + esc(PLAB[fk]) + "</td><td>" + (ed ? licIn(fk, raw) : txt(raw)) + left + "</td></tr>";
+    }).join("");
+    return hd + '<div class="rg-dsub">ชีตทะเบียน แท็บ ใบอนุญาต · แถว ' + esc(r.tcode) + " " + esc(lic.name || "") + " · กรอกวันหมดอายุ หรือเลือกสถานะ</div>" +
+      '<div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>ใบอนุญาต</th><th>วันหมดอายุ / สถานะ</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
+      (ed ? '<div style="margin:6px 0 12px"><button type="button" id="rg-tsave-lic" class="au-save">💾 บันทึกวันหมดอายุ</button> <span class="rg-dsub">บันทึกลงชีต 0. CJx Store Document_New แท็บ ใบอนุญาต (ปุ่มนี้แยกจากปุ่มบันทึกวันยื่น/ได้ด้านล่าง)</span></div>' : "");
+  }
   function siteDrawer(code) {
     var r = REG() && REG().rows.filter(function (x) { return x.code === code; })[0];
     var u = utilRows().filter(function (x) { return x.code === code; })[0];
@@ -8357,6 +8382,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
             return "<tr><td>" + esc(boxName(c[0])) + "</td><td>" + esc(x.dl || DASH) + "</td><td>" + stt + "</td><td>" + ((x.na && !x.skip) ? DASH : dateIn(cols[c[0]], x.skip ? "-" : x.v, true)) + "</td></tr>";
           }).join("");
         }).join("") + "</tbody></table></div>";
+      h += newExpSection(r, groups);
     } else if (!r) h += '<div class="rg-dsub">สาขานี้ไม่อยู่ในกลุ่มเอกสารทะเบียน (ยังไม่ยื่น อ.1 หรือเปิดแล้ว)</div>';
     if (u && showUtil) h += '<div class="section-label" style="margin-top:14px">น้ำ-ไฟ · SLA ให้ทันวันเปิด (D-0)</div><div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เรื่อง</th><th>ขั้น</th><th>เตรียม</th><th>ขอ</th><th>ได้</th></tr></thead><tbody>' +
       UTRK.map(function (t) { var x = u.t[t[1]] || {}, c = UCOLS[t[1]]; return "<tr><td>" + t[0] + "</td><td>" + (x.s ? USTEP[x.s] : DASH) + "</td><td>" + dateIn(c[0], x.prep) + "</td><td>" + dateIn(c[1], x.req) + "</td><td>" + dateIn(c[2], x.got) + "</td></tr>"; }).join("") + "</tbody></table></div>";
@@ -8364,6 +8390,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       : '<div class="rg-dsub" style="margin-top:12px">ดูอย่างเดียว — บันทึกได้เฉพาะ Admin / ทีมทะเบียน</div>';
     drawer(code + " · " + ((r && r.name) || (u && u.name) || ""), h);
     var sb = document.getElementById("rg-save"); if (sb) sb.onclick = function () { saveDrawer(code); };
+    var eb = document.getElementById("rg-tsave-lic"); if (eb && r && r.tcode) eb.onclick = function () { taxSave(r.tcode, "lic", eb); };
     [].forEach.call(document.querySelectorAll("#rg-drawer .rg-w"), function (w) {
       var di = w.querySelector(".rg-in"), sk = w.querySelector(".rg-skip");
       function mark() { w.classList.toggle("dirty", wval(w) !== w.getAttribute("data-orig")); w.classList.remove("saved", "err"); }
@@ -8763,7 +8790,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     var list = sortRows(byStatus(c.rows, c.stat), rk, c.coh), pg = c.noPage ? { items: list, p: 0, n: 1, total: list.length } : pageOf(key, list);
     var msg = c.rows.length ? (list.length ? "" : "ไม่มีสาขาตรงตัวกรองสถานะ — กด “ล้างตัวกรอง” หรือเลือกสถานะอื่น") : "ไม่มีสาขาในกลุ่ม/ตัวกรองนี้ — ลองเปลี่ยนกลุ่ม หรือกด “ล้างตัวกรอง”";
     var b1 = pg.items.map(function (r) { return rowOpen(c.coh, r) + siteTd(r) + infoTd(c.coh, r) + c.row(r) + '<td class="rg-nw">' + stWord(c.stat(r)) + "</td></tr>"; }).join("") || emptyRow(c.n, msg);
-    return strip(T, c.coh, c.w) +
+    return (c.noStrip ? "" : strip(T, c.coh, c.w)) +
       details(key + "-t1", tcard("rg-t1", c.th, b1, pager(key, pg)), '🏪 รายสาขา <span class="rg-dsub2">· ' + list.length + " สาขา · กดแถวเพื่อดูรายละเอียด" + (c.coh === "a" ? " / ลงวันที่" : "") + "</span>") +
       (c.note ? '<div class="rg-tnote">' + c.note + "</div>" : "");
   }
@@ -8856,9 +8883,10 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
    *   prototype/registration_open_proto.html (สรุปตัวเลข → รายใบอนุญาต → รายสาขา) · ข้อมูลชุดเดิม openModel (getRegOpen · ชีตทะเบียนผ่าน Tank G)
    * สถานะต่อช่อง = licCell เดิม + แยก 2 อย่างแบบต้นแบบ: "soon" = มีใบ อีก ≤30 วันถึงรอบต่อ · "zn" = สุรา ป.1/ป.2 ไม่ต้องมี + บัญชีบอกติด Zoning
    * นับเฉพาะร้านที่อยู่ในชีตทะเบียน (ร้านที่มีแต่ในไฟล์บัญชี แจ้งจำนวนแยก) */
-  var PST = { ok: ["✓", "มีใบ ยังไม่ถึงรอบต่อ"], soon: ["✓", "มีใบ อีก ≤30 วันถึงรอบต่อ"], due: ["🟠", "ถึงรอบต่ออายุแล้ว"], over: ["🔴", "หมดอายุแล้ว"],
+  // 13 พ.ย. (ทีมทะเบียน "ก่อนหมดอายุ 1 เดือนให้เป็นสีแดง ก่อนนั้นให้เป็นสีเหลือง"): crit = ถึงรอบต่อ + เหลือ ≤30 วันจะหมดอายุ (แดง) · due = ถึงรอบต่อ เหลือ >30 วัน (เหลือง)
+  var PST = { ok: ["✓", "มีใบ ยังไม่ถึงรอบต่อ"], soon: ["✓", "มีใบ อีก ≤30 วันถึงรอบต่อ"], due: ["🟡", "ถึงรอบต่ออายุ (เหลือมากกว่า 30 วัน)"], crit: ["🔴", "อีก ≤30 วันจะหมดอายุ"], over: ["🔴", "หมดอายุแล้ว"],
     prog: ["", "ยังไม่มีวันหมดอายุ — ชีตเขียนสถานะไว้"], none: ["?", "ยังไม่มีบันทึก (ช่องว่าง)"], na: ["–", "ไม่ต้องมี"], zn: ["🚫", "ติด Zoning ขายสุราไม่ได้"] };
-  var PHAVE = { ok: 1, soon: 1, due: 1, over: 1 };
+  var PHAVE = { ok: 1, soon: 1, due: 1, crit: 1, over: 1 };
   var PLAB = { l1: "ขายสุรา ป.1 (ค้าส่ง)", l2: "ขายสุรา ป.2 (ค้าปลีก)", l3: "ขายยาสูบ ป.2", l4: "ค้าซากสัตว์", l5: "ขายอาหารสัตว์",
     l6: "สถานที่สะสมอาหาร", l7: "สถานที่จำหน่ายอาหาร", l8: "กิจการอันตราย — ยาฆ่าแมลง", l9: "กิจการอันตราย — แก๊ส" };
   var PF = { fs: "", fl: "", fv: "", so: "code" }, RF = { rf: "any", rl: "", rs: "w" };
@@ -8867,6 +8895,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function pst(r, l) {
     var x = r.lic[l[0]], lead = OM().lead[l[0]] || 0;
     if (x.s === "ok") return x.left <= lead + 30 ? "soon" : "ok";
+    if (x.s === "due") return x.left <= 30 ? "crit" : "due";
     if (x.s === "na") return (l[0] === "l1" || l[0] === "l2") && r.zone === "ติด Zoning" ? "zn" : "na";
     return x.s;
   }
@@ -8880,9 +8909,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if (x.exp) t += "\nหมดอายุ " + pEx(x.exp) + " · " + (x.left < 0 ? "หมดมาแล้ว " + (-x.left) + " วัน" : "เหลือ " + x.left + " วัน") + " · ต่อล่วงหน้าได้ D-" + (lead != null ? lead : "?");
     return t;
   }
-  function pScore(r) { var w = { over: 100, due: 30, none: 10, prog: 3 }; return OLIC.reduce(function (s, l) { return s + (w[pst(r, l)] || 0); }, 0); }
+  function pScore(r) { var w = { over: 100, crit: 60, due: 30, none: 10, prog: 3 }; return OLIC.reduce(function (s, l) { return s + (w[pst(r, l)] || 0); }, 0); }
   function pCnt(rows) {
-    var c = {}; OLIC.forEach(function (l) { c[l[0]] = { ok: 0, soon: 0, due: 0, over: 0, prog: 0, none: 0, na: 0, zn: 0, words: {} }; });
+    var c = {}; OLIC.forEach(function (l) { c[l[0]] = { ok: 0, soon: 0, due: 0, crit: 0, over: 0, prog: 0, none: 0, na: 0, zn: 0, words: {} }; });
     rows.forEach(function (r) { OLIC.forEach(function (l) {
       var st = pst(r, l), k = c[l[0]]; k[st]++;
       if (st === "prog") { var w = pShort(r.lic[l[0]].raw).replace(/…$/, "").replace(/\d[\d,.]*\s*บาท.*$/, "").trim(); k.words[w] = (k.words[w] || 0) + 1; }
@@ -8897,30 +8926,30 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   // F.st (สถานะในแถวตัวกรองบนสุด) ใช้กับตารางรายสาขาด้วย: 🔴 เลยกำหนด = มีใบหมดอายุ · ⏳ ค้าง = ถึงรอบต่อ/ยังไม่ได้ใบ · ☐ = มีช่องว่าง · ✓ = ไม่มีเรื่องต้องตาม
   function pTopSt(r, sts) {
     if (F.st === "over") return sts.indexOf("over") >= 0;
-    if (F.st === "pend") return sts.indexOf("due") >= 0 || sts.indexOf("prog") >= 0;
+    if (F.st === "pend") return sts.indexOf("due") >= 0 || sts.indexOf("crit") >= 0 || sts.indexOf("prog") >= 0;
     if (F.st === "none") return sts.indexOf("none") >= 0;
     if (F.st === "done") return !pScore(r);
     return true;
   }
 
   function bLic() {
-    var rows = pRows(), C = pCnt(rows), N = rows.length, T = { ok: 0, soon: 0, due: 0, over: 0, prog: 0, none: 0, na: 0, zn: 0 };
+    var rows = pRows(), C = pCnt(rows), N = rows.length, T = { ok: 0, soon: 0, due: 0, crit: 0, over: 0, prog: 0, none: 0, na: 0, zn: 0 };
     OLIC.forEach(function (l) { Object.keys(T).forEach(function (k) { T[k] += C[l[0]][k]; }); });
-    var have = T.ok + T.soon + T.due + T.over, need = have + T.prog + T.none, pct = need ? Math.round(have * 100 / need) : 0;
-    var h = pHero([[need ? pct + "%" : DASH, "#15803d", "มีใบแล้ว (" + have + " จาก " + need + " ช่องที่ต้องมีใบ)"], [T.over, "#b91c1c", "🔴 ใบหมดอายุแล้ว"], [T.due, "#c2410c", "🟠 ถึงรอบต่ออายุ"],
+    var have = T.ok + T.soon + T.due + T.crit + T.over, need = have + T.prog + T.none, pct = need ? Math.round(have * 100 / need) : 0;
+    var h = pHero([[need ? pct + "%" : DASH, "#15803d", "มีใบแล้ว (" + have + " จาก " + need + " ช่องที่ต้องมีใบ)"], [T.over, "#b91c1c", "🔴 ใบหมดอายุแล้ว"], [T.crit, "#b91c1c", "🔴 อีก ≤30 วันจะหมดอายุ"], [T.due, "#a16207", "🟡 ถึงรอบต่ออายุ (เหลือ >30 วัน)"],
       [T.prog, "#92400e", "ยังไม่ได้ใบ — ทีมกำลังขอ (ชีตเขียนสถานะ เช่น รอติดตาม / รอชำระเงิน)"], [T.none, "#1d4ed8", "? ยังไม่มีบันทึก (ช่องว่าง)"]]);
     function dot(n, cls) { return n ? '<b class="' + cls + '">' + n + "</b>" : "·"; }
     var lt = OLIC.map(function (l) {
-      var c = C[l[0]], hv = c.ok + c.soon + c.due + c.over, nd = hv + c.prog + c.none, p = nd ? Math.round(hv * 100 / nd) : 0;
+      var c = C[l[0]], hv = c.ok + c.soon + c.due + c.crit + c.over, nd = hv + c.prog + c.none, p = nd ? Math.round(hv * 100 / nd) : 0;
       var col = p >= 90 ? "#15803d" : (p >= 60 ? "#b45309" : "#b91c1c"), top = Object.keys(c.words).map(function (w) { return [w, c.words[w]]; }).sort(function (a, b) { return b[1] - a[1]; });
       var pg = c.prog ? '<b class="rgp-pg" title="' + esc(top.map(function (t) { return t[0] + " " + t[1]; }).join("\n")) + '">' + c.prog + '</b><div class="rgp-pgs">' + esc(top.slice(0, 2).map(function (t) { return t[0] + " " + t[1]; }).join(" · ")) + "</div>" : "·";
       return "<tr><td>" + esc(PLAB[l[0]]) + '</td><td class="c">' + (nd ? '<div class="rgp-bar"><span style="width:' + p + "%;background:" + col + '"></span></div><b style="color:' + col + '">' + p + "%</b>" : DASH) + "</td>" +
-        '<td class="c">' + (c.ok + c.soon) + '</td><td class="c">' + dot(c.due, "rgp-a") + '</td><td class="c">' + dot(c.over, "rgp-r") + '</td><td class="c">' + pg + '</td><td class="c">' + dot(c.none, "rgp-u") + "</td>" +
+        '<td class="c">' + (c.ok + c.soon) + '</td><td class="c">' + dot(c.due, "rgp-a") + '</td><td class="c">' + dot(c.crit, "rgp-r") + '</td><td class="c">' + dot(c.over, "rgp-r") + '</td><td class="c">' + pg + '</td><td class="c">' + dot(c.none, "rgp-u") + "</td>" +
         '<td class="c">' + (c.zn ? '<span class="rgp-zn">🚫 ' + c.zn + "</span> + " + c.na : (c.na || "·")) + '</td><td class="c rgp-tot">' + N + "</td></tr>";
     }).join("");
-    h += details("lic-sum", '<div class="card rgp-card"><div class="rgp-tw"><table class="rgp-t"><tr><th>ใบอนุญาต</th><th class="c">มีใบแล้ว</th><th class="c">✓ ยังไม่หมด</th><th class="c">🟠 ถึงรอบต่อ</th><th class="c">🔴 หมดแล้ว</th>' +
+    h += details("lic-sum", '<div class="card rgp-card"><div class="rgp-tw"><table class="rgp-t"><tr><th>ใบอนุญาต</th><th class="c">มีใบแล้ว</th><th class="c">✓ ยังไม่หมด</th><th class="c">🟡 ถึงรอบต่อ<br><span class="rgp-thn">(เหลือ >30 วัน)</span></th><th class="c">🔴 อีก ≤30 วัน<br><span class="rgp-thn">จะหมดอายุ</span></th><th class="c">🔴 หมดแล้ว</th>' +
       '<th class="c">ยังไม่ได้ใบ<br><span class="rgp-thn">(ทีมกำลังขอ)</span></th><th class="c">? ว่าง</th><th class="c">– ไม่ต้องมี<br><span class="rgp-thn">(🚫 = ติด Zoning)</span></th><th class="c">รวม</th></tr>' + lt + "</table></div>" +
-      '<div class="rgp-f">"มีใบแล้ว" = ช่องที่ชีตมีวันหมดอายุ ÷ ช่องที่ต้องมีใบ (ไม่นับ "ไม่ต้องมี") · ถึงรอบต่อ = วันนี้อยู่ในช่วงต่อล่วงหน้าตามหัวคอลัมน์ชีต (D-90 / D-60 / D-45) · "ไม่ต้องมี" นับทั้ง "-" และคำว่า "ไม่ต้องมี"</div>' + pNote() + "</div>", "📄 รายใบอนุญาต");
+      '<div class="rgp-f">"มีใบแล้ว" = ช่องที่ชีตมีวันหมดอายุ ÷ ช่องที่ต้องมีใบ (ไม่นับ "ไม่ต้องมี") · ถึงรอบต่อ = วันนี้อยู่ในช่วงต่อล่วงหน้าตามหัวคอลัมน์ชีต (D-90 / D-60 / D-45) · เหลือ ≤30 วันจะหมดอายุ = แดง · "ไม่ต้องมี" นับทั้ง "-" และคำว่า "ไม่ต้องมี"</div>' + pNote() + "</div>", "📄 รายใบอนุญาต");
 
     // รายสาขา
     var t0 = todayIso(), fl = PF.fl === "" ? null : OLIC[+PF.fl], list = rows.map(function (r) { return { r: r, st: OLIC.map(function (l) { return pst(r, l); }), s: pScore(r) }; });
@@ -8939,17 +8968,17 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       return a.r.code < b.r.code ? -1 : 1;
     });
     var body = list.map(function (x) {
-      var r = x.r, n = { over: 0, due: 0, prog: 0, none: 0 }, age = r.open_iso ? Math.round((new Date(t0) - new Date(r.open_iso)) / 86400000) : null;
+      var r = x.r, n = { over: 0, crit: 0, due: 0, prog: 0, none: 0 }, age = r.open_iso ? Math.round((new Date(t0) - new Date(r.open_iso)) / 86400000) : null;
       x.st.forEach(function (s) { if (s in n) n[s]++; });
       var cells = OLIC.map(function (l, i) { var s = x.st[i], v = r.lic[l[0]]; return '<td class="rgp-m rgp-' + s + '" title="' + esc(pTip(l, v, s)) + '">' + (s === "prog" ? esc(pShort(v.raw)) : PST[s][0]) + "</td>"; }).join("");
       return '<tr class="rg-orow" data-ocode="' + esc(r.code) + '" tabindex="0"><td class="rgp-st"><b>' + esc(r.code) + "</b> " + esc(r.name) + '</td><td class="c rgp-od' + (age != null && age <= 90 ? " rgp-new" : "") + '"' + (age != null ? ' title="เปิดมาแล้ว ' + age + ' วัน"' : "") + ">" + esc(pEx(r.open_iso)) + "</td>" + cells +
-        '<td class="c rgp-rn">' + ((n.over + n.due) || "") + '</td><td class="c rgp-pn">' + (n.prog || "") + '</td><td class="c rgp-un">' + (n.none || "") + "</td></tr>";
+        '<td class="c rgp-rn">' + ((n.over + n.crit + n.due) || "") + '</td><td class="c rgp-pn">' + (n.prog || "") + '</td><td class="c rgp-un">' + (n.none || "") + "</td></tr>";
     }).join("") || '<tr><td colspan="' + (5 + OLIC.length) + '" class="rg-empty">' + (rows.length ? "ไม่มีร้านตรงตัวกรอง — กด “ล้างตัวกรอง”" : "ไม่มีร้านในกลุ่ม/ตัวกรองนี้") + "</td></tr>";
     h += details("lic-site", '<div class="card rgp-card">' +
-      '<div class="rgp-leg"><span class="rgp-ok">✓ มีใบ ยังไม่หมด</span><span class="rgp-due">🟠 ถึงรอบต่อ</span><span class="rgp-over">🔴 หมดอายุแล้ว</span><span class="rgp-prog">คำในช่อง = ยังไม่ได้ใบ · สถานะที่ทีมเขียนในชีต</span><span class="rgp-none">? ยังไม่มีบันทึก</span><span class="rgp-na">– ไม่ต้องมี</span><span class="rgp-zn">🚫 ติด Zoning (ขายสุราไม่ได้)</span><span class="rgp-nw">วันเปิดสีส้ม = เปิดมาไม่เกิน 90 วัน</span> · ชี้ที่ช่องเพื่อดูค่าในชีต · กดแถวเพื่อดูรายละเอียดร้าน</div>' +
-      '<div class="rgp-flt">' + pSel("fs", PF.fs, [["", "สถานะสาขา: ทั้งหมด"], ["todo", "มีเรื่องต้องตาม (หมด/ถึงรอบ/ยังไม่ได้ใบ/ว่าง)"], ["over", "🔴 มีใบหมดอายุ"], ["due", "🟠 มีใบถึงรอบต่อ"], ["none", "? มีช่องว่าง"], ["prog", "มีใบที่ยังไม่ได้ (ทีมกำลังขอ)"], ["clean", "✓ ไม่มีเรื่องต้องตาม"], ["zn", "🚫 ติด Zoning"]]) +
+      '<div class="rgp-leg"><span class="rgp-ok">✓ มีใบ ยังไม่หมด</span><span class="rgp-due">🟡 ถึงรอบต่อ (เหลือ >30 วัน)</span><span class="rgp-crit">🔴 อีก ≤30 วันจะหมดอายุ</span><span class="rgp-over">🔴 หมดอายุแล้ว</span><span class="rgp-prog">คำในช่อง = ยังไม่ได้ใบ · สถานะที่ทีมเขียนในชีต</span><span class="rgp-none">? ยังไม่มีบันทึก</span><span class="rgp-na">– ไม่ต้องมี</span><span class="rgp-zn">🚫 ติด Zoning (ขายสุราไม่ได้)</span><span class="rgp-nw">วันเปิดสีส้ม = เปิดมาไม่เกิน 90 วัน</span> · ชี้ที่ช่องเพื่อดูค่าในชีต · กดแถวเพื่อดูรายละเอียดร้าน</div>' +
+      '<div class="rgp-flt">' + pSel("fs", PF.fs, [["", "สถานะสาขา: ทั้งหมด"], ["todo", "มีเรื่องต้องตาม (หมด/ถึงรอบ/ยังไม่ได้ใบ/ว่าง)"], ["over", "🔴 มีใบหมดอายุ"], ["crit", "🔴 มีใบอีก ≤30 วันจะหมด"], ["due", "🟡 มีใบถึงรอบต่อ (เหลือ >30 วัน)"], ["none", "? มีช่องว่าง"], ["prog", "มีใบที่ยังไม่ได้ (ทีมกำลังขอ)"], ["clean", "✓ ไม่มีเรื่องต้องตาม"], ["zn", "🚫 ติด Zoning"]]) +
       pSel("fl", PF.fl, pLicOpts("ใบอนุญาต: ทุกใบ")) +
-      pSel("fv", PF.fv, [["", "สถานะในใบที่เลือก: ทั้งหมด"], ["ok", "✓ ยังไม่หมด"], ["due", "🟠 ถึงรอบต่อ"], ["over", "🔴 หมดแล้ว"], ["prog", "ยังไม่ได้ใบ"], ["none", "? ว่าง"], ["na", "– ไม่ต้องมี"], ["zn", "🚫 ติด Zoning"]]) +
+      pSel("fv", PF.fv, [["", "สถานะในใบที่เลือก: ทั้งหมด"], ["ok", "✓ ยังไม่หมด"], ["due", "🟡 ถึงรอบต่อ (เหลือ >30 วัน)"], ["crit", "🔴 อีก ≤30 วันจะหมด"], ["over", "🔴 หมดแล้ว"], ["prog", "ยังไม่ได้ใบ"], ["none", "? ว่าง"], ["na", "– ไม่ต้องมี"], ["zn", "🚫 ติด Zoning"]]) +
       pSel("so", PF.so, [["code", "เรียง: รหัสสาขา"], ["open", "เรียง: เปิดล่าสุดก่อน"], ["score", "เรียง: เรื่องต้องตามมากสุด"]]) +
       '<button type="button" class="rgp-clr" data-pfclr="lic">ล้างตัวกรอง</button><span class="rgp-cnt">แสดง ' + list.length + " จาก " + N + " ร้าน</span></div>" +
       '<div class="rgp-tw rgp-scroll"><table class="rgp-t rgp-mx"><thead><tr><th>สาขา</th><th class="c">วันเปิด</th>' + pTh() + '<th class="c">หมด/ถึงรอบ</th><th class="c">ยังไม่ได้ใบ</th><th class="c">ว่าง</th></tr></thead><tbody>' + body + "</tbody></table></div></div>", "🏪 รายสาขา <span class=\"rg-dsub2\">· " + N + " ร้าน · มีเรื่องต้องตาม " + todo + " ร้าน</span>");
@@ -8957,27 +8986,27 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
 
   function bRenew() {
-    var rows = pRows(), C = {}, sR = { over: {}, due: {}, soon: {} }, tot = { over: 0, due: 0, soon: 0 };
-    OLIC.forEach(function (l) { C[l[0]] = { over: 0, due: 0, soon: 0, ok: 0 }; });
+    var rows = pRows(), C = {}, sR = { over: {}, crit: {}, due: {}, soon: {} }, tot = { over: 0, crit: 0, due: 0, soon: 0 };
+    OLIC.forEach(function (l) { C[l[0]] = { over: 0, crit: 0, due: 0, soon: 0, ok: 0 }; });
     var list = rows.map(function (r) {
       var st = OLIC.map(function (l) { var s = pst(r, l); if (r.lic[l[0]].exp) { C[l[0]][s]++; if (s in sR) { sR[s][r.code] = 1; tot[s]++; } } return s; });
       var w = OLIC.reduce(function (m, l) { var x = r.lic[l[0]]; return x.exp ? Math.min(m, x.left) : m; }, 99999);
       return { r: r, st: st, w: w };
     });
     function ns(o) { return Object.keys(o).length; }
-    var h = pHero([[tot.over, "#b91c1c", "🔴 ใบที่หมดอายุแล้ว (" + ns(sR.over) + " ร้าน)"], [tot.due, "#c2410c", "🟠 ถึงรอบต่ออายุแล้ว — ยื่นต่อได้เลย (" + ns(sR.due) + " ร้าน)"], [tot.soon, "#a16207", "🟡 อีกไม่เกิน 30 วันจะถึงรอบต่อ (" + ns(sR.soon) + " ร้าน)"]]);
+    var h = pHero([[tot.over, "#b91c1c", "🔴 ใบที่หมดอายุแล้ว (" + ns(sR.over) + " ร้าน)"], [tot.crit, "#b91c1c", "🔴 อีก ≤30 วันจะหมดอายุ — ต้องรีบต่อ (" + ns(sR.crit) + " ร้าน)"], [tot.due, "#a16207", "🟡 ถึงรอบต่ออายุแล้ว เหลือ >30 วัน — ยื่นต่อได้เลย (" + ns(sR.due) + " ร้าน)"], [tot.soon, "#475569", "อีกไม่เกิน 30 วันจะถึงรอบต่อ (" + ns(sR.soon) + " ร้าน)"]]);
     var m = OM(), lt = OLIC.map(function (l) {
       var c = C[l[0]];
-      return "<tr><td>" + esc(PLAB[l[0]]) + '</td><td class="c">' + (c.over ? '<b class="rgp-r">' + c.over + "</b>" : "·") + '</td><td class="c">' + (c.due ? '<b class="rgp-a">' + c.due + "</b>" : "·") + '</td><td class="c">' + (c.soon || "·") +
+      return "<tr><td>" + esc(PLAB[l[0]]) + '</td><td class="c">' + (c.over ? '<b class="rgp-r">' + c.over + "</b>" : "·") + '</td><td class="c">' + (c.crit ? '<b class="rgp-r">' + c.crit + "</b>" : "·") + '</td><td class="c">' + (c.due ? '<b class="rgp-a">' + c.due + "</b>" : "·") + '</td><td class="c">' + (c.soon || "·") +
         '</td><td class="c">' + c.ok + '</td><td class="c">' + (m.lead[l[0]] != null ? m.lead[l[0]] + " วัน" : DASH) + "</td></tr>";
     }).join("");
-    h += details("ren-sum", '<div class="card rgp-card"><div class="rgp-tw"><table class="rgp-t"><tr><th>ใบอนุญาต</th><th class="c">🔴 หมดแล้ว</th><th class="c">🟠 ถึงรอบต่อ</th><th class="c">🟡 อีก ≤30 วัน</th><th class="c">ยังไม่ถึงรอบ</th><th class="c">ต่อล่วงหน้าได้</th></tr>' + lt + "</table></div>" +
+    h += details("ren-sum", '<div class="card rgp-card"><div class="rgp-tw"><table class="rgp-t"><tr><th>ใบอนุญาต</th><th class="c">🔴 หมดแล้ว</th><th class="c">🔴 อีก ≤30 วันจะหมด</th><th class="c">🟡 ถึงรอบต่อ<br><span class="rgp-thn">(เหลือ >30 วัน)</span></th><th class="c">อีก ≤30 วัน<br><span class="rgp-thn">ถึงรอบ</span></th><th class="c">ยังไม่ถึงรอบ</th><th class="c">ต่อล่วงหน้าได้</th></tr>' + lt + "</table></div>" +
       '<div class="rgp-f">นับเฉพาะช่องที่ชีตมีวันหมดอายุ · ช่องที่เป็นข้อความ (กำลังขอ/รอชำระ) ดูที่หน้า 📄 ใบอนุญาต</div>' + pNote() + "</div>", "📄 รายใบอนุญาต");
     var li = RF.rl === "" ? null : +RF.rl;
     var shown = list.filter(function (x) {
       if (!pTopSt(x.r, x.st)) return false;
       var sts = li == null ? x.st : [x.st[li]];
-      if (RF.rf === "any") return sts.some(function (s) { return s === "over" || s === "due" || s === "soon"; });
+      if (RF.rf === "any") return sts.some(function (s) { return s === "over" || s === "crit" || s === "due" || s === "soon"; });
       return !RF.rf || sts.indexOf(RF.rf) >= 0;
     });
     shown.sort(function (a, b) { return (RF.rs === "w" ? a.w - b.w : 0) || (a.r.code < b.r.code ? -1 : 1); });
@@ -8985,14 +9014,14 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       var r = x.r;
       return '<tr class="rg-orow" data-ocode="' + esc(r.code) + '" tabindex="0"><td class="rgp-st"><b>' + esc(r.code) + "</b> " + esc(r.name) + "</td>" + OLIC.map(function (l, i) {
         var v = r.lic[l[0]], s = x.st[i];
-        if (v.exp) return '<td class="rgp-m rgp-rn-' + s + '" title="' + esc(pTip(l, v, s)) + '">' + (s === "over" ? "หมด " + (-v.left) + " วัน" : (s === "due" || s === "soon") ? "เหลือ " + v.left + " วัน" : esc(pEx(v.exp))) + "</td>";
+        if (v.exp) return '<td class="rgp-m rgp-rn-' + s + '" title="' + esc(pTip(l, v, s)) + '">' + (s === "over" ? "หมด " + (-v.left) + " วัน" : (s === "crit" || s === "due" || s === "soon") ? "เหลือ " + v.left + " วัน" : esc(pEx(v.exp))) + "</td>";
         var k = s === "na" || s === "zn" ? "na" : (s === "prog" ? "prog" : "none");
         return '<td class="rgp-m rgp-rn-' + k + '" title="' + esc(pTip(l, v, s)) + '">' + (k === "na" ? "–" : (v.raw ? esc(String(v.raw).slice(0, 24)) : "ว่าง")) + "</td>";
       }).join("") + "</tr>";
     }).join("") || '<tr><td colspan="' + (1 + OLIC.length) + '" class="rg-empty">' + (rows.length ? "ไม่มีร้านตรงตัวกรอง — เลือก “แสดง: ทุกร้าน” หรือกด “ล้างตัวกรอง”" : "ไม่มีร้านในกลุ่ม/ตัวกรองนี้") + "</td></tr>";
     h += details("ren-site", '<div class="card rgp-card">' +
-      '<div class="rgp-leg"><span class="rgp-rn-over">หมด N วัน = หมดอายุแล้ว</span><span class="rgp-rn-due">เหลือ N วัน = ถึงรอบต่อ</span><span class="rgp-rn-soon">เหลือ N วัน = อีก ≤30 วันถึงรอบ</span><span class="rgp-rn-ok">วันที่ = ยังไม่ถึงรอบ</span><span class="rgp-rn-prog">ข้อความในชีต</span> · กดแถวเพื่อดูรายละเอียดร้าน</div>' +
-      '<div class="rgp-flt">' + pSel("rf", RF.rf, [["any", "แสดง: เฉพาะร้านที่ต้องต่อ (🔴🟠🟡)"], ["over", "🔴 มีใบหมดอายุแล้ว"], ["due", "🟠 มีใบถึงรอบต่อ"], ["soon", "🟡 มีใบอีก ≤30 วันถึงรอบ"], ["", "ทุกร้าน"]]) +
+      '<div class="rgp-leg"><span class="rgp-rn-over">หมด N วัน = หมดอายุแล้ว</span><span class="rgp-rn-crit">เหลือ ≤30 วัน = ใกล้หมดอายุ</span><span class="rgp-rn-due">เหลือ N วัน = ถึงรอบต่อ (เหลือ >30 วัน)</span><span class="rgp-rn-soon">เหลือ N วัน = อีก ≤30 วันถึงรอบ</span><span class="rgp-rn-ok">วันที่ = ยังไม่ถึงรอบ</span><span class="rgp-rn-prog">ข้อความในชีต</span> · กดแถวเพื่อดูรายละเอียดร้าน</div>' +
+      '<div class="rgp-flt">' + pSel("rf", RF.rf, [["any", "แสดง: เฉพาะร้านที่ต้องต่อ / ใกล้ถึงรอบ"], ["over", "🔴 มีใบหมดอายุแล้ว"], ["crit", "🔴 มีใบอีก ≤30 วันจะหมด"], ["due", "🟡 มีใบถึงรอบต่อ (เหลือ >30 วัน)"], ["soon", "มีใบอีก ≤30 วันถึงรอบ"], ["", "ทุกร้าน"]]) +
       pSel("rl", RF.rl, pLicOpts("ใบอนุญาต: ทุกใบ")) + pSel("rs", RF.rs, [["w", "เรียง: หมดก่อนขึ้นก่อน"], ["code", "เรียง: รหัสสาขา"]]) +
       '<button type="button" class="rgp-clr" id="rgp-csv">⬇ Export CSV</button><button type="button" class="rgp-clr" data-pfclr="renew">ล้างตัวกรอง</button><span class="rgp-cnt">แสดง ' + shown.length + " จาก " + rows.length + " ร้าน</span></div>" +
       '<div class="rgp-tw rgp-scroll"><table class="rgp-t rgp-rx"><thead><tr><th>สาขา</th>' + pTh() + "</tr></thead><tbody>" + body + "</tbody></table></div>" +
@@ -9002,11 +9031,11 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
   var PCSV = [];
   function pCsv() {
-    var SW = { over: "หมดอายุแล้ว", due: "ถึงรอบต่ออายุ", soon: "อีก ≤30 วันถึงรอบ", ok: "ยังไม่ถึงรอบ" }, li = RF.rl === "" ? null : +RF.rl, m = OM();
+    var SW = { over: "หมดอายุแล้ว", crit: "อีก ≤30 วันจะหมดอายุ", due: "ถึงรอบต่ออายุ (เหลือ >30 วัน)", soon: "อีก ≤30 วันถึงรอบ", ok: "ยังไม่ถึงรอบ" }, li = RF.rl === "" ? null : +RF.rl, m = OM();
     var out = [["Code", "สาขา", "ใบอนุญาต", "สถานะ", "วันหมดอายุ", "เหลือ/เลย (วัน)", "ยื่นต่อได้ตั้งแต่"]];
     PCSV.forEach(function (x) { OLIC.forEach(function (l, i) {
       var v = x.r.lic[l[0]], s = x.st[i]; if (!v.exp || (li != null && i !== li)) return;
-      if (RF.rf === "any" && !/^(over|due|soon)$/.test(s)) return; if (RF.rf && RF.rf !== "any" && s !== RF.rf) return;
+      if (RF.rf === "any" && !/^(over|crit|due|soon)$/.test(s)) return; if (RF.rf && RF.rf !== "any" && s !== RF.rf) return;
       out.push([x.r.code, x.r.name, PLAB[l[0]], SW[s] || s, fmtIso(v.exp), v.left < 0 ? "เลย " + (-v.left) : "เหลือ " + v.left, m.lead[l[0]] != null ? fmtIso(addDays(v.exp, -m.lead[l[0]])) : ""]);
     }); });
     var csv = "﻿" + out.map(function (r) { return r.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(","); }).join("\r\n");
@@ -9031,11 +9060,102 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   //   ช่องโชว์วันที่จริงจากไฟล์บัญชี (ได้รับเอกสาร / จ่าย) + คำ Remark บัญชี แทนสัญลักษณ์อย่างเดียว · ทะเบียน ภป.1/ภป.3 รวมเป็นช่องเดียว
   function txCell(k, line, tip, span) { return '<td class="rg-c rg-mc rg-s-' + k + '"' + (span ? ' colspan="' + span + '"' : "") + ' title="' + esc(tip) + '">' + SYM[k] + (line ? '<div class="rg-ml">' + esc(line) + "</div>" : "") + "</td>"; }
   var LPARTS = [["c", "ประเมินรวม"], ["l", "ภาษีที่ดิน"], ["b", "สิ่งปลูกสร้าง"]];
+  /* ===== 13 พ.ย. (จี "อยากได้ Summary แบบนี้กับภาษีที่ดินสิ่งปลูกสร้างและภาษีป้าย" + ทีมทะเบียน "ภาษีป้าย ควรขึ้น Step ที่ค้างอยู่ด้วย แล้วก็ต้องมี Filter")
+   * หน้าตาเดียวกับหน้าใบอนุญาต: การ์ดสรุป → ตารางสรุปรายขั้น → รายสาขา · กดตัวเลข "ค้างที่ขั้นนี้" = กรองรายสาขา
+   * ภาษีป้าย 4 ขั้น: ทะเบียนยื่น ภป.1 → ทะเบียนได้ ภป.3 → บัญชีได้รับเอกสาร (E-mail) → บัญชีจ่าย
+   *   เลยกำหนด: ภป.1 / จ่าย ยังไม่ทำและเลยกำหนด (31 มี.ค. · เปิดหลังจากนั้น = วันเปิด + 15) · ไม่มีแถวในชีต = "ไม่มีข้อมูล" (ไม่ใช่ศูนย์)
+   *   ค้างที่ขั้น = ขั้นแรกที่ยังไม่ทำ · บัญชีจ่ายแล้ว = ครบ (ขั้นก่อนหน้าที่ยังว่างดูได้ที่หน้า ตรวจข้อมูล)
+   * ภาษีที่ดิน (บัญชีอย่างเดียว · ทะเบียนยังไม่มีคอลัมน์ในชีต): ยังไม่ได้เอกสาร → ได้เอกสาร ยังไม่จ่าย → จ่ายครบ · แยก 3 ส่วน ประเมินรวม/ที่ดิน/สิ่งปลูกสร้าง */
+  var TF = { ss: "", ls: "" };
+  var SSTEP = [["s1", "ทะเบียน · ยื่น ภป.1"], ["s3", "ทะเบียน · ได้ ภป.3"], ["mail", "บัญชี · ได้รับเอกสาร (E-mail)"], ["paid", "บัญชี · จ่าย"]];
+  function sStep(r) {
+    var y = r.sign && r.sign.y69, g = r.taxS, t0 = todayIso();
+    var dl = g ? g.dl : (r.open_iso && addDays(r.open_iso, 15) > TAX_SIGN_DL ? addDays(r.open_iso, 15) : TAX_SIGN_DL);
+    var st = {
+      s1: y ? (y.s1 ? "done" : (t0 > dl ? "over" : "pend")) : "none",
+      s3: y ? (y.s3 ? "done" : "pend") : "none",
+      mail: g ? (g.mail || g.paid ? "done" : "pend") : "none",
+      paid: g ? (g.s === "ok" ? "done" : (g.s === "over" ? "over" : "pend")) : "none" };
+    var cur = st.paid === "done" ? "done" : (SSTEP.filter(function (x) { return st[x[0]] !== "done"; })[0] || ["done"])[0];
+    return { st: st, cur: cur, dl: dl };
+  }
+  function sumRow(lab, c, n, cur, fk, fv) {
+    var p = n ? Math.round(c.done * 100 / n) : 0, col = p >= 90 ? "#15803d" : (p >= 60 ? "#b45309" : "#b91c1c");
+    function dot(v, cls) { return v ? '<b class="' + cls + '">' + v + "</b>" : "·"; }
+    return "<tr><td>" + esc(lab) + '</td><td class="c">' + (n ? '<div class="rgp-bar"><span style="width:' + p + "%;background:" + col + '"></span></div><b style="color:' + col + '">' + p + "%</b> <span class=\"rgp-thn\">(" + c.done + ")</span>" : DASH) + "</td>" +
+      '<td class="c">' + dot(c.pend, "rgp-a") + '</td><td class="c">' + dot(c.over, "rgp-r") + '</td><td class="c">' + dot(c.none, "rgp-u") + "</td>" +
+      '<td class="c">' + (cur ? '<button type="button" class="rgp-clr rgp-go' + (TF[fk] === fv ? " on" : "") + '" data-tf="' + fk + '" data-tv="' + fv + '">' + cur + " ร้าน ›</button>" : "·") + '</td><td class="c rgp-tot">' + n + "</td></tr>";
+  }
+  var SUM_TH = '<tr><th>ขั้น</th><th class="c">ทำแล้ว</th><th class="c">⏳ ยังไม่ทำ<br><span class="rgp-thn">(ยังไม่ถึงกำหนด)</span></th><th class="c">🔴 เลยกำหนด</th><th class="c">? ไม่มีข้อมูล<br><span class="rgp-thn">(ไม่มีแถวในชีต)</span></th><th class="c">ค้างอยู่ที่ขั้นนี้<br><span class="rgp-thn">กดเพื่อกรองรายสาขา</span></th><th class="c">รวม</th></tr>';
+  function signSum(rows) {
+    var N = rows.length, C = {}, cur = {}, paidN = 0, overN = 0, pendN = 0, noAcc = 0;
+    SSTEP.forEach(function (x) { C[x[0]] = { done: 0, pend: 0, over: 0, none: 0 }; cur[x[0]] = 0; }); cur.done = 0;
+    rows.forEach(function (r) {
+      var k = sStep(r); SSTEP.forEach(function (x) { C[x[0]][k.st[x[0]]]++; }); cur[k.cur]++;
+      if (k.st.paid === "done") paidN++; else if (k.st.paid === "over") overN++; else if (k.st.paid === "pend") pendN++; else noAcc++;
+    });
+    var acc = N - noAcc, pct = acc ? Math.round(paidN * 100 / acc) : 0;
+    var h = pHero([[acc ? pct + "%" : DASH, "#15803d", "บัญชีจ่ายแล้ว (" + paidN + " จาก " + acc + " ร้านในชีตบัญชี)"], [overN, "#b91c1c", "🔴 เลยกำหนด ยังไม่จ่าย"], [pendN, "#92400e", "⏳ ยังไม่จ่าย · ยังไม่ถึงกำหนด"], [noAcc, "#1d4ed8", "? ไม่อยู่ในชีตบัญชี"]]);
+    h += details("sign-sum", '<div class="card rgp-card"><div class="rgp-tw"><table class="rgp-t">' + SUM_TH +
+      SSTEP.map(function (x) { return sumRow(x[1], C[x[0]], N, cur[x[0]], "ss", x[0]); }).join("") +
+      '<tr><td>✓ ครบทุกขั้น (บัญชีจ่ายแล้ว)</td><td colspan="4"></td><td class="c">' + (cur.done ? '<button type="button" class="rgp-clr rgp-go' + (TF.ss === "done" ? " on" : "") + '" data-tf="ss" data-tv="done">' + cur.done + " ร้าน ›</button>" : "·") + '</td><td class="c rgp-tot">' + N + "</td></tr>" +
+      "</table></div>" + tfBar("ss", SSTEP.concat([["done", "✓ ครบทุกขั้น"]])) +
+      '<div class="rgp-f">กำหนด: ยื่น ภป.1 และจ่าย ภายใน 31 มี.ค. 2569 (ร้านเปิดหลังจากนั้น = วันเปิด + 15 วัน) · ค้างอยู่ที่ขั้น = ขั้นแรกที่ยังไม่ได้ทำ · บัญชีจ่ายแล้ว = ครบ · ที่มา: ชีตทะเบียน แท็บ ภาษีป้าย@2569 + ชีตบัญชี (สด)</div></div>', "📊 สรุปรายขั้น · ภาษีป้าย 2569");
+    return h;
+  }
+  var LSTEP = [["doc", "ยังไม่ได้เอกสาร (ใบประเมิน)"], ["pay", "ได้เอกสารแล้ว · ยังไม่จ่าย"]];
+  function lStep(r) {
+    var y = r.taxL; if (!y) return { cur: "none", y: null };
+    if (y.s === "ok") return { cur: "done", y: y };
+    var on = y.parts.filter(function (q) { return q.has || q.paid; });
+    var noDoc = !on.length || /^ยังไม่ได้/.test(y.rem || "") || on.some(function (q) { return !q.paid && !q.mail; });
+    return { cur: noDoc ? "doc" : "pay", y: y };
+  }
+  function landSum(rows) {
+    var N = rows.length, cur = { doc: 0, pay: 0, done: 0, none: 0 }, cOver = { doc: 0, pay: 0 }, P = {}, overN = 0, freshN = 0;
+    LPARTS.forEach(function (p) { P[p[0]] = { has: 0, mail: 0, paid: 0, wait: 0 }; });
+    rows.forEach(function (r) {
+      var k = lStep(r); cur[k.cur]++;
+      if (k.y && k.y.s === "over") { overN++; if (k.cur in cOver) cOver[k.cur]++; }
+      if (k.y && k.y.s !== "ok" && k.y.fresh) freshN++;
+      if (k.y) k.y.parts.forEach(function (q) { if (!(q.has || q.paid)) return; var c = P[q.k]; c.has++; if (q.mail) c.mail++; if (q.paid) c.paid++; else c.wait++; });
+    });
+    var acc = N - cur.none, pct = acc ? Math.round(cur.done * 100 / acc) : 0;
+    var h = pHero([[acc ? pct + "%" : DASH, "#15803d", "บัญชีจ่ายครบแล้ว (" + cur.done + " จาก " + acc + " ร้านในชีตบัญชี)"], [overN, "#b91c1c", "🔴 เลยกำหนด 30 มิ.ย. ยังไม่จ่าย"], [freshN, "#92400e", "⏳ ร้านเปิดปี 2569 · ยังไม่นับเลยกำหนด"], [cur.none, "#1d4ed8", "? ไม่อยู่ในชีตบัญชี"]]);
+    var st = LSTEP.map(function (x) {
+      var n = cur[x[0]];
+      return "<tr><td>" + esc(x[1]) + '</td><td class="c">' + (n - cOver[x[0]] ? '<b class="rgp-a">' + (n - cOver[x[0]]) + "</b>" : "·") + '</td><td class="c">' + (cOver[x[0]] ? '<b class="rgp-r">' + cOver[x[0]] + "</b>" : "·") +
+        '</td><td class="c">' + (n ? '<button type="button" class="rgp-clr rgp-go' + (TF.ls === x[0] ? " on" : "") + '" data-tf="ls" data-tv="' + x[0] + '">' + n + " ร้าน ›</button>" : "·") + "</td></tr>";
+    }).join("") + '<tr><td>✓ จ่ายครบแล้ว</td><td colspan="2"></td><td class="c">' + (cur.done ? '<button type="button" class="rgp-clr rgp-go' + (TF.ls === "done" ? " on" : "") + '" data-tf="ls" data-tv="done">' + cur.done + " ร้าน ›</button>" : "·") + "</td></tr>";
+    var pt = LPARTS.map(function (p) {
+      var c = P[p[0]], pc = c.has ? Math.round(c.paid * 100 / c.has) : 0, col = pc >= 90 ? "#15803d" : (pc >= 60 ? "#b45309" : "#b91c1c");
+      return "<tr><td>" + esc(p[1]) + '</td><td class="c">' + (c.has || "·") + '</td><td class="c">' + (c.mail || "·") + '</td><td class="c">' + (c.has ? '<div class="rgp-bar"><span style="width:' + pc + "%;background:" + col + '"></span></div><b style="color:' + col + '">' + pc + "%</b> <span class=\"rgp-thn\">(" + c.paid + ")</span>" : DASH) +
+        '</td><td class="c">' + (c.wait ? '<b class="rgp-a">' + c.wait + "</b>" : "·") + "</td></tr>";
+    }).join("");
+    h += details("land-sum", '<div class="card rgp-card"><div class="rgp-tw"><table class="rgp-t"><tr><th>ค้างอยู่ที่</th><th class="c">⏳ ยังไม่ถึงกำหนด</th><th class="c">🔴 เลยกำหนด</th><th class="c">รวม · กดเพื่อกรองรายสาขา</th></tr>' + st + "</table></div>" +
+      '<div class="rgp-tw" style="margin-top:12px"><table class="rgp-t"><tr><th>ส่วนของภาษี</th><th class="c">มีใบประเมิน (ร้าน)</th><th class="c">บัญชีได้รับเอกสาร</th><th class="c">จ่ายแล้ว</th><th class="c">ยังไม่จ่าย</th></tr>' + pt + "</table></div>" +
+      tfBar("ls", LSTEP.concat([["done", "✓ จ่ายครบแล้ว"]])) +
+      '<div class="rgp-f">กำหนดชำระ 30 มิ.ย. 2569 · ร้านเปิดตั้งแต่ 1 ม.ค. 2569 ยังไม่นับเลยกำหนด · ประเมินรวม หรือ แยกที่ดิน/สิ่งปลูกสร้าง อย่างใดอย่างหนึ่ง · ที่มา: ชีตบัญชีภาษีที่ดิน (สด)</div></div>', "📊 สรุป · ภาษีที่ดินและสิ่งปลูกสร้าง 2569");
+    return h;
+  }
+  function tfBar(fk, list) {
+    return '<div class="rgp-flt" style="margin-top:10px"><select data-pf="' + fk + '"><option value="">ค้างอยู่ที่ขั้น: ทั้งหมด</option>' + list.map(function (x) { return '<option value="' + x[0] + '"' + (TF[fk] === x[0] ? " selected" : "") + ">" + esc(x[1]) + "</option>"; }).join("") + "</select>" +
+      (TF[fk] ? '<button type="button" class="rgp-clr" data-tf="' + fk + '" data-tv="">ล้างตัวกรองขั้น</button>' : "") + '<span class="rgp-cnt">ใช้กรองตารางรายสาขาด้านล่าง · ค้นหาชื่อ/รหัสสาขา ใช้ช่องค้นหาด้านบน</span></div>';
+  }
+
   function bLand() {
-    return twoTables({ coh: "b", w: "landtax", rows: rowsB(), stat: function (r) { return bStat(r, "landtax"); },
-      th: "<tr>" + infoTh("b", 2) + '<th colspan="3" class="rg-gh">บัญชี · ปี 2569 (กำหนดชำระ 30 มิ.ย.)</th><th rowspan="2">สถานะ</th></tr><tr>' +
-        LPARTS.map(function (p) { return '<th class="rg-sh">' + p[1] + "<span>&nbsp;</span></th>"; }).join("") + "</tr>", n: 6,
-      row: function (r) {
+    var all = rowsB(), rows = TF.ls ? all.filter(function (r) { return lStep(r).cur === TF.ls; }) : all;
+    return landSum(all) + twoTables({ coh: "b", w: "landtax", rows: rows, noStrip: true, stat: function (r) { return bStat(r, "landtax"); },
+      th: "<tr>" + infoTh("b", 2) + '<th rowspan="2">ค้างอยู่ที่</th><th colspan="3" class="rg-gh">บัญชี · ปี 2569 (กำหนดชำระ 30 มิ.ย.)</th><th rowspan="2">สถานะ</th></tr><tr>' +
+        LPARTS.map(function (p) { return '<th class="rg-sh">' + p[1] + "<span>&nbsp;</span></th>"; }).join("") + "</tr>", n: 7,
+      row: function (r) { return curTd(lStep(r).cur, LSTEP, "จ่ายครบแล้ว") + landCells(r); },
+      note: "ข้อมูล: ชีตบัญชีภาษีที่ดิน (สด) · ในช่อง = วันที่บัญชีได้รับเอกสาร / วันจ่าย · – = ไม่มีใบประเมินส่วนนี้ (ประเมินรวมหรือแยกอย่างใดอย่างหนึ่ง) · ร้านเปิดตั้งแต่ 1 ม.ค. 2569 ยังไม่นับเลยกำหนด" });
+  }
+  function curTd(cur, list, doneWord) {
+    var x = list.filter(function (q) { return q[0] === cur; })[0];
+    return '<td class="rg-dc rg-dcw">' + (cur === "done" ? '<span class="rg-okt">✓ ' + doneWord + "</span>" : (cur === "none" ? '<span class="rg-muted">ไม่มีข้อมูล</span>' : '<span class="rg-pt">' + esc(x ? x[1] : cur) + "</span>")) + "</td>";
+  }
+  function landCells(r) {
         var y = r.taxL;
         if (!y) return OPEN.d.taxL === null ? txCell("over", "อ่านชีตบัญชีไม่ได้", "ดึงชีตบัญชีภาษีที่ดินไม่สำเร็จ — ดูป้ายแดงด้านบน", 3) : txCell("none", "ไม่อยู่ในชีตบัญชี", "ร้านนี้ไม่อยู่ในชีตบัญชีภาษีที่ดิน", 3);
         var wait = y.s === "over" ? "over" : "pend", on = y.parts.filter(function (q) { return q.has || q.paid; });
@@ -9051,16 +9171,15 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           if (waitPart) return txCell(wait, "ยังไม่ได้เอกสาร", p[1] + " · " + y.rem);
           return txCell("na", "", p[1] + " · ไม่มีใบประเมินส่วนนี้" + (sep && p[0] === "c" ? " (ประเมินแยก)" : (!sep && p[0] !== "c" ? " (ประเมินรวม)" : "")));
         }).join("");
-      },
-      note: "ข้อมูล: ชีตบัญชีภาษีที่ดิน (สด) · ในช่อง = วันที่บัญชีได้รับเอกสาร / วันจ่าย · – = ไม่มีใบประเมินส่วนนี้ (ประเมินรวมหรือแยกอย่างใดอย่างหนึ่ง) · ร้านเปิดตั้งแต่ 1 ม.ค. 2569 ยังไม่นับเลยกำหนด" });
   }
   function bSign() {
-    return twoTables({ coh: "b", w: "signtax", rows: rowsB(), stat: function (r) { return bStat(r, "signtax"); },
-      th: "<tr>" + infoTh("b", 2) + '<th class="rg-gh">ทะเบียน · ปี 2569</th><th colspan="2" class="rg-gh">บัญชี · ปี 2569</th><th rowspan="2">สถานะ</th></tr><tr>' +
-        '<th class="rg-sh">ยื่น ภป.1 / ได้ ภป.3<span>&nbsp;</span></th><th class="rg-sh">ได้รับเอกสาร<span>&nbsp;</span></th><th class="rg-sh">จ่าย<span>กำหนด 31 มี.ค.</span></th></tr>', n: 6,
+    var all = rowsB(), rows = TF.ss ? all.filter(function (r) { return sStep(r).cur === TF.ss; }) : all;
+    return signSum(all) + twoTables({ coh: "b", w: "signtax", rows: rows, noStrip: true, stat: function (r) { return bStat(r, "signtax"); },
+      th: "<tr>" + infoTh("b", 2) + '<th rowspan="2">ค้างอยู่ที่ขั้น</th><th class="rg-gh">ทะเบียน · ปี 2569</th><th colspan="2" class="rg-gh">บัญชี · ปี 2569</th><th rowspan="2">สถานะ</th></tr><tr>' +
+        '<th class="rg-sh">ยื่น ภป.1 / ได้ ภป.3<span>&nbsp;</span></th><th class="rg-sh">ได้รับเอกสาร<span>&nbsp;</span></th><th class="rg-sh">จ่าย<span>กำหนด 31 มี.ค.</span></th></tr>', n: 7,
       row: function (r) {
-        var y = (r.sign && r.sign.y69) || {}, g = r.taxS, reg = [y.s1 ? "ภป.1 " + y.s1 : "", y.s3 ? "ภป.3 " + y.s3 : ""].filter(Boolean).join(" · ");
-        var h = reg ? txCell("done", reg, "ทะเบียนลงในชีตแล้ว · " + reg) : txCell("none", "ยังไม่ลงในชีต", "ทีมทะเบียนยังไม่ได้ลงวันยื่น ภป.1 / ได้ ภป.3 ในชีต (แท็บ ภาษีป้าย@2569)");
+        var y = (r.sign && r.sign.y69) || {}, g = r.taxS, cur = curTd(sStep(r).cur, SSTEP, "ครบทุกขั้น"), reg = [y.s1 ? "ภป.1 " + y.s1 : "", y.s3 ? "ภป.3 " + y.s3 : ""].filter(Boolean).join(" · ");
+        var h = cur + (reg ? txCell("done", reg, "ทะเบียนลงในชีตแล้ว · " + reg) : txCell("none", "ยังไม่ลงในชีต", "ทีมทะเบียนยังไม่ได้ลงวันยื่น ภป.1 / ได้ ภป.3 ในชีต (แท็บ ภาษีป้าย@2569)"));
         if (!g) return h + (OPEN.d.taxS === null ? txCell("over", "อ่านชีตบัญชีไม่ได้", "ดึงชีตบัญชีภาษีป้ายไม่สำเร็จ — ดูป้ายแดงด้านบน", 2) : txCell("none", "ไม่อยู่ในชีตบัญชี", "ร้านนี้ไม่อยู่ในชีตบัญชีภาษีป้าย", 2));
         var wait = g.s === "over" ? "over" : "pend";
         h += g.mail ? txCell("done", fmtIso(g.mail), "บัญชีได้รับ E-mail " + fmtIso(g.mail)) :
@@ -9286,7 +9405,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     [].forEach.call(v.querySelectorAll("tr.rg-orow"), function (tr) { tr.onclick = function () { openDrawer(tr.getAttribute("data-ocode")); }; });
     [].forEach.call(v.querySelectorAll("tr.rg-row,tr.rg-orow"), function (tr) { tr.onkeydown = function (e) { if (e.key === "Enter") tr.click(); }; });
     var rt = v.querySelector("#rg-retry"); if (rt) rt.onclick = function () { loadOpen(); };
-    [].forEach.call(v.querySelectorAll("select[data-pf]"), function (el) { el.onchange = function () { var k = el.getAttribute("data-pf"); (k in PF ? PF : RF)[k] = el.value; render(); }; });
+    [].forEach.call(v.querySelectorAll("select[data-pf]"), function (el) { el.onchange = function () { var k = el.getAttribute("data-pf"); (k in PF ? PF : (k in TF ? TF : RF))[k] = el.value; PG = {}; render(); }; });
+    [].forEach.call(v.querySelectorAll("[data-tf]"), function (b) { b.onclick = function () { var k = b.getAttribute("data-tf"), val = b.getAttribute("data-tv"); TF[k] = TF[k] === val ? "" : val; PG = {}; render(); }; });
     [].forEach.call(v.querySelectorAll("[data-pfclr]"), function (b) { b.onclick = function () { if (b.getAttribute("data-pfclr") === "lic") PF = { fs: "", fl: "", fv: "", so: "code" }; else RF = { rf: "any", rl: "", rs: "w" }; render(); }; });
     var cv = v.querySelector("#rgp-csv"); if (cv) cv.onclick = pCsv;
   }
