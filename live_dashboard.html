@@ -1173,7 +1173,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=164335" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=181821" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8235,7 +8235,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     ["สะสม+จำหน่าย", [["rg_food_s", "ยื่น"], ["rg_food_g", "ได้"]]], ["ยาฆ่าแมลง", [["rg_pest_s", "ยื่น"], ["rg_pest_g", "ได้"]]],
     ["แก็ซ", [["rg_gas_s", "ยื่น"], ["rg_gas_g", "ได้"]]], ["ถังขยะ", [["rg_trash_p", "เทศบาล"], ["rg_trash_b", "SCM"]]],
     ["ใช้เสียง", [["rg_sound", "ยื่น"]]], ["ภาษีป้าย", [["rg_tax", "ยื่น"]]], ["ภพ.06", [["rg_pp06", "จด"]]]];
-  var UTRK = [["น้ำ-ไฟ ชั่วคราว", "util_temp"], ["น้ำถาวร", "util_water"], ["ไฟถาวร", "util_elec"]];
+  // 13 พ.ย. (จี "TAP น้ำไฟไปอ่านจาก Tracking ไฟฟ้า-ประปา · ดูอย่างเดียว ยังไม่ต้องมี SLA"): 2 เรื่อง = วันส่งเอกสารให้ ผรม. + เลข Tracking (ชีต รัฐกิจ+ทะเบียน CJx ผ่าน getRegOpen.util)
+  //   เดิม 3 เรื่อง เตรียม/ขอ/ได้ จากชีต Template_งานทะเบียน (วันตามแผนจากสูตร) — หน้า Overall ยังใช้ชีตเดิม (จีเลือก "ยังไม่แตะ Overall")
+  var UTRK = [["ประปา + ไฟชั่วคราว", "util_wt"], ["ไฟฟ้า", "util_el"]];
   var USTEP = { prep: "ยังไม่เตรียมเอกสาร", req: "เตรียมแล้ว · ยังไม่ขอ", wait: "ขอแล้ว · รอ", got: "ได้แล้ว" };
   var F = { q: "", st: "all", month: "", prov: "", range: "d25", u: "", grp: "", code: "" };   // grp "" = สาขาใหม่ D-25 + ร้านเปิดแล้ว (แยกตาราง) · code = สาขาเดียว
   function boxName(k) { var c = (window.SOP_BOX_CATALOG || []).filter(function (x) { return x.key === k; })[0]; return c ? c.name : k; }
@@ -8249,21 +8251,22 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var UOV = {};   // ค่าที่เพิ่งบันทึกในหน้านี้ (ทับข้อมูลเดิมจนกว่าจะโหลดใหม่)
   function todayIso() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
   function ustep(x) { return x.got ? "got" : (x.req ? "wait" : (x.prep ? "req" : "prep")); }
+  // ฐานสาขา = ชุดเดียวกับกล่องน้ำ-ไฟใน Overall (WIP + สแกนสัญญาแล้ว · ร้านที่เปิดแล้ว/ยกเลิก ไม่อยู่ = จบแล้ว) · สถานะ = ชีต Tracking ไฟฟ้า-ประปา
+  function utilData() { return (OPEN.st === "ok" && OPEN.d) ? (OPEN.d.util === undefined ? null : OPEN.d.util) : undefined; }   // undefined = ยังโหลด · null = อ่านไม่ได้
   function utilRows() {
-    var by = {};
-    UTRK.forEach(function (t) {
-      ["prep", "req", "wait", "got"].forEach(function (s) {
-        (det(t[1] + "_" + s) || []).forEach(function (x) { var o = by[x.code] = by[x.code] || { code: x.code, name: x.name, t: {} }; o.t[t[1]] = { s: s, prep: x.reg_prep, req: x.reg_req, got: x.reg_got }; });
-      });
-    });
-    Object.keys(UOV).forEach(function (code) { var o = by[code]; if (!o) return; Object.keys(UOV[code]).forEach(function (tk) { var x = o.t[tk] = o.t[tk] || {}; var v = UOV[code][tk]; ["prep", "req", "got"].forEach(function (f) { if (f in v) x[f] = v[f]; }); x.s = ustep(x); }); });
-    var om = {}; (REG() ? REG().rows : []).forEach(function (r) { if (r.open_iso) om[r.code] = r.open_iso; });
-    var t0 = todayIso();
+    var by = {}, ud = utilData(), sm = {}, om = {};
+    ["prep", "req", "wait", "got"].forEach(function (s0) { (det("util_temp_" + s0) || []).forEach(function (x) { if (!by[x.code]) by[x.code] = { code: x.code, name: x.name, t: {} }; }); });
+    (ud || []).forEach(function (o) { sm[o.cjx] = o; });
+    (REG() ? REG().rows : []).forEach(function (r) { if (r.open_iso) om[r.code] = r.open_iso; });
     return Object.keys(by).map(function (k) {
-      var u = by[k], done = UTRK.every(function (t) { return u.t[t[1]] && u.t[t[1]].s === "got"; });
-      u.open = om[k] || ""; u.done = done; u.wait = UTRK.some(function (t) { return u.t[t[1]] && u.t[t[1]].s === "wait"; });
-      u.over = !done && !!u.open && u.open <= t0;           // D-0: ถึง/เลยวันเปิดแล้วยังได้ไม่ครบ
-      u.st = done ? "done" : (u.over ? "over" : (u.wait ? "wait" : "notyet"));
+      var u = by[k], o = sm[k];
+      u.src = ud === undefined ? "loading" : (ud === null ? "err" : (o ? "ok" : "none"));
+      u.t.util_wt = o ? { s: o.wtd ? "sent" : "no", d: o.wtd || "", trk: o.wtt || "", con: o.wtc || "" } : {};
+      u.t.util_el = o ? { s: o.eld ? "sent" : "no", d: o.eld || "", trk: o.elt || "", con: o.elc || "" } : {};
+      u.open = om[k] || (o && o.open) || ""; u.tcode = (o && o.t) || "";
+      u.nSent = UTRK.filter(function (t) { return u.t[t[1]].s === "sent"; }).length;
+      u.done = u.nSent === UTRK.length; u.over = false; u.wait = !u.done && u.nSent > 0;
+      u.st = u.done ? "done" : (u.wait ? "wait" : "notyet");
       return u;
     });
   }
@@ -8405,10 +8408,14 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       h += newExpSection(r, groups);
     } else if (!r) h += '<div class="rg-dsub">สาขานี้ไม่อยู่ในกลุ่มเอกสารทะเบียน (ยังไม่ยื่น อ.1 หรือเปิดแล้ว)</div>';
     if (r && !groups.length) h += newExpSection(r, []);   // 13 พ.ย. (จี "หมายเหตุต้องมีทุกหน้า"): แท็บน้ำ-ไฟ = หมายเหตุสาขาอย่างเดียว
-    if (u && showUtil) h += '<div class="section-label" style="margin-top:14px">น้ำ-ไฟ · SLA ให้ทันวันเปิด (D-0)</div><div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เรื่อง</th><th>ขั้น</th><th>เตรียม</th><th>ขอ</th><th>ได้</th><th>หมายเหตุ</th></tr></thead><tbody>' +
-      UTRK.map(function (t) { var x = u.t[t[1]] || {}, c = UCOLS[t[1]]; return "<tr><td>" + t[0] + "</td><td>" + (x.s ? USTEP[x.s] : DASH) + "</td><td>" + dateIn(c[0], x.prep) + "</td><td>" + dateIn(c[1], x.req) + "</td><td>" + dateIn(c[2], x.got) + "</td><td>" + tNote(code, t[1]) + "</td></tr>"; }).join("") + "</tbody></table></div>";
+    if (u && showUtil) h += '<div class="section-label" style="margin-top:14px">น้ำ-ไฟ · ส่งเอกสารให้ ผรม. (ชีต Tracking ไฟฟ้า-ประปา · ดูอย่างเดียว)</div>' +
+      (u.src === "ok" ? "" : '<div class="rg-dsub rg-bad">' + (u.src === "err" ? "อ่านชีต Tracking ไฟฟ้า-ประปา ไม่สำเร็จ — ช่องว่างเพราะอ่านไม่ได้ ไม่ใช่ยังไม่ส่ง" : u.src === "loading" ? "กำลังโหลดชีต Tracking ไฟฟ้า-ประปา…" : "สาขานี้ไม่มีแถวในชีต Tracking ไฟฟ้า-ประปา") + "</div>") +
+      '<div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เรื่อง</th><th>วันส่งเอกสาร</th><th>เลข Tracking</th><th>ผรม.</th><th>หมายเหตุ</th></tr></thead><tbody>' +
+      UTRK.map(function (t) { var x = u.t[t[1]] || {}; return "<tr><td>" + t[0] + "</td><td>" + (x.s === "sent" ? '<span class="rg-ok">✓ ' + esc(x.d) + "</span>" : (x.s === "no" ? "ยังไม่ส่ง" : DASH)) + "</td><td>" + esc(x.trk || DASH) + "</td><td>" + esc(x.con || DASH) + "</td><td>" + tNote(code, t[1]) + "</td></tr>"; }).join("") + "</tbody></table></div>" +
+      '<div class="rg-dsub">แก้วันส่ง / เลข Tracking ที่ชีต รัฐกิจ+ทะเบียน CJx แท็บ Tracking ไฟฟ้า-ประปา</div>';
     h += tNoteBar();
-    h += canEdit() ? '<div class="rg-savebar"><button type="button" class="sp-btn pri" id="rg-save">💾 บันทึกที่แก้</button><span class="rg-dsub">บันทึกลงชีต Template_งานทะเบียน (ชีตเดิมของทีมทะเบียน) · ตัวเลขทุกแท็บอัปเดตรอบโหลดถัดไป (~5–10 นาที) · ทุกการแก้ถูกบันทึกในประวัติ (Audit)</span></div>'
+    if (CURV === "util") { /* 13 พ.ย.: แท็บน้ำ-ไฟ ดูอย่างเดียว — ไม่มีช่องให้บันทึกลง Template (หมายเหตุใช้ปุ่ม 📝 ด้านบน) */ }
+    else h += canEdit() ? '<div class="rg-savebar"><button type="button" class="sp-btn pri" id="rg-save">💾 บันทึกที่แก้</button><span class="rg-dsub">บันทึกลงชีต Template_งานทะเบียน (ชีตเดิมของทีมทะเบียน) · ตัวเลขทุกแท็บอัปเดตรอบโหลดถัดไป (~5–10 นาที) · ทุกการแก้ถูกบันทึกในประวัติ (Audit)</span></div>'
       : '<div class="rg-dsub" style="margin-top:12px">ดูอย่างเดียว — บันทึกได้เฉพาะ Admin / ทีมทะเบียน</div>';
     drawer(code + " · " + ((r && r.name) || (u && u.name) || ""), h);
     var sb = document.getElementById("rg-save"); if (sb) sb.onclick = function () { saveDrawer(code); };
@@ -8598,10 +8605,11 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   function aStat(r, w) {
     if (w === "util") {
       var u = umap()[r.code]; if (!u) return { st: "na", word: "ไม่มีข้อมูลน้ำ-ไฟ" };
-      var got = UTRK.filter(function (t) { return u.t[t[1]] && u.t[t[1]].s === "got"; }).length;
-      var um = UTRK.filter(function (t) { return !(u.t[t[1]] && u.t[t[1]].s === "got"); }).map(function (t) { return t[0]; });
-      var us = u.done ? "done" : (u.over ? "over" : "pend");
-      return { st: us, word: us === "done" ? "ครบ" : (us === "over" ? "หลุด SLA" : "ค้าง") + " · ได้ " + got + "/3 เรื่อง", miss: um };
+      if (u.src === "err") return { st: "na", word: "อ่านชีต Tracking ไม่ได้" };
+      if (u.src === "loading") return { st: "na", word: "กำลังโหลด" };
+      if (u.src === "none") return { st: "na", word: "ไม่มีแถวในชีต Tracking" };
+      var um = UTRK.filter(function (t) { return u.t[t[1]].s !== "sent"; }).map(function (t) { return "ส่งเอกสาร" + t[0]; });
+      return { st: u.done ? "done" : "pend", word: u.done ? "ส่งครบ" : "ส่งแล้ว " + u.nSent + "/" + UTRK.length + " เรื่อง", miss: um };
     }
     var ks = keysOf(WORK[w].g), s = rowState(r, ks);
     if (!s.n) return { st: "na", word: "ไม่มีเอกสารที่ต้องทำ" };
@@ -8735,7 +8743,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
   function cohHead(coh, n) {
     var t = coh === "a" ? "สาขาใหม่ (ยังไม่เปิด)" : "ร้านที่เปิดแล้ว";
-    var s = coh === "a" ? (CURV === "util" ? "ชุดเดียวกับกล่องน้ำ-ไฟใน Overall" : F.range === "all" ? "ทุกสาขาที่ยื่น อ.1 แล้ว ยังไม่เปิด" : "D-25 ตาม After อ.1") : "รหัส T### · เฉพาะร้านที่เปิดแล้ว" + (OM() && notOpenedB() ? " (ไม่นับ " + notOpenedB() + " ร้านที่ยังไม่เปิด/ไม่มีวันเปิด)" : "");
+    var s = coh === "a" ? (CURV === "util" ? "ชุดเดียวกับกล่องน้ำ-ไฟใน Overall · สถานะจากชีต Tracking ไฟฟ้า-ประปา" : F.range === "all" ? "ทุกสาขาที่ยื่น อ.1 แล้ว ยังไม่เปิด" : "D-25 ตาม After อ.1") : "รหัส T### · เฉพาะร้านที่เปิดแล้ว" + (OM() && notOpenedB() ? " (ไม่นับ " + notOpenedB() + " ร้านที่ยังไม่เปิด/ไม่มีวันเปิด)" : "");
     return '<div class="rg-coh-h"><span class="rg-coh-t rg-coh-' + coh + '">' + t + '</span><span class="rg-coh-s">' + s + (n != null ? " · " + n + " สาขา" : "") + "</span></div>";
   }
   function stateBox(cls, html) { return '<div class="card"><div class="rg-empty ' + cls + '">' + html + "</div></div>"; }
@@ -8857,20 +8865,16 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
   var USUB = [["prep", "เตรียม"], ["req", "ขอ"], ["got", "ได้"]];
   function aUtil() {
-    var t0 = todayIso();
-    var th = "<tr>" + infoTh("a") + UTRK.map(function (t) { return '<th class="rg-sh" title="เตรียม → ขอ → ได้ · SLA = ให้ทันวันเปิด (D-0)">' + esc(t[0]) + "<span>เตรียม · ขอ · ได้ D-0</span></th>"; }).join("") + "<th>สถานะ</th></tr>";
-    function utd(r, u, tk, lab) {
-      var x = (u && u.t[tk]) || {}, tip = lab + "\nเตรียม: " + (x.prep || "–") + "\nขอ: " + (x.req || "–") + "\nได้: " + (x.got || "–");
-      if (x.got) return mTd("done", "ได้ " + x.got, tip);
-      if (!r.open_iso) return mTd(x.req || x.prep ? "pend" : "none", x.req ? "ขอ " + x.req : (x.prep ? "เตรียม " + x.prep : ""), tip + "\nไม่ทราบวันเปิด (ยังไม่นับ SLA)");
-      var left = dayDiff(r.open_iso, t0);
-      if (left <= 0) return mTd("over", "ถึงวันเปิดแล้ว", tip + "\nยังไม่ได้ · ถึง/เลยวันเปิด " + r.open);
-      return mTd("pend", x.req ? "ขอ " + x.req : (x.prep ? "เตรียม " + x.prep : "ยังไม่เตรียม"), tip + "\nต้องได้ก่อนวันเปิด " + r.open + " · เหลือ " + left + " วัน");
+    var th = "<tr>" + infoTh("a") + UTRK.map(function (t) { return '<th class="rg-sh" title="วันส่งเอกสารให้ ผรม. + เลข Tracking (ชีต Tracking ไฟฟ้า-ประปา)">' + esc(t[0]) + "<span>ส่งเอกสาร · Tracking</span></th>"; }).join("") + "<th>สถานะ</th></tr>";
+    function utd(u, tk, lab) {
+      var x = (u && u.t[tk]) || {}, tip = lab + "\nวันส่งเอกสาร: " + (x.d || "–") + "\nเลข Tracking: " + (x.trk || "–") + "\nผรม.: " + (x.con || "–");
+      return x.s === "sent" ? mTd("done", "ส่ง " + x.d, tip) : mTd("none", "ยังไม่ส่ง", tip);
     }
-    var base = rowsU(), um = umap();
-    return twoTables({ coh: "a", w: "util", rows: base, stat: function (r) { return aStat(r, "util"); }, th: th, n: 6,
-      row: function (r) { var u = um[r.code]; if (!u) return '<td colspan="3" class="rg-dc rg-muted">ไม่มีข้อมูลน้ำ-ไฟ</td>'; return UTRK.map(function (t) { return utd(r, u, t[1], t[0]); }).join(""); },
-      note: "รายชื่อ = ชุดเดียวกับกล่องน้ำ-ไฟในแท็บ Overall (ทุกสาขา ไม่ใช่เฉพาะ D-25) · SLA น้ำ-ไฟ = ต้องได้ครบภายในวันเปิด (D-0)" });
+    var base = rowsU(), um = umap(), ud = utilData(), msg = ud === null ? "อ่านชีต Tracking ไม่ได้" : (ud === undefined ? "กำลังโหลด…" : "ไม่มีแถวในชีต Tracking");
+    return (ud === null ? '<div class="rg-dsub rg-bad" style="margin:6px 0">🔴 อ่านชีต Tracking ไฟฟ้า-ประปา ไม่สำเร็จ — สถานะน้ำ-ไฟว่างเพราะอ่านไม่ได้ ไม่ใช่ยังไม่ส่ง (ดูป้ายแดงด้านบน)</div>' : "") +
+      twoTables({ coh: "a", w: "util", rows: base, stat: function (r) { return aStat(r, "util"); }, th: th, n: 2 + UTRK.length,
+      row: function (r) { var u = um[r.code]; if (!u || u.src !== "ok") return '<td colspan="' + UTRK.length + '" class="rg-dc rg-muted">' + msg + "</td>"; return UTRK.map(function (t) { return utd(u, t[1], t[0]); }).join(""); },
+      note: "รายชื่อ = ชุดเดียวกับกล่องน้ำ-ไฟในแท็บ Overall (สาขาที่ยังไม่เปิด · ร้านที่เปิดแล้วถือว่าจบ) · สถานะ = ชีต รัฐกิจ+ทะเบียน CJx แท็บ Tracking ไฟฟ้า-ประปา (ดูอย่างเดียว · ยังไม่มี SLA) · ⚠️ กล่องน้ำ-ไฟในหน้า Overall ยังใช้ชีตเดิม Template_งานทะเบียน ตัวเลขสองหน้าจึงไม่เท่ากัน" });
   }
 
   /* ---- กลุ่ม B: ร้านที่เปิดแล้ว ---- */
@@ -9312,7 +9316,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       else h += aBlock(function () { return w === "util" ? aUtil() : aDoc(w); }, w === "util" ? function () { return rowsU().length; } : null);
     }
     if (sh.b) {
-      if (w === "util") h += bNote("<b>ร้านที่เปิดแล้ว: ยังไม่ดึงแท็บ ไฟฟ้าและประปา</b><br>ยังไม่มีข้อมูลน้ำ-ไฟของร้านที่เปิดแล้วในแอปนี้");
+      if (w === "util") h += bNote("<b>ร้านที่เปิดแล้ว: จบงานน้ำ-ไฟแล้ว</b><br>แท็บนี้ไล่เฉพาะสาขาที่ยังไม่เปิด");
       else h += bBlock({ house: bHouse, license: bLic, renew: bRenew, trash: bTrash, signtax: bSign, landtax: bLand }[w]);
     }
     return h;
@@ -9444,7 +9448,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         var rb = rowsB();
         var qn = isAdminUser() ? qcCount() : null;
         top += '<div class="rg-crow">' + cohHead("b", rb.length) + warnBox() + (qn && qn.n ? '<button type="button" class="rg-qcl" data-go="qc">🔎 พบจุดต้องเคลียร์ในข้อมูล ' + qn.n + " เรื่อง · " + qn.shops + " ร้าน — ดูหน้า ตรวจข้อมูล →</button>" : "") + '<div class="rg-cards">' + B_WORKS.map(function (w) { return wcard("b", w, tally(rb, function (r) { return bStat(r, w); })); }).join("") +
-          offCard("util", "ร้านที่เปิดแล้ว: ยังไม่ดึงแท็บ ไฟฟ้าและประปา") + "</div></div>";
+          offCard("util", "ร้านที่เปิดแล้ว: จบงานน้ำ-ไฟแล้ว (ไล่เฉพาะสาขาที่ยังไม่เปิด)") + "</div></div>";
         tabs += '<div class="rg-coh">' + ovTable("b", rb) + "</div>";
         src.push(srcB());
       }
@@ -9680,7 +9684,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   }
   // ข้อมูล Overall/After มาทีหลัง (async) → วาดใหม่เมื่อพร้อม · กลับมาที่แท็บ = วาดใหม่ (ได้ตัวเลขล่าสุดหลังโหลดใหม่เบื้องหลัง)
   //   ใช้ "ลายเซ็น" = จำนวนในทุกกล่อง (ไม่ใช่แค่ ready) เพราะ After โหลดเสร็จทีหลัง Overall → กล่องทะเบียนเปลี่ยนจาก 0 เป็นตัวเลขจริง
-  function sig() { var r = REG(); return (r ? r.rows.length + ":" + r.rows.map(function (x) { return x.code + rowState(x).pend; }).join(",") : "x") + "|" + UTRK.map(function (t) { return ["prep", "req", "wait", "got"].map(function (s2) { var d = det(t[1] + "_" + s2); return d ? d.length : "x"; }).join("."); }).join(","); }
+  function sig() { var r = REG(); return (r ? r.rows.length + ":" + r.rows.map(function (x) { return x.code + rowState(x).pend; }).join(",") : "x") + "|" + ["prep", "req", "wait", "got"].map(function (s2) { var d = det("util_temp_" + s2); return d ? d.length : "x"; }).join(".") + "|" + (OPEN.d && OPEN.d.util ? OPEN.d.util.length : "x"); }
   var lastSig = "", ri = 0, riv = setInterval(function () { var s = sig(); if (s !== lastSig) { lastSig = s; if (["landtax", "insure"].indexOf(CURV) < 0) render(); } if (++ri > 600) clearInterval(riv); }, 1000);
   var _st = window.showTab;
   // 14 ต.ค. (จี "ซ่อนเลย มันไม่ได้ใช้"): แท็บนี้ซ่อนช่องค้นหา + ปุ่มสวมอาคารของทั้งแอป (แท็บนี้มีช่องค้นหาของตัวเองในแถวตัวกรอง)
