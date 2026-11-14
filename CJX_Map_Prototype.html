@@ -76,7 +76,288 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
 .pdn{margin-left:auto;font-size:11px;color:#64748b}
 .pdempty{padding:14px 10px;font-size:12px;color:#64748b;text-align:center}
 </style>
-</head><body><div class="wrap">
+<script>/*THEME*/
+/* theme.js — ธีมมืด/สว่างของแอป Pipeline (จี 14 พ.ย. 69: "ตามเครื่อง · เฉพาะ Pipeline")
+ *
+ * อ่านก่อนแก้: ไฟล์นี้ถูก build ฉีดเข้า <head> ของ live_dashboard.html และหน้าแผนที่ (CJX_Map_Prototype.html)
+ *
+ * กติกา
+ *  - ค่าเริ่ม = ตามโหมดของเครื่อง (prefers-color-scheme) · ปุ่ม 🌙/☀️ บนหัวแอปสลับเอง แล้วเครื่องจำไว้ (localStorage "dpt_theme")
+ *    ถ้ากดแล้วตรงกับโหมดเครื่อง = ลบค่าที่จำ (กลับไปตามเครื่อง)
+ *  - แอปมีสีฝังตายตัว ~1,000 จุด (CSS + inline style + SVG) → ไม่แก้ทีละจุด แต่แปลงสีอัตโนมัติตอนเปิดโหมดมืด:
+ *      · stylesheet: สร้างกฎ override (นำหน้าด้วย html[data-theme="dark"]) วางต่อท้าย <style> ต้นฉบับแต่ละก้อน
+ *      · inline style / SVG fill-stroke: แปลงค่าบน element (จำค่าเดิมไว้ใน WeakMap → กลับโหมดสว่างคืนค่าเดิม)
+ *  - แปลงตาม "หน้าที่" ของสี ไม่กลับสีทั้งหน้า (กลับสีทั้งหน้าทำให้สีสถานะเพี้ยน — จีไม่เอา):
+ *      พื้นหลังสว่าง → มืด (คงโทนสี) · ตัวอักษรเข้ม → สว่าง · เส้นขอบสว่าง → มืด
+ *      สีเข้ม/สีสดที่เป็นพื้นปุ่ม (เช่น ปุ่มน้ำเงิน ตัวหนังสือขาว) = คงเดิม
+ *  - ไม่แตะ box-shadow / รูป / ข้อมูล · ไม่มี network · ไม่เขียนอะไรออกนอกเครื่อง
+ */
+(function () {
+  if (window.DPT_THEME) return;
+  var KEY = "dpt_theme", root = document.documentElement, DS = 'html[data-theme="dark"]';
+  var mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  function saved() { try { var v = localStorage.getItem(KEY); return (v === "dark" || v === "light") ? v : ""; } catch (e) { return ""; } }
+  function sys() { return mq && mq.matches ? "dark" : "light"; }
+  function eff() { return saved() || sys(); }
+  var DARK = false;
+
+  /* ---------- สี ---------- */
+  function rgb2hsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, h = 0, s = 0, d = mx - mn;
+    if (d) {
+      s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      h = mx === r ? ((g - b) / d + (g < b ? 6 : 0)) : mx === g ? ((b - r) / d + 2) : ((r - g) / d + 4);
+      h *= 60;
+    }
+    return [h, s, l];
+  }
+  function hsl2rgb(h, s, l) {
+    var c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2, r = 0, g = 0, b = 0;
+    if (h < 60) { r = c; g = x; } else if (h < 120) { r = x; g = c; } else if (h < 180) { g = c; b = x; }
+    else if (h < 240) { g = x; b = c; } else if (h < 300) { r = x; b = c; } else { r = c; b = x; }
+    return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
+  }
+  function h2(n) { n = Math.max(0, Math.min(255, n)); return (n < 16 ? "0" : "") + n.toString(16); }
+  /* role: bg | text | border | any → คืนสีใหม่ หรือ null = คงเดิม */
+  function mapRGB(r, g, b, a, role) {
+    var t = rgb2hsl(r, g, b), h = t[0], s = t[1], l = t[2], c = s * (1 - Math.abs(2 * l - 1)), nl, ns = s;
+    if (role === "any") {
+      if (c > 0.25 && l >= 0.25 && l < 0.6) {                    // สีสดกลาง ๆ (ตัวแปร --blue/--red · แท่งกราฟ) → สว่างขึ้นนิด ให้อ่านบนพื้นมืดได้
+        if (l >= 0.58) return null;
+        var oa = hsl2rgb(h, s, 0.58);
+        return a < 1 ? "rgba(" + oa[0] + ", " + oa[1] + ", " + oa[2] + ", " + a + ")" : "#" + h2(oa[0]) + h2(oa[1]) + h2(oa[2]);
+      }
+      role = l >= 0.6 ? "bg" : (l < 0.4 ? "text" : "");
+    }
+    if (role === "bg") {
+      if (l < 0.6) return null;                                   // พื้นเข้ม/สีสด (ปุ่ม) = คงเดิม
+      nl = l > 0.985 ? 0.15 : 0.08 + (1 - l) * 0.8;               // ขาวล้วน = พื้นการ์ด (สว่างกว่าพื้นหน้าเล็กน้อย)
+      if (s < 0.12) { h = 220; ns = 0.18; } else ns = s * 0.55;   // เทาล้วน → เทาอมน้ำเงินโทนเดียวกันทั้งแอป
+    } else if (role === "text") {
+      if (l >= 0.6) return null;                                  // ตัวอักษรสว่างอยู่แล้ว (ขาวบนปุ่ม) = คงเดิม
+      if (c > 0.25) nl = 0.62 + l * 0.3;                          // สีสด (แดง/เขียว/น้ำเงิน) → สว่างขึ้น คงโทน
+      else { nl = 0.95 - l * 0.5; ns = s * 0.8; }                 // เทา/ดำ → เทาอ่อน/ขาว
+    } else if (role === "border") {
+      if (l < 0.6) return null;
+      nl = 0.16 + (1 - l) * 0.7; ns = s * 0.5;
+    } else return null;
+    var o = hsl2rgb(h, ns, nl);
+    return a < 1 ? "rgba(" + o[0] + ", " + o[1] + ", " + o[2] + ", " + a + ")" : "#" + h2(o[0]) + h2(o[1]) + h2(o[2]);
+  }
+  var COLOR_RX = /#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\b|rgba?\(([^)]*)\)|\b(white|black)\b/g;
+  var CACHE = {};
+  function mapToken(tok, hx, args, name, role) {
+    var k = role + "|" + tok; if (k in CACHE) return CACHE[k];
+    var r, g, b, a = 1;
+    if (hx) {
+      var x = hx.length <= 4 ? hx.split("").map(function (ch) { return ch + ch; }).join("") : hx;
+      r = parseInt(x.slice(0, 2), 16); g = parseInt(x.slice(2, 4), 16); b = parseInt(x.slice(4, 6), 16);
+      if (x.length === 8) a = Math.round(parseInt(x.slice(6, 8), 16) / 255 * 1000) / 1000;
+    } else if (args != null) {
+      var p = args.split(/[\s,\/]+/).filter(Boolean);
+      if (p.length < 3 || /%|var|calc/i.test(args)) return (CACHE[k] = tok);
+      r = +p[0]; g = +p[1]; b = +p[2]; if (p.length > 3) a = +p[3];
+      if (isNaN(r) || isNaN(g) || isNaN(b) || isNaN(a)) return (CACHE[k] = tok);
+    } else if (name) {
+      r = g = b = name.toLowerCase() === "white" ? 255 : 0;
+    } else return (CACHE[k] = tok);
+    if (a === 0) return (CACHE[k] = tok);
+    var m = mapRGB(r, g, b, a, role);
+    return (CACHE[k] = m || tok);
+  }
+  function mapValue(v, role) {
+    if (!v || v.indexOf("url(") >= 0) return v;
+    return String(v).replace(COLOR_RX, function (tok, hx, args, name) { return mapToken(tok, hx, args, name, role); });
+  }
+  var BORDER_RX = /^(border(-(top|right|bottom|left|block|inline)(-(start|end))?)?-color|outline-color|column-rule-color|text-decoration-color)$/;
+  function roleOf(p) {
+    if (p === "color" || p === "-webkit-text-fill-color" || p === "caret-color") return "text";
+    if (p === "background-color" || p === "background-image") return "bg";
+    if (BORDER_RX.test(p)) return "border";
+    if (p === "fill" || p === "stroke" || p === "stop-color" || p === "flood-color") return "any";
+    if (/^--(t\d|text|muted|ink|fg)/.test(p)) return "text";      // ตัวแปรสีตัวอักษร (--text --t2 --t3 --t4)
+    if (p.indexOf("--") === 0) return "any";
+    return "";
+  }
+
+  /* ---------- stylesheet → กฎ override ---------- */
+  function splitSel(sel) {
+    var out = [], d = 0, cur = "";
+    for (var i = 0; i < sel.length; i++) {
+      var ch = sel[i];
+      if (ch === "(" || ch === "[") d++; else if (ch === ")" || ch === "]") d--;
+      if (ch === "," && d === 0) { out.push(cur); cur = ""; } else cur += ch;
+    }
+    out.push(cur); return out;
+  }
+  function prefixSel(sel) {
+    return splitSel(sel).map(function (s) {
+      s = s.trim();
+      if (/^:root\b/.test(s)) return DS + s.slice(5);
+      if (/^html\b/i.test(s)) return DS + s.slice(4);
+      return DS + " " + s;
+    }).join(",");
+  }
+  function genRules(list) {
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var r = list[i];
+      try {
+        if (r.type === 1 && r.style && r.selectorText) {
+          var d = [];
+          for (var j = 0; j < r.style.length; j++) {
+            var p = r.style[j], role = roleOf(p); if (!role) continue;
+            var v = r.style.getPropertyValue(p), m = mapValue(v, role);
+            d.push(p + ":" + m + (r.style.getPropertyPriority(p) ? " !important" : ""));
+          }
+          // ใส่ทุก prop สี (ทั้งที่แปลงและไม่แปลง) เพื่อให้ลำดับ/ความเฉพาะของกฎเดิมยังชนะกันเหมือนเดิม
+          if (d.length) out.push(prefixSel(r.selectorText) + "{" + d.join(";") + "}");
+        } else if (r.type === 4 && r.cssRules) {
+          var inner = genRules(r.cssRules); if (inner) out.push("@media " + r.conditionText + "{" + inner + "}");
+        } else if (r.type === 12 && r.cssRules) {
+          var inner2 = genRules(r.cssRules); if (inner2) out.push("@supports " + r.conditionText + "{" + inner2 + "}");
+        }
+      } catch (e) { /* กฎแปลก ๆ ข้ามไป — ไม่ให้ธีมทำแอปพัง */ }
+    }
+    return out.join("\n");
+  }
+  var OV = new WeakMap();
+  function procStyleNode(node) {
+    if (!node || node.nodeName !== "STYLE" || node.hasAttribute("data-dpt-dark") || !node.parentNode) return;
+    var sh = node.sheet, rules; if (!sh) return;
+    try { rules = sh.cssRules; } catch (e) { return; }
+    var css = genRules(rules), ov = OV.get(node);
+    if (!ov) { ov = document.createElement("style"); ov.setAttribute("data-dpt-dark", "1"); OV.set(node, ov); }
+    if (ov.textContent !== css) ov.textContent = css;
+    if (ov.parentNode !== node.parentNode || ov.previousSibling !== node) node.parentNode.insertBefore(ov, node.nextSibling);
+  }
+  function procAllSheets() { var s = document.querySelectorAll("style:not([data-dpt-dark])"); for (var i = 0; i < s.length; i++) procStyleNode(s[i]); }
+
+  /* ---------- inline style / SVG attr ---------- */
+  var REC = new WeakMap(), ATTRS = ["fill", "stroke", "stop-color"];
+  function procEl(el) {
+    if (!el || el.nodeType !== 1 || el.hasAttribute("data-dpt-dark")) return;
+    var rec = REC.get(el), touched = false, st = el.style;
+    if (st && st.length && el.getAttribute("style")) {
+      var todo = [];
+      for (var i = 0; i < st.length; i++) {
+        var p = st[i], role = roleOf(p); if (!role) continue;
+        var v = st.getPropertyValue(p);
+        if (rec && rec.s[p] && rec.s[p][1] === v) continue;       // ค่าที่เราแปลงไว้แล้ว
+        var m = mapValue(v, role);
+        if (m !== v) todo.push([p, v, m, st.getPropertyPriority(p)]);
+      }
+      for (var t = 0; t < todo.length; t++) {
+        if (!rec) { rec = { s: {}, a: {} }; REC.set(el, rec); }
+        st.setProperty(todo[t][0], todo[t][2], todo[t][3]);
+        rec.s[todo[t][0]] = [todo[t][1], st.getPropertyValue(todo[t][0]), todo[t][3]];
+        touched = true;
+      }
+    }
+    for (var k = 0; k < ATTRS.length; k++) {
+      var an = ATTRS[k], av = el.getAttribute(an); if (!av) continue;
+      if (rec && rec.a[an] && rec.a[an][1] === av) continue;
+      var am = mapValue(av, "any");
+      if (am !== av) {
+        if (!rec) { rec = { s: {}, a: {} }; REC.set(el, rec); }
+        el.setAttribute(an, am); rec.a[an] = [av, am]; touched = true;
+      }
+    }
+    if (touched && !el.hasAttribute("data-dpt-d")) el.setAttribute("data-dpt-d", "1");
+  }
+  var SEL = "[style],[fill],[stroke],[stop-color]";
+  function procTree(n) {
+    if (!n || n.nodeType !== 1) return;
+    if (n.nodeName === "STYLE") { procStyleNode(n); return; }
+    procEl(n);
+    var list = n.querySelectorAll(SEL); for (var i = 0; i < list.length; i++) procEl(list[i]);
+    var ss = n.querySelectorAll("style:not([data-dpt-dark])"); for (var j = 0; j < ss.length; j++) procStyleNode(ss[j]);
+  }
+  function restoreAll() {
+    var list = document.querySelectorAll("[data-dpt-d]");
+    for (var i = 0; i < list.length; i++) {
+      var el = list[i], rec = REC.get(el);
+      if (rec) {
+        for (var p in rec.s) { if (el.style.getPropertyValue(p) === rec.s[p][1]) el.style.setProperty(p, rec.s[p][0], rec.s[p][2]); }
+        for (var a in rec.a) { if (el.getAttribute(a) === rec.a[a][1]) el.setAttribute(a, rec.a[a][0]); }
+        REC.delete(el);
+      }
+      el.removeAttribute("data-dpt-d");
+    }
+  }
+
+  var mo = new MutationObserver(function (muts) {
+    if (!DARK) return;
+    for (var i = 0; i < muts.length; i++) {
+      var m = muts[i];
+      if (m.type === "attributes") procEl(m.target);
+      else if (m.type === "characterData") { var pn = m.target.parentNode; if (pn && pn.nodeName === "STYLE") procStyleNode(pn); }
+      else {
+        if (m.target.nodeName === "STYLE") procStyleNode(m.target);
+        for (var j = 0; j < m.addedNodes.length; j++) procTree(m.addedNodes[j]);
+      }
+    }
+  });
+  mo.observe(root, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["style", "fill", "stroke", "stop-color"] });
+
+  /* ---------- พื้นฐานโหมดมืด + ปุ่ม ---------- */
+  var base = document.createElement("style");
+  base.setAttribute("data-dpt-dark", "1");
+  base.textContent =
+    DS + "{color-scheme:dark;background:#1a1d24}" +
+    DS + " img," + DS + " video{filter:none}" +
+    DS + " .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.88)}" +
+    DS + " ::-webkit-scrollbar-thumb{background:#3a4556}" +
+    "#dpt-theme-btn{font-size:14px;line-height:1;border:1px solid #d6dbe4;background:#fff;border-radius:999px;padding:4px 9px;cursor:pointer;margin-left:10px;min-height:26px}" +
+    DS + " #dpt-theme-btn{background:#1f2937;border-color:#3a4556}" +
+    "#dpt-theme-btn.dpt-float{position:fixed;left:12px;bottom:12px;z-index:9000;box-shadow:0 2px 8px rgba(0,0,0,.18)}";
+  (document.head || root).appendChild(base);
+
+  var btn = null;
+  function paintBtn() {
+    if (!btn) return;
+    btn.textContent = DARK ? "☀️" : "🌙";
+    btn.title = (DARK ? "เปลี่ยนเป็นธีมสว่าง" : "เปลี่ยนเป็นธีมมืด") + (saved() ? "" : " (ตอนนี้ตามเครื่อง)");
+    btn.setAttribute("aria-label", btn.title);
+  }
+  function mountBtn() {
+    if (btn || window.self !== window.top) return;              // หน้าแผนที่ใน iframe ไม่ต้องมีปุ่ม (ตามหน้าแม่)
+    btn = document.createElement("button");
+    btn.id = "dpt-theme-btn"; btn.type = "button";
+    btn.onclick = function () {
+      var next = DARK ? "light" : "dark";
+      try { if (next === sys()) localStorage.removeItem(KEY); else localStorage.setItem(KEY, next); } catch (e) {}
+      apply(next);
+    };
+    var stamps = document.querySelector("header.top .stamps");
+    if (stamps) stamps.insertBefore(btn, stamps.firstChild); else { btn.className = "dpt-float"; document.body.appendChild(btn); }
+    paintBtn();
+  }
+
+  function apply(theme) {
+    var dark = theme === "dark";
+    root.setAttribute("data-theme", dark ? "dark" : "light");
+    if (dark !== DARK) {
+      DARK = dark;
+      if (dark) { procAllSheets(); if (document.body) procTree(document.body); }
+      else restoreAll();
+    }
+    paintBtn();
+  }
+  apply(eff());
+  if (mq) {
+    var onSys = function () { if (!saved()) apply(sys()); };
+    if (mq.addEventListener) mq.addEventListener("change", onSys); else if (mq.addListener) mq.addListener(onSys);
+  }
+  window.addEventListener("storage", function (e) { if (e.key === KEY || e.key === null) apply(eff()); });
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { if (DARK) procAllSheets(); mountBtn(); });
+  else mountBtn();
+
+  window.DPT_THEME = { apply: apply, current: function () { return DARK ? "dark" : "light"; }, mapValue: mapValue };
+})();
+
+</script></head><body><div class="wrap">
 <h1>🏢 Site Management<span class="beta">v7 · แผนที่จริง + directions</span></h1>
 <div class="sub">ข้อมูลจริง ณ 30 Sep 2026 10:41 · 463 สาขา (เปิดแล้ว 169 + ปักวันแล้ว 129 + ยังไม่ปักวัน 165) · คลิกหมุด=รายละเอียด+ใกล้เคียง · 📏 วัดระยะ · 🚗 เส้นทาง A→B</div>
 <div class="kpis">
