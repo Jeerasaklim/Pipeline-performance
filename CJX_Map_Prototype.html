@@ -119,30 +119,56 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
     return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
   }
   function h2(n) { n = Math.max(0, Math.min(255, n)); return (n < 16 ? "0" : "") + n.toString(16); }
-  /* role: bg | text | border | any → คืนสีใหม่ หรือ null = คงเดิม */
+  /* GLOW: สีที่แปลงเป็น neon แล้ว ("r,g,b" → rgba สำหรับแสงเรือง) — ใช้เติม box-shadow / text-shadow / drop-shadow */
+  var GLOW = {};
+  function glowOf(v) {
+    if (!v) return "";
+    var m = String(v).match(/rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/), k;
+    if (m) k = m[1] + "," + m[2] + "," + m[3];
+    else { m = String(v).match(/#([0-9a-fA-F]{6})\b/); if (!m) return ""; k = parseInt(m[1].slice(0, 2), 16) + "," + parseInt(m[1].slice(2, 4), 16) + "," + parseInt(m[1].slice(4, 6), 16); }
+    return GLOW[k] || "";
+  }
+  /* แสงเรืองสำหรับค่าที่เป็นตัวแปร (stroke:var(--orange)) — ดูสีจริงของตัวแปรตอนนี้ ถ้าเป็นสีมีโทน = เรือง */
+  function varGlow(v) {
+    var m = String(v || "").match(/^\s*var\((--[\w-]+)/); if (!m) return "";
+    var cv = "";
+    try { cv = getComputedStyle(root).getPropertyValue(m[1]).trim(); } catch (e) {}
+    var r, g, b, x = cv.match(/^#([0-9a-fA-F]{6})\b/), y = cv.match(/rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/);
+    if (x) { r = parseInt(x[1].slice(0, 2), 16); g = parseInt(x[1].slice(2, 4), 16); b = parseInt(x[1].slice(4, 6), 16); }
+    else if (y) { r = +y[1]; g = +y[2]; b = +y[3]; } else return "";
+    var t = rgb2hsl(r, g, b);
+    return (t[1] > 0.35 && t[2] > 0.22 && t[2] < 0.95) ? "color-mix(in srgb, " + String(v).trim() + " 50%, transparent)" : "";
+  }
+  function anyGlow(v) { return glowOf(v) || varGlow(v); }
+  var SIDES = ["border-top-color", "border-right-color", "border-bottom-color", "border-left-color"];
+  /* role: bg | text | border | stroke | any → คืนสีใหม่ หรือ null = คงเดิม */
   function mapRGB(r, g, b, a, role) {
     var t = rgb2hsl(r, g, b), h = t[0], s = t[1], l = t[2], c = s * (1 - Math.abs(2 * l - 1)), nl, ns = s;
     if (role === "any") {
       if (c > 0.25 && l >= 0.25 && l < 0.6) {                    // สีสดกลาง ๆ (ตัวแปร --blue/--red · แท่งกราฟ) → สว่างขึ้นนิด ให้อ่านบนพื้นมืดได้
-        if (l >= 0.58) return null;
-        var oa = hsl2rgb(h, s, 0.58);
+        if (l >= 0.62) return null;
+        var oa = hsl2rgb(h, Math.max(s, 0.85), 0.62);
         return a < 1 ? "rgba(" + oa[0] + ", " + oa[1] + ", " + oa[2] + ", " + a + ")" : "#" + h2(oa[0]) + h2(oa[1]) + h2(oa[2]);
       }
       role = l >= 0.6 ? "bg" : (l < 0.4 ? "text" : "");
     }
+    var neon = false, isChroma = s > 0.35 && l > 0.22 && l < 0.95;   // สีที่มีโทน (ไม่ใช่เทา/ขาว/ดำ)
+    if (role === "stroke") role = isChroma ? "border" : (l >= 0.6 ? "border" : (l < 0.4 ? "text" : ""));
     if (role === "bg") {
       if (l < 0.6) return null;                                   // พื้นเข้ม/สีสด (ปุ่ม) = คงเดิม
-      nl = l > 0.985 ? 0.15 : 0.08 + (1 - l) * 0.8;               // ขาวล้วน = พื้นการ์ด (สว่างกว่าพื้นหน้าเล็กน้อย)
-      if (s < 0.12) { h = 220; ns = 0.18; } else ns = s * 0.55;   // เทาล้วน → เทาอมน้ำเงินโทนเดียวกันทั้งแอป
+      if (s < 0.12) { h = 220; ns = 0.18; nl = l > 0.985 ? 0.155 : 0.085 + (1 - l) * 0.8; }   // เทา/ขาว → เทาอมน้ำเงินโทนเดียวทั้งแอป
+      else { nl = 0.115 + (1 - l) * 0.25; ns = Math.min(s * 0.5, 0.45); }                  // พื้นการ์ดพาสเทล → มืดอมสีจาง ๆ (ให้กรอบเรืองแสงเด่น)
     } else if (role === "text") {
-      if (l >= 0.6) return null;                                  // ตัวอักษรสว่างอยู่แล้ว (ขาวบนปุ่ม) = คงเดิม
-      if (c > 0.25) nl = 0.62 + l * 0.3;                          // สีสด (แดง/เขียว/น้ำเงิน) → สว่างขึ้น คงโทน
+      if (c > 0.25 || (isChroma && l < 0.6)) { nl = 0.72; ns = Math.max(s, 0.8); neon = true; }   // ตัวเลข/ข้อความสี → สีสดสว่าง (เรือง)
+      else if (l >= 0.6) return null;                             // ตัวอักษรสว่างอยู่แล้ว (ขาวบนปุ่ม) = คงเดิม
       else { nl = 0.95 - l * 0.5; ns = s * 0.8; }                 // เทา/ดำ → เทาอ่อน/ขาว
     } else if (role === "border") {
-      if (l < 0.6) return null;
-      nl = 0.16 + (1 - l) * 0.7; ns = s * 0.5;
+      if (isChroma) { nl = 0.62; ns = Math.max(s, 0.85); neon = true; }   // กรอบสี → neon
+      else if (l < 0.6) return null;
+      else { nl = 0.2 + (1 - l) * 0.6; ns = s * 0.5; }            // กรอบเทา → เทาเข้มพอเห็น
     } else return null;
     var o = hsl2rgb(h, ns, nl);
+    if (neon) GLOW[o[0] + "," + o[1] + "," + o[2]] = "rgba(" + o[0] + ", " + o[1] + ", " + o[2] + ", " + (role === "text" ? 0.45 : 0.5) + ")";
     return a < 1 ? "rgba(" + o[0] + ", " + o[1] + ", " + o[2] + ", " + a + ")" : "#" + h2(o[0]) + h2(o[1]) + h2(o[2]);
   }
   var COLOR_RX = /#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\b|rgba?\(([^)]*)\)|\b(white|black)\b/g;
@@ -175,7 +201,8 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
     if (p === "color" || p === "-webkit-text-fill-color" || p === "caret-color") return "text";
     if (p === "background-color" || p === "background-image") return "bg";
     if (BORDER_RX.test(p)) return "border";
-    if (p === "fill" || p === "stroke" || p === "stop-color" || p === "flood-color") return "any";
+    if (p === "stroke") return "stroke";
+    if (p === "fill" || p === "stop-color" || p === "flood-color") return "any";
     if (/^--(t\d|text|muted|ink|fg)/.test(p)) return "text";      // ตัวแปรสีตัวอักษร (--text --t2 --t3 --t4)
     if (p.indexOf("--") === 0) return "any";
     return "";
@@ -205,12 +232,17 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
       var r = list[i];
       try {
         if (r.type === 1 && r.style && r.selectorText) {
-          var d = [];
+          var d = [], got = {};
           for (var j = 0; j < r.style.length; j++) {
             var p = r.style[j], role = roleOf(p); if (!role) continue;
             var v = r.style.getPropertyValue(p), m = mapValue(v, role);
+            got[p] = m;
             d.push(p + ":" + m + (r.style.getPropertyPriority(p) ? " !important" : ""));
           }
+          var gb = anyGlow(got["border-top-color"]);              // กรอบสีครบ 4 ด้าน → แสงเรืองรอบกล่อง
+          if (gb && SIDES.every(function (x) { return anyGlow(got[x]); })) d.push("box-shadow:0 0 0 1px " + gb + ",0 0 14px " + gb);
+          var gt = anyGlow(got["color"]); if (gt) d.push("text-shadow:0 0 10px " + gt);
+          var gs = anyGlow(got["stroke"]); if (gs) d.push("filter:drop-shadow(0 0 3px " + gs + ") drop-shadow(0 0 9px " + gs + ")");
           // ใส่ทุก prop สี (ทั้งที่แปลงและไม่แปลง) เพื่อให้ลำดับ/ความเฉพาะของกฎเดิมยังชนะกันเหมือนเดิม
           if (d.length) out.push(prefixSel(r.selectorText) + "{" + d.join(";") + "}");
         } else if (r.type === 4 && r.cssRules) {
@@ -254,17 +286,32 @@ tr:hover td{background:#fafbff}tr.hl td{background:#fffbeb}
         rec.s[todo[t][0]] = [todo[t][1], st.getPropertyValue(todo[t][0]), todo[t][3]];
         touched = true;
       }
+      if (todo.length) {
+        var gb = anyGlow(st.getPropertyValue("border-top-color"));
+        if (gb && SIDES.every(function (x) { return anyGlow(st.getPropertyValue(x)); })) addFx(el, rec, "box-shadow", "0 0 0 1px " + gb + ", 0 0 14px " + gb);
+        var gt = anyGlow(st.getPropertyValue("color")); if (gt) addFx(el, rec, "text-shadow", "0 0 10px " + gt);
+        var gs = anyGlow(st.getPropertyValue("stroke")); if (gs) addFx(el, rec, "filter", "drop-shadow(0 0 3px " + gs + ") drop-shadow(0 0 9px " + gs + ")");
+      }
     }
     for (var k = 0; k < ATTRS.length; k++) {
       var an = ATTRS[k], av = el.getAttribute(an); if (!av) continue;
       if (rec && rec.a[an] && rec.a[an][1] === av) continue;
-      var am = mapValue(av, "any");
+      var am = mapValue(av, an === "stroke" ? "stroke" : "any");
       if (am !== av) {
         if (!rec) { rec = { s: {}, a: {} }; REC.set(el, rec); }
         el.setAttribute(an, am); rec.a[an] = [av, am]; touched = true;
+        if (an === "stroke") { var ga = glowOf(am); if (ga) addFx(el, rec, "filter", "drop-shadow(0 0 3px " + ga + ") drop-shadow(0 0 9px " + ga + ")"); }
       }
     }
     if (touched && !el.hasAttribute("data-dpt-d")) el.setAttribute("data-dpt-d", "1");
+  }
+  /* เติมเอฟเฟกต์แสงบน element (จำค่าเดิมไว้คืนตอนกลับโหมดสว่าง) */
+  function addFx(el, rec, p, v) {
+    if (!rec) return;
+    var st = el.style, cur = st.getPropertyValue(p);
+    if (rec.s[p] && rec.s[p][1] === cur) return;
+    st.setProperty(p, v);
+    rec.s[p] = [cur, st.getPropertyValue(p), st.getPropertyPriority(p)];
   }
   var SEL = "[style],[fill],[stroke],[stop-color]";
   function procTree(n) {
