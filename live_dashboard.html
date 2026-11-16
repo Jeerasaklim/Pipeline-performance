@@ -1501,7 +1501,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=185946" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=190937" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -10605,6 +10605,9 @@ render();
     "#tab-kf .kchip{display:inline-flex;gap:6px;align-items:center;border:1.5px dashed #e03131;border-radius:999px;padding:2px 10px;margin:6px 6px 0 0;cursor:pointer;background:var(--surface);color:var(--text);font:inherit;font-size:12px}" +
     "#tab-kf .kchip em{font-style:normal;font-weight:800;color:#e03131}" +
     "#tab-kf .kkpi{font-size:12px;color:var(--t2);margin-left:auto}#tab-kf .kkpi b{color:var(--text);font-size:14px}" +
+    "#tab-kf .kf-subs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px}" +
+    "#tab-kf .kf-sub{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--border2,#c8cdd9);background:var(--surface);color:var(--t2);border-radius:999px;padding:6px 14px;cursor:pointer}" +
+    "#tab-kf .kf-sub.on{background:#1d4ed8;border-color:#1d4ed8;color:#fff}#tab-kf .kf-sub .kf-subn{font-weight:800;margin-left:4px;opacity:.85}#tab-kf .kf-sub .kf-subw{color:#e03131}#tab-kf .kf-sub.on .kf-subw{color:#fff}" +
     "#kf-dbg{position:fixed;inset:0;background:rgba(15,23,42,.35);display:none;z-index:900}#kf-dbg.on{display:block}" +
     "#kf-drw{position:fixed;top:0;right:0;bottom:0;width:min(520px,100vw);background:var(--surface,#fff);box-shadow:-8px 0 24px rgba(0,0,0,.15);transform:translateX(105%);transition:transform .18s;z-index:901;overflow:auto;padding:18px 20px 40px;color:var(--text)}" +
     "#kf-drw.on{transform:none}#kf-drw h3{margin:0 0 4px;font-size:16px}#kf-drw .kf-x{position:absolute;top:12px;right:14px;border:0;background:none;font-size:22px;cursor:pointer;color:var(--t3)}" +
@@ -10672,7 +10675,8 @@ render();
   function labelLines(t) { var L = wrap(t, 82, 3); if (L.length >= 2) { var L2 = wrap(t, 82, 3, 62); if ((L2.length <= 3 && L2[L2.length - 1].slice(-1) !== "…") || L.length === 3) L = L2; } return L; }
 
   var CLS = { "Site Expansion": "own-siteex", "Site Negotiation": "own-nego", "Construction Management": "own-constr", "Governance Affairs": "own-ratkit" };
-  var ST = { st: "idle", d: null, err: "" }, MODEL = null;
+  var ST = { st: "idle", d: null, err: "" }, MODEL = null, SUB = 0;
+  try { SUB = +(localStorage.getItem("kfSub") || 0) || 0; } catch (e) {}
 
   function build(d) {
     var flows = (d.layout || []).map(function (F) {
@@ -10691,12 +10695,36 @@ render();
   }
 
   function flowHtml(X, fi) {
-    var SX = 0.6, SY = 0.75, W = 100, H = 76, PAD = 30, mx = 0, my = 0, pos = {};
-    X.boxes.forEach(function (b) { var px = Math.round(PAD + b.n.c * 230 * SX), py = Math.round(PAD + b.n.r * 130 * SY); pos[b.n.id] = { x: px, y: py }; mx = Math.max(mx, px + W); my = Math.max(my, py + H); });
-    var vbW = mx + PAD, vbH = my + PAD + 10;
+    /* จี 16 พ.ย. "ลดขนาดให้เห็นทั้งหน้าเหมือน Overall": SVG กว้างเต็มการ์ด (ไม่ต้องเลื่อนข้าง)
+       flow ยาวเกิน 13 คอลัมน์ → พับเป็นแถว (band) ตัดที่คอลัมน์ "คอขวด" (มีขั้นเดียว) ใกล้กึ่งกลาง เพื่อให้ตัวหนังสือยังอ่านได้ */
+    var CW = 138, RH = 97.5, W = 100, H = 76, PAD = 30, BGAP = 46, MAXC = 13, pos = {}, band = {};
+    var cols = 0; X.boxes.forEach(function (b) { cols = Math.max(cols, b.n.c + 1); });
+    var cuts = [0];
+    (function () {
+      var start = 0;
+      while (cols - start > MAXC) {
+        var mid = start + Math.ceil((cols - start) / 2), best = -1;
+        for (var d = 0; d <= 4 && best < 0; d++) [mid - d, mid + d].forEach(function (c) {
+          if (best >= 0 || c <= start + 2 || c >= cols - 1) return;
+          var n = X.boxes.filter(function (b) { return b.n.c === c && !b.n.old; }).length; if (n === 1) best = c; });
+        if (best < 0) best = mid;
+        cuts.push(best); start = best;
+      }
+    })();
+    function bandOf(c) { var k = 0; for (var i = 0; i < cuts.length; i++) if (c >= cuts[i]) k = i; return k; }
+    var bandRows = cuts.map(function () { return 0; });
+    X.boxes.forEach(function (b) { var k = bandOf(b.n.c); bandRows[k] = Math.max(bandRows[k], b.n.r + 1); });
+    var bandTop = [], acc = 0; bandRows.forEach(function (r, k) { bandTop[k] = acc; acc += r * RH + BGAP; });
+    var mx = 0, my = 0;
+    X.boxes.forEach(function (b) { var k = bandOf(b.n.c), px = Math.round(PAD + (b.n.c - cuts[k]) * CW), py = Math.round(PAD + bandTop[k] + b.n.r * RH); band[b.n.id] = k; pos[b.n.id] = { x: px, y: py }; mx = Math.max(mx, px + W); my = Math.max(my, py + H); });
+    var vbW = mx + PAD + 14, vbH = my + PAD + 10;
     var edges = X.F.edges.map(function (e) {
       var a = pos[e[0]], b = pos[e[1]]; if (!a || !b) return "";
       var ay = a.y + H / 2, by = b.y + H / 2;
+      if (band[e[1]] > band[e[0]]) {   // ข้ามแถวที่พับ: ออกขวา → ลงช่องว่างก่อนแถวถัดไป → ไปซ้ายสุด → เข้ากล่องทางซ้าย
+        var gy = Math.round(PAD + bandTop[band[e[1]]] - BGAP / 2 - 4), rx = a.x + W + 10, lx = Math.max(6, b.x - 14);
+        return '<polyline points="' + (a.x + W) + "," + ay + " " + rx + "," + ay + " " + rx + "," + gy + " " + lx + "," + gy + " " + lx + "," + by + " " + b.x + "," + by + '" class="fedge" marker-end="url(#kfarrow)"/>';
+      }
       if (b.x > a.x + W) { var m = Math.round((a.x + W + b.x) / 2); return '<polyline points="' + (a.x + W) + "," + ay + " " + m + "," + ay + " " + m + "," + by + " " + b.x + "," + by + '" class="fedge" marker-end="url(#kfarrow)"/>'; }
       var low = Math.max(a.y, b.y) + H + 12; return '<polyline points="' + (a.x + W / 2) + "," + (a.y + H) + " " + (a.x + W / 2) + "," + low + " " + (b.x + W / 2) + "," + low + " " + (b.x + W / 2) + "," + (b.y + H) + '" class="fedge" marker-end="url(#kfarrow)"/>';
     }).join("");
@@ -10718,7 +10746,7 @@ render();
     return '<div class="section-label">' + esc(X.F.name) + " &mdash; TICKETS AT EACH STEP</div><div class=\"card\">" +
       '<div class="fhead"><div class="flegend"><span class="item"><span class="sw own-nego"></span>Site Nego</span><span class="item"><span class="sw own-ratkit"></span>รัฐกิจ</span><span class="item"><span class="sw own-constr"></span>ก่อสร้าง</span><span class="item"><span class="sw own-siteex"></span>Site Ex</span><span class="item" style="color:var(--t3)">กรอบเส้นประ = ขั้นเฉพาะเวอร์ชันเก่า</span></div>' +
       '<span class="kkpi">🕐 ณ ' + esc(stampTh(ST.d.stamp)) + ' (อัปเดตทุก 1 ชม.) · ใบค้าง (ไม่ซ้ำ) <b>' + nItems.toLocaleString() + "</b> · รวมรายขั้น <b>" + inBox.toLocaleString() + "</b>" + (unN ? ' · ไม่ตรงกล่อง <b style="color:#e03131">' + unN.toLocaleString() + "</b>" : ' · <b style="color:#0ca678">ทุกขั้นมีกล่องรับ ✓</b>') + "</span></div>" +
-      '<div class="flow-wrap"><svg viewBox="0 0 ' + vbW + " " + vbH + '" class="flow" style="width:' + Math.round(vbW * 1.25) + 'px;min-width:0;max-width:none" xmlns="http://www.w3.org/2000/svg">' +
+      '<div class="flow-wrap"><svg viewBox="0 0 ' + vbW + " " + vbH + '" class="flow" style="width:100%;min-width:0;max-width:' + Math.round(vbW * 0.8) + 'px;margin:0 auto" xmlns="http://www.w3.org/2000/svg">' +
       '<defs><marker id="kfarrow" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3 L0,6 Z" fill="#4a5568"/></marker></defs>' +
       edges + nodes + badges + "</svg></div>" + um + "</div>";
   }
@@ -10738,7 +10766,13 @@ render();
     if (ST.st !== "ok") { $("flows").innerHTML = ""; return; }
     CTX.font = (function () { var e = document.querySelector(".flabel"), cs = e ? getComputedStyle(e) : null; return cs ? cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily : '600 10.5px "Plus Jakarta Sans","Sarabun",sans-serif'; })();
     MODEL = build(ST.d);
-    $("flows").innerHTML = MODEL.map(flowHtml).join("");
+    /* แท็บย่อย (จี 16 พ.ย. "แยก Subtab") — ทีละ flow · จำแท็บที่เลือกไว้ในเครื่อง */
+    if (SUB >= MODEL.length) SUB = 0;
+    var bar = '<div class="kf-subs">' + MODEL.map(function (X, i) {
+      var n = Object.keys(X.items).length, un = Object.keys(X.un).length;
+      return '<button type="button" class="kf-sub' + (i === SUB ? " on" : "") + '" data-sub="' + i + '">' + esc(X.F.name) + ' <span class="kf-subn">' + n.toLocaleString() + " ใบ</span>" + (un ? ' <span class="kf-subw">⚠</span>' : "") + "</button>";
+    }).join("") + "</div>";
+    $("flows").innerHTML = bar + flowHtml(MODEL[SUB], SUB);
   }
 
   function openList(title, sub, items) {
@@ -10759,6 +10793,8 @@ render();
   sec.addEventListener("mouseout", function (e) { var g = e.target.closest && e.target.closest(".gnode"); if (g && !g.contains(e.relatedTarget)) { var el = document.getElementById("kfb-" + g.getAttribute("data-f") + "-" + g.getAttribute("data-b")); if (el) el.style.display = "none"; } });
   sec.addEventListener("click", function (e) {
     if (!MODEL) return;
+    var sb = e.target.closest(".kf-sub");
+    if (sb) { SUB = +sb.getAttribute("data-sub") || 0; try { localStorage.setItem("kfSub", String(SUB)); } catch (x) {} render(); return; }
     var g = e.target.closest(".gnode"), c = e.target.closest(".kchip");
     if (g) { var X = MODEL[+g.getAttribute("data-f")], b = X.boxes[+g.getAttribute("data-b")]; openList(b.n.t, X.F.name + " · " + b.n.team + (b.n.tg ? " (สำนักยังไม่ยืนยัน)" : "") + " · ค้าง " + b.items.length + " ใบ", b.items); return; }
     if (c) { var X2 = MODEL[+c.getAttribute("data-f")], k = c.getAttribute("data-u"); openList(k, X2.F.name + " · ชื่อขั้นนี้ไม่ตรงกล่องไหน · " + X2.un[k].length + " ใบ", X2.un[k]); }
