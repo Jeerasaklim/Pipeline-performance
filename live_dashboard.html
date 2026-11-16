@@ -1501,7 +1501,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=145416" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=185126" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -10575,6 +10575,200 @@ render();
     if (window.DPT_ROLE && window.DPT_ID_TOKEN && window.DPT_GAS_URL && !pre) pre = setTimeout(function () { if (GR.st === "idle") load(); }, 6000);
     var r = ready(); if (r && !wasReady && sec.classList.contains("active") && !dirtyIn(sec).length) render(); wasReady = r;
   }, 1000);
+})();
+
+</script>
+<script>/*KF-TAB*/
+/* ============================================================================
+ * kissflow-tab.js — แท็บ Kissflow · งานค้างรายขั้น (16 พ.ย. 2569 · จี "ขึ้นแอปจริงได้เลย")
+ *   กล่อง/เส้น = หน้า "Kissflow Live" ใน CJX Workflow (ชื่อขั้นจริงจากใบงาน) — แผนผังมาจาก server (KF_LAYOUT ใน GO_webapp.gs) หลัง login
+ *   ตัวเลขในกล่อง = ใบ InProgress ที่ค้างอยู่ขั้นนั้น (แท็บ KF_Queue · kfQueueSync ทุก 1 ชม.) · 1 ใบค้างหลายขั้นพร้อมกันได้ (ขั้นคู่ขนาน)
+ *   hover = ป้ายแดง "เกินกำหนด" (จีสั่ง 16 พ.ย.) → ยังไม่มี Deadline รายขั้น (Kissflow ว่างทุกขั้น) = บอกว่า "ยังไม่ตั้ง Deadline" ไม่ใช่ 0
+ *   ขั้นที่ชื่อไม่ตรงกล่องไหน (เวอร์ชันใหม่ของ Flow) = แถบแดง "ไม่ตรงกล่อง" ใต้การ์ด — ห้ามหายเงียบ
+ *   โหลดไม่ได้ = ป้ายแดง (กล่องว่างเพราะโหลดไม่ได้ ไม่ใช่ไม่มีงาน) · ข้อมูลเก่ากว่า 2.5 ชม. = ป้ายเหลือง
+ *   อ่านอย่างเดียว ไม่มีปุ่มเขียนข้อมูล
+ * ========================================================================== */
+(function () {
+  "use strict";
+  var nav = document.querySelector("nav.tabs"), main = document.querySelector("main");
+  if (!nav || !main) return;
+
+  var css = document.createElement("style");
+  css.textContent =
+    "#tab-kf .kf-fresh{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--t2);margin-bottom:12px}#tab-kf .kf-fresh b{color:var(--text)}" +
+    ":is(#tab-kf) .kf-red{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:12px}" +
+    ":is(#tab-kf) .kf-amb{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:8px 12px;font-size:12.5px;margin-bottom:12px}" +
+    "#tab-kf .kbadge{pointer-events:none}#tab-kf .kbadge rect{fill:#e03131;stroke:var(--surface);stroke-width:1.5}" +
+    "#tab-kf .kbadge text{fill:#fff;font-family:\"Plus Jakarta Sans\",\"Sarabun\",sans-serif;font-size:9.5px;font-weight:800;text-anchor:middle;dominant-baseline:middle}" +
+    "#tab-kf .fcount.zero{fill:var(--t3)}#tab-kf .kold .fnode{stroke-dasharray:5 3}" +
+    "#tab-kf .kum{margin-top:12px;font-size:12.5px;color:var(--t2)}#tab-kf .kum b{color:var(--text)}" +
+    "#tab-kf .kchip{display:inline-flex;gap:6px;align-items:center;border:1.5px dashed #e03131;border-radius:999px;padding:2px 10px;margin:6px 6px 0 0;cursor:pointer;background:var(--surface);color:var(--text);font:inherit;font-size:12px}" +
+    "#tab-kf .kchip em{font-style:normal;font-weight:800;color:#e03131}" +
+    "#tab-kf .kkpi{font-size:12px;color:var(--t2);margin-left:auto}#tab-kf .kkpi b{color:var(--text);font-size:14px}" +
+    "#kf-dbg{position:fixed;inset:0;background:rgba(15,23,42,.35);display:none;z-index:900}#kf-dbg.on{display:block}" +
+    "#kf-drw{position:fixed;top:0;right:0;bottom:0;width:min(520px,100vw);background:var(--surface,#fff);box-shadow:-8px 0 24px rgba(0,0,0,.15);transform:translateX(105%);transition:transform .18s;z-index:901;overflow:auto;padding:18px 20px 40px;color:var(--text)}" +
+    "#kf-drw.on{transform:none}#kf-drw h3{margin:0 0 4px;font-size:16px}#kf-drw .kf-x{position:absolute;top:12px;right:14px;border:0;background:none;font-size:22px;cursor:pointer;color:var(--t3)}" +
+    "#kf-drw .kf-sub{font-size:12px;color:var(--t3);margin-bottom:10px}#kf-drw table{width:100%;border-collapse:collapse;font-size:12.5px}" +
+    "#kf-drw th{font-size:11px;color:var(--t3);text-align:left;padding:6px 4px;border-bottom:1px solid var(--border2,#c8cdd9)}#kf-drw td{padding:6px 4px;border-bottom:1px solid var(--border);vertical-align:top}" +
+    "#kf-drw td.c{white-space:nowrap;font-weight:700}#kf-drw td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}#kf-drw .mute{color:var(--t3)}";
+  document.head.appendChild(css);
+
+  var tb = document.createElement("button"); tb.className = "tab-btn"; tb.setAttribute("data-tab", "kf"); tb.style.display = "none";
+  tb.onclick = function () { showTab("kf"); };
+  tb.innerHTML = '<span class="tab-ico">🔁</span><span class="tab-txt"><span class="tab-primary">Kissflow</span><span class="tab-sub">งานค้างรายขั้น</span></span>';
+  nav.appendChild(tb);
+
+  var sec = document.createElement("section"); sec.id = "tab-kf"; sec.className = "tab-panel";
+  sec.innerHTML = '<div class="page-head"><h1>🔁 Kissflow Workflow <span class="page-th">งานค้างรายขั้น</span></h1></div>' +
+    '<div id="kf-fresh" class="kf-fresh"></div><div id="kf-alert"></div><div id="kf-flows"></div>';
+  main.appendChild(sec);
+  var dbg = document.createElement("div"); dbg.id = "kf-dbg"; document.body.appendChild(dbg);
+  var drw = document.createElement("div"); drw.id = "kf-drw"; document.body.appendChild(drw);
+
+  function $(i) { return document.getElementById("kf-" + i); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function days(iso) { if (!iso) return null; var t = Date.parse(iso); if (isNaN(t)) return null; return Math.floor((Date.now() - t) / 864e5); }
+
+  /* ---- ตัดบรรทัดชื่อกล่อง ตาม "คำ" ภาษาไทย + วัดความกว้างจริง (จี: ตัวหนังสือห้าม "ตก" กลางคำ) ---- */
+  var CTX = document.createElement("canvas").getContext("2d");
+  var SEGW = (window.Intl && Intl.Segmenter) ? new Intl.Segmenter("th", { granularity: "word" }) : null;
+  var SEGG = (window.Intl && Intl.Segmenter) ? new Intl.Segmenter("th", { granularity: "grapheme" }) : null;
+  var KEEP = ["ตรวจสอบ", "ผู้รับเหมา", "เจ้าของที่", "คณะกรรมการ", "ใบอนุญาต", "ทะเบียนบ้าน", "คู่แข่ง", "ส่งมอบ", "ติดตั้ง", "นำเสนอ", "รถตู้", "วันที่", "เสนอราคา", "ใบเสนอราคา"];
+  function toks(t, g) {
+    var S = g ? SEGG : SEGW; if (!S) return g ? Array.from(t) : t.split(/(\s+)/);
+    var a = Array.from(S.segment(t), function (x) { return x.segment; }); if (g) return a;
+    var o = [];
+    a.forEach(function (w) {
+      var p = o[o.length - 1];
+      if (p != null && ((/[ก-ฮ]\.$/.test(p) && /^\d/.test(w)) || (/^[ก-ฮ]$/.test(p) && /^\.\d*/.test(w)) || (/^\.$/.test(w) && /[ก-ฮ]$/.test(p)) || (/[ก-ฮ]\.$/.test(p) && /^[ก-ฮ]\./.test(w)) ||
+        KEEP.some(function (k) { return k === p + w || (k.indexOf(p + w) === 0 && p.length < k.length); }))) o[o.length - 1] = p + w;
+      else if (p != null && p.trim() === "(") o[o.length - 1] = p + w;
+      else o.push(w);
+    });
+    return o;
+  }
+  function wid(s) { return CTX.measureText(s).width; }
+  function wrap(t, max, maxL, first) {
+    var L = [], cur = "", M = function () { return (!L.length && first) ? first : max; };
+    toks(t).forEach(function (w) {
+      if (!cur && /^\s+$/.test(w)) return;
+      if (wid(cur + w) <= M()) { cur += w; return; }
+      if (cur.trim()) { L.push(cur.trim()); cur = ""; }
+      if (/^\s+$/.test(w)) return;
+      if (wid(w) <= M()) { cur = w; return; }
+      toks(w, 1).forEach(function (c) { if (wid(cur + c) <= M()) cur += c; else { L.push(cur); cur = c; } });
+    });
+    if (cur.trim()) L.push(cur.trim());
+    if (L.length > maxL) { var gs = toks(L.slice(maxL - 1).join(" "), 1), o = ""; for (var i = 0; i < gs.length; i++) { if (wid(o + gs[i] + "…") > max) break; o += gs[i]; } L = L.slice(0, maxL - 1).concat([o.trim() + "…"]); }
+    return L;
+  }
+  function labelLines(t) { var L = wrap(t, 82, 3); if (L.length >= 2) { var L2 = wrap(t, 82, 3, 62); if ((L2.length <= 3 && L2[L2.length - 1].slice(-1) !== "…") || L.length === 3) L = L2; } return L; }
+
+  var CLS = { "Site Expansion": "own-siteex", "Site Negotiation": "own-nego", "Construction Management": "own-constr", "Governance Affairs": "own-ratkit" };
+  var ST = { st: "idle", d: null, err: "" }, MODEL = null;
+
+  function build(d) {
+    var flows = (d.layout || []).map(function (F) {
+      var byStep = {}, boxes = F.nodes.map(function (n) { var b = { n: n, items: [] }; n.steps.forEach(function (s) { byStep[s] = b; }); return b; });
+      return { F: F, boxes: boxes, byStep: byStep, un: {}, items: {} };
+    });
+    var byFlow = {}; flows.forEach(function (x) { byFlow[x.F.flow] = x; });
+    (d.rows || []).forEach(function (r) {
+      var X = byFlow[r[0]]; if (!X) return;
+      var t = { id: r[1], ticket: r[2], code: r[3], name: r[4], step: r[5], status: r[6], since: r[7] };
+      X.items[t.id] = 1;
+      var b = X.byStep[t.step];
+      if (b) b.items.push(t); else (X.un[t.step || "(ไม่ระบุขั้น)"] = X.un[t.step || "(ไม่ระบุขั้น)"] || []).push(t);
+    });
+    return flows;
+  }
+
+  function flowHtml(X, fi) {
+    var SX = 0.6, SY = 0.75, W = 100, H = 76, PAD = 30, mx = 0, my = 0, pos = {};
+    X.boxes.forEach(function (b) { var px = Math.round(PAD + b.n.c * 230 * SX), py = Math.round(PAD + b.n.r * 130 * SY); pos[b.n.id] = { x: px, y: py }; mx = Math.max(mx, px + W); my = Math.max(my, py + H); });
+    var vbW = mx + PAD, vbH = my + PAD + 10;
+    var edges = X.F.edges.map(function (e) {
+      var a = pos[e[0]], b = pos[e[1]]; if (!a || !b) return "";
+      var ay = a.y + H / 2, by = b.y + H / 2;
+      if (b.x > a.x + W) { var m = Math.round((a.x + W + b.x) / 2); return '<polyline points="' + (a.x + W) + "," + ay + " " + m + "," + ay + " " + m + "," + by + " " + b.x + "," + by + '" class="fedge" marker-end="url(#kfarrow)"/>'; }
+      var low = Math.max(a.y, b.y) + H + 12; return '<polyline points="' + (a.x + W / 2) + "," + (a.y + H) + " " + (a.x + W / 2) + "," + low + " " + (b.x + W / 2) + "," + low + " " + (b.x + W / 2) + "," + (b.y + H) + '" class="fedge" marker-end="url(#kfarrow)"/>';
+    }).join("");
+    var nodes = X.boxes.map(function (b, bi) {
+      var p = pos[b.n.id], L = labelLines(b.n.t), n = b.items.length, cx = p.x + W / 2, top = p.y + (L.length === 1 ? 31 : L.length === 2 ? 25 : 22);
+      var cy = L.length === 3 ? p.y + 62 : p.y + (L.length === 1 ? 51 : 56);
+      var cls = (CLS[b.n.team] || "") + (b.n.old ? " kold" : "");
+      return '<g class="gnode ' + cls + '" data-f="' + fi + '" data-b="' + bi + '" style="cursor:pointer"><title>' + esc(b.n.t) + (b.n.old ? " · เฉพาะเวอร์ชันเก่า (ใบเก่ายังค้าง)" : "") + ' — คลิกเพื่อดูรายชื่อ</title>' +
+        '<rect x="' + p.x + '" y="' + p.y + '" width="' + W + '" height="' + H + '" rx="7" class="fnode clickable"/>' +
+        L.map(function (l, i) { return '<text x="' + cx + '" y="' + (top + i * 11.5) + '" class="flabel">' + esc(l) + "</text>"; }).join("") +
+        '<text x="' + cx + '" y="' + cy + '" class="fcount' + (n ? "" : " zero") + '">' + n.toLocaleString() + "</text>" +
+        '<text x="' + (p.x + W - 11) + '" y="' + (p.y + 12) + '" class="fexpand">&#10530;</text></g>';
+    }).join("");
+    var badges = X.boxes.map(function (b, bi) { var p = pos[b.n.id], w = 104; return '<g class="kbadge" id="kfb-' + fi + "-" + bi + '" style="display:none"><rect x="' + (p.x + W / 2 - w / 2) + '" y="' + (p.y - 8) + '" width="' + w + '" height="16" rx="8"/><text x="' + (p.x + W / 2) + '" y="' + p.y + '">เกิน: ยังไม่ตั้ง Deadline</text></g>'; }).join("");
+    var nItems = Object.keys(X.items).length, inBox = X.boxes.reduce(function (a, b) { return a + b.items.length; }, 0);
+    var unK = Object.keys(X.un), unN = unK.reduce(function (a, k) { return a + X.un[k].length; }, 0);
+    var um = unK.length ? '<div class="kum"><b>⚠ ขั้นใน Kissflow ที่ชื่อไม่ตรงกล่องไหน</b> — ' + unN.toLocaleString() + " รายการ · " + unK.length + " ขั้น (เวอร์ชันใหม่ของ Flow · คลิกดูใบ) — ต้องเพิ่มกล่องในหน้า Kissflow Live<br>" +
+      unK.map(function (k) { return '<button class="kchip" data-f="' + fi + '" data-u="' + esc(k) + '">' + esc(k) + " <em>" + X.un[k].length + "</em></button>"; }).join("") + "</div>" : "";
+    return '<div class="section-label">' + esc(X.F.name) + " &mdash; TICKETS AT EACH STEP</div><div class=\"card\">" +
+      '<div class="fhead"><div class="flegend"><span class="item"><span class="sw own-nego"></span>Site Nego</span><span class="item"><span class="sw own-ratkit"></span>รัฐกิจ</span><span class="item"><span class="sw own-constr"></span>ก่อสร้าง</span><span class="item"><span class="sw own-siteex"></span>Site Ex</span><span class="item" style="color:var(--t3)">กรอบเส้นประ = ขั้นเฉพาะเวอร์ชันเก่า</span></div>' +
+      '<span class="kkpi">ใบค้าง (ไม่ซ้ำ) <b>' + nItems.toLocaleString() + "</b> · รวมรายขั้น <b>" + inBox.toLocaleString() + "</b>" + (unN ? ' · ไม่ตรงกล่อง <b style="color:#e03131">' + unN.toLocaleString() + "</b>" : ' · <b style="color:#0ca678">ทุกขั้นมีกล่องรับ ✓</b>') + "</span></div>" +
+      '<div class="flow-wrap"><svg viewBox="0 0 ' + vbW + " " + vbH + '" class="flow" style="width:' + Math.round(vbW * 1.25) + 'px;min-width:0;max-width:none" xmlns="http://www.w3.org/2000/svg">' +
+      '<defs><marker id="kfarrow" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3 L0,6 Z" fill="#4a5568"/></marker></defs>' +
+      edges + nodes + badges + "</svg></div>" + um + "</div>";
+  }
+
+  function render() {
+    var f = "", a = "";
+    if (ST.st === "loading") f = "<span>Kissflow: <b>กำลังโหลด…</b></span>";
+    if (ST.st === "ok") f = "<span>Kissflow: <b>ณ " + esc(ST.d.stamp || "—") + "</b> (ซิงก์ทุก ~1 ชม.) · กล่อง = หน้า \"Kissflow Live\" (ชื่อขั้นจริงจากใบงาน) · นับเฉพาะใบ InProgress</span>";
+    $("fresh").innerHTML = f;
+    if (ST.st === "err") a = '<div class="kf-red"><b>🔴 โหลดข้อมูล Kissflow ไม่สำเร็จ</b> — กล่องด้านล่าง<b>ว่างเพราะโหลดไม่ได้ ไม่ใช่ไม่มีงาน</b><br>' + esc(ST.err) + ' <button type="button" class="o1-btn ghost" id="kf-retry">ลองโหลดอีกครั้ง</button></div>';
+    if (ST.st === "ok" && ST.d.empty) a = '<div class="kf-red"><b>🔴 ยังไม่มีข้อมูลงานค้าง</b> — ยังไม่ได้รัน setupKfQueue ใน Apps Script (กล่องเป็น 0 เพราะยังไม่มีข้อมูล ไม่ใช่ไม่มีงาน)</div>';
+    else if (ST.st === "ok" && ST.d.stale) a = '<div class="kf-amb">⚠ ข้อมูล Kissflow เก่ากว่า 2.5 ชม. (ล่าสุด ' + esc(ST.d.stamp || "—") + ') — ซิงก์รอบหลังอาจล้ม ตัวเลขอาจไม่ตรงปัจจุบัน</div>';
+    $("alert").innerHTML = a;
+    var rb = $("retry"); if (rb) rb.onclick = function () { ST.st = "idle"; load(); };
+    if (ST.st !== "ok") { $("flows").innerHTML = ""; return; }
+    CTX.font = (function () { var e = document.querySelector(".flabel"), cs = e ? getComputedStyle(e) : null; return cs ? cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily : '600 10.5px "Plus Jakarta Sans","Sarabun",sans-serif'; })();
+    MODEL = build(ST.d);
+    $("flows").innerHTML = MODEL.map(flowHtml).join("");
+  }
+
+  function openList(title, sub, items) {
+    var rows = items.slice().sort(function (x, y) { return (x.since || "") < (y.since || "") ? -1 : 1; });
+    drw.innerHTML = '<button class="kf-x" type="button">×</button><h3>' + esc(title) + '</h3><div class="kf-sub">' + esc(sub) + "</div>" +
+      (rows.length ? "<table><tr><th>ใบงาน</th><th>สาขา / เรื่อง</th><th style=\"text-align:right\">ค้างขั้นนี้</th></tr>" + rows.map(function (t) {
+        var d = days(t.since);
+        return '<tr><td class="c">' + esc(t.ticket || t.id) + "</td><td>" + esc(t.code) + (t.name ? '<br><span class="mute">' + esc(t.name) + "</span>" : "") + (/Suspended/.test(t.step) ? '<br><span class="mute">ถูกพัก (Suspended)</span>' : "") +
+          '</td><td class="n">' + (d == null ? '<span class="mute">—</span>' : d + " วัน") + "</td></tr>";
+      }).join("") + "</table>" : '<p class="mute">ไม่มีใบค้างที่ขั้นนี้</p>');
+    drw.classList.add("on"); dbg.classList.add("on");
+    drw.querySelector(".kf-x").onclick = closeD;
+  }
+  function closeD() { drw.classList.remove("on"); dbg.classList.remove("on"); }
+  dbg.onclick = closeD;
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeD(); });
+  sec.addEventListener("mouseover", function (e) { var g = e.target.closest && e.target.closest(".gnode"); if (g) { var el = document.getElementById("kfb-" + g.getAttribute("data-f") + "-" + g.getAttribute("data-b")); if (el) el.style.display = ""; } });
+  sec.addEventListener("mouseout", function (e) { var g = e.target.closest && e.target.closest(".gnode"); if (g && !g.contains(e.relatedTarget)) { var el = document.getElementById("kfb-" + g.getAttribute("data-f") + "-" + g.getAttribute("data-b")); if (el) el.style.display = "none"; } });
+  sec.addEventListener("click", function (e) {
+    if (!MODEL) return;
+    var g = e.target.closest(".gnode"), c = e.target.closest(".kchip");
+    if (g) { var X = MODEL[+g.getAttribute("data-f")], b = X.boxes[+g.getAttribute("data-b")]; openList(b.n.t, X.F.name + " · " + b.n.team + (b.n.tg ? " (สำนักยังไม่ยืนยัน)" : "") + " · ค้าง " + b.items.length + " ใบ", b.items); return; }
+    if (c) { var X2 = MODEL[+c.getAttribute("data-f")], k = c.getAttribute("data-u"); openList(k, X2.F.name + " · ชื่อขั้นนี้ไม่ตรงกล่องไหน · " + X2.un[k].length + " ใบ", X2.un[k]); }
+  });
+
+  /* ---- โหลด (GAS getKfQueue · หลัง login) ---- */
+  function load() {
+    if (ST.st === "loading") return;
+    var u = window.DPT_GAS_URL, tk = window.DPT_ID_TOKEN || "";
+    if (!u || !tk) { ST.st = "err"; ST.err = "ยังไม่ได้เข้าสู่ระบบ — เข้าสู่ระบบด้านบนแล้วเปิดแท็บนี้ใหม่"; render(); return; }
+    ST.st = "loading"; render();
+    var url = u + (u.indexOf("?") < 0 ? "?" : "&") + "action=getKfQueue&token=" + encodeURIComponent(tk);
+    (typeof window.DPT_hedgedGet === "function" ? window.DPT_hedgedGet(url) : fetch(url, { redirect: "follow" }).then(function (r) { return r.json(); }))
+      .then(function (j) { if (!j || !j.ok || !j.layout) throw new Error((j && j.error) || "โหลดไม่สำเร็จ (backend ยังไม่มี action getKfQueue — ต้อง Deploy Apps Script เวอร์ชันใหม่)"); ST.d = j; ST.st = "ok"; render(); })
+      .catch(function (e) { ST.st = "err"; ST.err = String((e && e.message) || e); render(); });
+  }
+  var _st = window.showTab;
+  window.showTab = function (id) { var r = _st.apply(this, arguments); if (id === "kf") { if (ST.st === "idle") load(); else render(); } return r; };
+  setInterval(function () { tb.style.display = window.DPT_ROLE ? "" : "none"; }, 1000);
 })();
 
 </script>
