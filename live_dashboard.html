@@ -1501,7 +1501,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=185126" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=185946" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -10627,6 +10627,13 @@ render();
 
   function $(i) { return document.getElementById("kf-" + i); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  /* เวลาข้อมูล (จี 16 พ.ย.: "เขียนกำกับไว้ด้วยว่าข้อมูลกี่โมง จะรีทุก 1 ชม.") — stamp จาก server = "yyyy-MM-dd HH:mm" เวลาไทย */
+  var TH_MON = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  function stampMs(s) { var m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(s || ""); return m ? Date.parse(m[1] + "-" + m[2] + "-" + m[3] + "T" + m[4] + ":" + m[5] + ":00+07:00") : null; }
+  function stampTh(s) { var m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(s || ""); return m ? (+m[3]) + " " + TH_MON[+m[2] - 1] + " " + m[4] + ":" + m[5] + " น." : (s || "—"); }
+  function agoMin(s) { var t = stampMs(s); return t == null ? null : Math.max(0, Math.round((Date.now() - t) / 60000)); }
+  function agoTxt(m) { return m < 1 ? "เพิ่งอัปเดต" : m < 60 ? m + " นาทีที่แล้ว" : Math.floor(m / 60) + " ชม. " + (m % 60) + " นาทีที่แล้ว"; }
+  function nextTxt(s) { var t = stampMs(s); if (t == null) return ""; var n = new Date(t + 3600000), th = new Date(n.getTime() + 7 * 3600000); return ("0" + th.getUTCHours()).slice(-2) + ":" + ("0" + th.getUTCMinutes()).slice(-2) + " น."; }
   function days(iso) { if (!iso) return null; var t = Date.parse(iso); if (isNaN(t)) return null; return Math.floor((Date.now() - t) / 864e5); }
 
   /* ---- ตัดบรรทัดชื่อกล่อง ตาม "คำ" ภาษาไทย + วัดความกว้างจริง (จี: ตัวหนังสือห้าม "ตก" กลางคำ) ---- */
@@ -10710,7 +10717,7 @@ render();
       unK.map(function (k) { return '<button class="kchip" data-f="' + fi + '" data-u="' + esc(k) + '">' + esc(k) + " <em>" + X.un[k].length + "</em></button>"; }).join("") + "</div>" : "";
     return '<div class="section-label">' + esc(X.F.name) + " &mdash; TICKETS AT EACH STEP</div><div class=\"card\">" +
       '<div class="fhead"><div class="flegend"><span class="item"><span class="sw own-nego"></span>Site Nego</span><span class="item"><span class="sw own-ratkit"></span>รัฐกิจ</span><span class="item"><span class="sw own-constr"></span>ก่อสร้าง</span><span class="item"><span class="sw own-siteex"></span>Site Ex</span><span class="item" style="color:var(--t3)">กรอบเส้นประ = ขั้นเฉพาะเวอร์ชันเก่า</span></div>' +
-      '<span class="kkpi">ใบค้าง (ไม่ซ้ำ) <b>' + nItems.toLocaleString() + "</b> · รวมรายขั้น <b>" + inBox.toLocaleString() + "</b>" + (unN ? ' · ไม่ตรงกล่อง <b style="color:#e03131">' + unN.toLocaleString() + "</b>" : ' · <b style="color:#0ca678">ทุกขั้นมีกล่องรับ ✓</b>') + "</span></div>" +
+      '<span class="kkpi">🕐 ณ ' + esc(stampTh(ST.d.stamp)) + ' (อัปเดตทุก 1 ชม.) · ใบค้าง (ไม่ซ้ำ) <b>' + nItems.toLocaleString() + "</b> · รวมรายขั้น <b>" + inBox.toLocaleString() + "</b>" + (unN ? ' · ไม่ตรงกล่อง <b style="color:#e03131">' + unN.toLocaleString() + "</b>" : ' · <b style="color:#0ca678">ทุกขั้นมีกล่องรับ ✓</b>') + "</span></div>" +
       '<div class="flow-wrap"><svg viewBox="0 0 ' + vbW + " " + vbH + '" class="flow" style="width:' + Math.round(vbW * 1.25) + 'px;min-width:0;max-width:none" xmlns="http://www.w3.org/2000/svg">' +
       '<defs><marker id="kfarrow" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3 L0,6 Z" fill="#4a5568"/></marker></defs>' +
       edges + nodes + badges + "</svg></div>" + um + "</div>";
@@ -10719,7 +10726,9 @@ render();
   function render() {
     var f = "", a = "";
     if (ST.st === "loading") f = "<span>Kissflow: <b>กำลังโหลด…</b></span>";
-    if (ST.st === "ok") f = "<span>Kissflow: <b>ณ " + esc(ST.d.stamp || "—") + "</b> (ซิงก์ทุก ~1 ชม.) · กล่อง = หน้า \"Kissflow Live\" (ชื่อขั้นจริงจากใบงาน) · นับเฉพาะใบ InProgress</span>";
+    if (ST.st === "ok") f = "<span>🕐 ข้อมูล Kissflow ณ <b>" + esc(stampTh(ST.d.stamp)) + "</b>" + (agoMin(ST.d.stamp) != null ? " (" + agoTxt(agoMin(ST.d.stamp)) + ")" : "") +
+      " · อัปเดตอัตโนมัติ<b>ทุก 1 ชั่วโมง</b>" + (nextTxt(ST.d.stamp) ? " · รอบถัดไปประมาณ <b>" + nextTxt(ST.d.stamp) + "</b>" : "") +
+      "</span><span>กล่อง = หน้า \"Kissflow Live\" (ชื่อขั้นจริงจากใบงาน) · นับเฉพาะใบ InProgress</span>";
     $("fresh").innerHTML = f;
     if (ST.st === "err") a = '<div class="kf-red"><b>🔴 โหลดข้อมูล Kissflow ไม่สำเร็จ</b> — กล่องด้านล่าง<b>ว่างเพราะโหลดไม่ได้ ไม่ใช่ไม่มีงาน</b><br>' + esc(ST.err) + ' <button type="button" class="o1-btn ghost" id="kf-retry">ลองโหลดอีกครั้ง</button></div>';
     if (ST.st === "ok" && ST.d.empty) a = '<div class="kf-red"><b>🔴 ยังไม่มีข้อมูลงานค้าง</b> — ยังไม่ได้รัน setupKfQueue ใน Apps Script (กล่องเป็น 0 เพราะยังไม่มีข้อมูล ไม่ใช่ไม่มีงาน)</div>';
