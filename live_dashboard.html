@@ -1501,7 +1501,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=190937" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=183026" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8519,6 +8519,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     "@media (max-width:820px){.rgp-bar{width:60px}}",
     "#rg-drawer textarea.rg-in{width:100%;min-width:260px;box-sizing:border-box;font:inherit;font-size:12.5px;padding:4px 6px;border:1px solid var(--border2,#cbd5e1);border-radius:7px;resize:vertical}#rg-drawer select.rg-in{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--border2,#cbd5e1);border-radius:7px}",
     "#rg-drawer input.rg-in.rg-exc-in{width:100%;min-width:320px;box-sizing:border-box}#rg-drawer .rg-tw[data-f=excise]{display:block;width:100%}",   /* 13 พ.ย. (จี "อ่านไม่ออก ช่องสั้นไป") */
+    /* 24 พ.ย. บิลน้ำ-ไฟ-ขยะ ร้านเปิดแล้ว: ฿ = มียอดยังไม่ระบุสถานะ (โทนเดียวกับ ✓ แต่จาง) · เดือนที่เลือกมีเส้นใต้หัว */
+    "#tab-registration .rg-s-amt{color:var(--rg-ok);opacity:.75}#tab-registration th.rg-ucur{box-shadow:inset 0 -3px 0 var(--blue,#2563eb)}#tab-registration tr.rg-urow{cursor:pointer}#tab-registration tr.rg-urow:hover td:not(.rg-c){background:#eef2ff}#tab-registration td.rg-ucell{min-width:64px}#tab-registration .rgp-flt select{font:inherit;font-size:12.5px;padding:4px 8px;border:1px solid var(--border2,#cbd5e1);border-radius:8px;background:var(--surface,#fff)}",
     "#rg-drawer .rg-tn{display:block;margin-top:4px;border-radius:7px}#rg-drawer .rg-tn-in{width:100%;min-width:150px;box-sizing:border-box;font:inherit;font-size:12px;padding:3px 6px;border:1px dashed var(--border2,#cbd5e1);border-radius:7px;resize:vertical;background:var(--surface,#fff)}#rg-drawer .rg-tn-in:focus{border-style:solid;border-color:var(--blue)}#rg-drawer .rg-tn.dirty .rg-tn-in{background:#fef3c7}#rg-drawer .rg-tn.saved .rg-tn-in{background:#d1fae5}#rg-drawer .rg-tn.err .rg-tn-in{background:#fee2e2}.rg-tn-ro{font-size:12px;color:var(--t2);margin-top:3px;white-space:pre-wrap}",
     "button.rgd-row{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(150px,210px) 1fr minmax(170px,auto);gap:12px;align-items:center;width:100%;padding:7px 8px;border-radius:8px;cursor:pointer}button.rgd-row:hover{background:var(--bbg,#eef2ff)}button.rgd-row:focus-visible{outline:2px solid var(--blue)}",
     ".rgd-lab{font-size:13px;font-weight:700}.rgd-bar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:#eef1f6;gap:2px}.rgd-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;min-width:3px}",
@@ -8868,6 +8870,8 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       if (window.USE_GAS_BACKEND === true && window.DPT_GAS_URL && window.DPT_ID_TOKEN && allowed()) { clearInterval(iv); loadOpen(); }
     }, 1000);
   })();
+  // 24 พ.ย.: ทดสอบหน้าจอในเครื่อง (localhost เท่านั้น) — ใส่คำตอบ getRegOpen จำลอง/จริงเข้าไปตรง ๆ · บนเว็บจริงไม่มีฟังก์ชันนี้
+  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.REG_OPEN_inject = function (j) { OPEN.d = j; OPEN.warn = j.warn || []; OPEN.st = "ok"; OPEN.at = j.stamp || ""; freshen(); safeRender(); };
   window.REG_OPEN_load = loadOpen;
   window.REG_OPEN_model = openModel;   // ให้หน้าจอเรียก (และใช้ตรวจในหน้าทดสอบ)
 
@@ -9441,6 +9445,168 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     return bOne("trash", "ค่าขยะ", function (r) { var t = r.trash; return t ? "ค่าขยะ " + (t.rate || "ยังไม่มีบันทึก") + (t.band ? " · " + t.band : "") : "ยังไม่มีบันทึกในชีตค่าขยะ"; },
       function (r) { var t = r.trash || {}; return [t.rate, t.by].filter(Boolean).join(" · "); });
   }
+  /* ===== 24 พ.ย. 2569 (จี "ต่อเข้าแท็บน้ำ-ไฟ ให้บัญชีกับทีมทะเบียนมาทำงานบน APP" · PRD_Registration §18–21) — เฟส ① ดูอย่างเดียว
+   * ข้อมูล = OPEN.d.utl จาก GAS getRegOpen: meters (Tank G APP_UTL_Meter) + bills 13 เดือน (ACC_live_util ← GSheet บิลบัญชี)
+   * กติกาเดียว (utlCell) ใช้ทั้งแถบนับ ตาราง และลิ้นชัก (SPEC §20.4):
+   *   มีแถวบิล → ตามสถานะ · ไม่มีสถานะแต่มียอด = "฿ มียอด" (นำเข้าจาก Excel ยังไม่ระบุว่าจ่ายแล้วไหม) · ไม่มีแถว แต่อยู่ในช่วง cover_to = ✓ จ่ายล่วงหน้า
+   *   ไม่มีแถว + วันนี้ > วันอ่านมาตรของเดือน + 7 วัน = 🔴 บิลไม่มา · ยังไม่ถึง = ☐ · ก่อน bill_from / หลัง closed = ไม่ต้องมีบิล (ช่องว่าง)
+   *   ยอดผิดปกติ = ต่างจากเดือนก่อนหน้าที่มียอดล่าสุด > 30% · utl/bills = null (อ่านไม่ได้) ≠ [] → ป้ายแดง ช่องเดือน "?" ไม่ใช่ ☐ */
+  var UTL_LATE_D = 7, UTL_JUMP = 0.30, UTL_NCOL = 6;
+  var UTL_PAID = { "จ่ายแล้ว": 1, "หักบัญชีแล้ว": 1, "จ่ายล่วงหน้าแล้ว": 1 }, UTL_NA = { "ผรม.จ่าย": 1, "ใช้ฟรี/ไม่มีบิล": 1 };
+  var USVC = { util: ["ไฟ", "น้ำ", "Solar", "สัมปทานไฟ"], trash: ["ขยะ"] };
+  var UF = { m: "", svc: "", st: "" }, UTLC = null;
+  function ymAdd(ym, n) { var y = +ym.slice(0, 4), m = +ym.slice(5, 7) - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y + "-" + ("0" + (m + 1)).slice(-2); }
+  function ymTh(ym) { return ym ? THM[+ym.slice(5, 7) - 1] + String(+ym.slice(0, 4) + 543).slice(2) : ""; }
+  function utlRaw() { return OPEN.st === "ok" && OPEN.d ? OPEN.d.utl : undefined; }   // undefined = GAS ยังไม่ส่ง (ยังไม่ Deploy)
+  function utlModel() {
+    var u = utlRaw(); if (!u) return null;
+    if (UTLC && UTLC.src === u) return UTLC;
+    var mc = u.mcols || [], bc = u.bcols || [], meters = null, bills = null, byM = {};
+    if (u.meters) meters = u.meters.map(function (a) { var o = {}; mc.forEach(function (k, i) { o[k] = a[i] || ""; }); return o; });
+    if (u.bills) { bills = {}; u.bills.forEach(function (a) { var o = {}; bc.forEach(function (k, i) { o[k] = a[i] || ""; }); (bills[o.mid] = bills[o.mid] || {})[o.month] = o; }); }
+    (meters || []).forEach(function (m) { (byM[m.code] = byM[m.code] || []).push(m); });
+    UTLC = { src: u, meters: meters, bills: bills, byCode: byM, ts: u.ts || "", from: u.billFrom || "" };
+    return UTLC;
+  }
+  function utlNum(v) { var n = parseFloat(String(v == null ? "" : v).replace(/[,\s]/g, "")); return isFinite(n) ? n : null; }
+  function utlReadIso(m, ym) {   // วันอ่านมาตรของเดือน ym (ไม่รู้วัน = สิ้นเดือน)
+    var last = new Date(+ym.slice(0, 4), +ym.slice(5, 7), 0).getDate(), d = Math.min(+m.read_day || last, last);
+    return ym + "-" + ("0" + d).slice(-2);
+  }
+  function utlCell(M, m, ym) {
+    var o = OM(), r = o && o.rows.filter(function (x) { return x.code === m.code; })[0];
+    var from = m.bill_from || (r && r.open_iso ? r.open_iso.slice(0, 7) : "");
+    if (!from || ym < from || (m.closed && ym > m.closed)) return { st: "off", w: "ยังไม่ต้องมีบิลเดือนนี้" };
+    if (!M.bills) return { st: "err", w: "อ่านชีตบิลไม่ได้" };
+    var mb = M.bills[m.mid] || {}, b = mb[ym], amt = b ? utlNum(b.amount) : null;
+    if (b && b.status) {
+      var s = b.status, k = UTL_PAID[s] ? "done" : (UTL_NA[s] ? "na" : (s === "ได้รับบิล รอจ่าย" ? "pend" : (s === "ยังไม่ออกบิล" ? "over" : "amt")));
+      return { st: k, w: s, b: b, amt: amt };
+    }
+    if (b && amt != null) return { st: "amt", w: "มียอด · ยังไม่ระบุสถานะ", b: b, amt: amt };
+    var cov = Object.keys(mb).filter(function (k2) { return k2 < ym && mb[k2].cover_to && mb[k2].cover_to >= ym; })[0];
+    if (cov) return { st: "done", w: "จ่ายล่วงหน้าแล้ว (บิล " + ymTh(cov) + ")", b: mb[cov] };
+    var due = addDays(utlReadIso(m, ym), UTL_LATE_D);
+    if (todayIso() > due) return { st: "over", w: "บิลไม่มา (เลย " + fmtIso(due) + ")", b: b };
+    return { st: "none", w: "ยังไม่ถึงรอบ (บิลควรมาภายใน " + fmtIso(due) + ")", b: b };
+  }
+  function utlJump(M, m, ym) {   // ยอดเทียบเดือนก่อนหน้าที่มียอดล่าสุด
+    var mb = (M.bills && M.bills[m.mid]) || {}, cur = mb[ym] ? utlNum(mb[ym].amount) : null;
+    if (cur == null) return null;
+    var prev = Object.keys(mb).filter(function (k) { return k < ym && utlNum(mb[k].amount) != null; }).sort().pop();
+    var pv = prev ? utlNum(mb[prev].amount) : null;
+    if (!pv) return null;
+    return { pct: (cur - pv) / pv, prev: prev, pv: pv, cur: cur };
+  }
+  function utlCurMonth() { if (!UF.m) UF.m = todayIso().slice(0, 7); return UF.m; }
+  function utlSymTd(c, extra) {
+    if (c.st === "off") return '<td class="rg-c rg-ucell" title="' + esc(c.w) + '"></td>';
+    if (c.st === "err") return '<td class="rg-c rg-ucell rg-s-over" title="อ่านชีตบิลไม่ได้">?</td>';
+    var sym = c.st === "amt" ? "฿" : SYM[c.st], cls = c.st === "amt" ? "amt" : c.st;
+    var line = c.amt != null ? c.amt.toLocaleString("th-TH", { maximumFractionDigits: 2 }) : "";
+    return '<td class="rg-c rg-mc rg-ucell rg-s-' + cls + '" title="' + esc(c.w + (c.b && c.b.note ? "\n" + c.b.note : "")) + '">' + sym + (line ? '<div class="rg-ml">' + esc(line) + "</div>" : "") + (extra || "") + "</td>";
+  }
+  function utlRows(w) {
+    var M = utlModel(); if (!M || !M.meters) return [];
+    var q = F.q.trim().toLowerCase(), o = OM(), nm = {};
+    (o ? o.rows : []).forEach(function (r) { nm[r.code] = r; });
+    return M.meters.filter(function (m) {
+      if (USVC[w].indexOf(m.svc) < 0) return false;
+      if (UF.svc && m.svc !== UF.svc) return false;
+      var r = nm[m.code];
+      if (F.code && m.code !== F.code) return false;
+      if (F.prov && (!r || r.prov !== F.prov)) return false;
+      if (q && (m.code + " " + (r ? r.name : "") + " " + m.acct + " " + m.meter + " " + m.prov_office).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    }).map(function (m) { return { m: m, r: nm[m.code] || null }; });
+  }
+  function utlMissing(w) {   // ร้านที่เปิดแล้ว (กลุ่ม B ของแท็บนี้) ที่ยังไม่มีมิเตอร์ / เลขอ้างอิงไม่ครบ — งานทีมทะเบียน
+    var M = utlModel(); if (!M || !M.meters) return [];
+    var need = w === "trash" ? ["ขยะ"] : ["ไฟ", "น้ำ"];
+    return rowsB().map(function (r) {
+      var ms = M.byCode[r.code] || [], miss = [];
+      need.forEach(function (s) {
+        var x = ms.filter(function (m) { return m.svc === s; });
+        if (!x.length) miss.push("ไม่มีแถว" + s);
+        else if (s !== "ขยะ" && !x.some(function (m) { return m.acct || m.meter; })) miss.push(s + " ไม่มีเลขผู้ใช้/เลขมิเตอร์");
+      });
+      return miss.length ? { r: r, miss: miss } : null;
+    }).filter(Boolean);
+  }
+  function utlBlock(w) {
+    var g = bGate(), u = utlRaw();
+    var head = '<div class="rg-coh">' + (w === "trash" ? "" : cohHead("b", null));   // หน้าเก็บขยะ: หัวกลุ่ม/ป้ายโหลดอยู่ในตารางเดิมด้านบนแล้ว
+    if (g) return w === "trash" ? "" : head + g + "</div>";
+    if (u === undefined) return head + stateBox("rg-errbox", "<b>🔴 ยังไม่มีข้อมูลบิลน้ำ-ไฟ-ขยะจาก backend</b><br>ต้อง Deploy Apps Script (GO_webapp.gs ฉบับ 24 พ.ย.) ก่อน — ยังไม่ได้แปลว่าไม่มีบิลค้าง") + "</div>";
+    var M = utlModel();
+    if (!M.meters) return head + stateBox("rg-errbox", "<b>🔴 อ่านข้อมูลมิเตอร์ไม่ได้</b><br>" + esc((OPEN.warn || []).filter(function (x) { return /^utl/.test(x); }).join(" · ") || "ไม่ทราบสาเหตุ") + "<br>ตัวเลขยังไม่แสดง — ไม่ได้แปลว่าไม่มีงาน") + "</div>";
+    var ym = utlCurMonth(), months = []; for (var i = UTL_NCOL - 1; i >= 0; i--) months.push(ymAdd(ym, -i));
+    var rows = utlRows(w), T = { done: 0, amt: 0, pend: 0, over: 0, none: 0, na: 0, jump: 0, n: 0 };
+    rows.forEach(function (x) {
+      x.c = utlCell(M, x.m, ym); x.j = M.bills ? utlJump(M, x.m, ym) : null; x.jb = !!(x.j && Math.abs(x.j.pct) > UTL_JUMP);
+      if (x.c.st === "off" || x.c.st === "err") return; T.n++; T[x.c.st]++; if (x.jb) T.jump++;
+    });
+    var miss = utlMissing(w);
+    var RK = { over: 0, pend: 1, amt: 2, none: 3, done: 4, na: 5, off: 6, err: 6 };
+    var shown = rows.filter(function (x) { return !UF.st || (UF.st === "jump" ? x.jb : x.c.st === UF.st); })
+      .sort(function (a, b) { return (RK[a.c.st] - RK[b.c.st]) || ((b.jb ? 1 : 0) - (a.jb ? 1 : 0)) || (a.m.code < b.m.code ? -1 : a.m.code > b.m.code ? 1 : (a.m.svc < b.m.svc ? -1 : 1)); });
+    function chip(k, sym, word, v, unit) { return '<button type="button" class="rg-chip rg-chip-' + (k === "jump" ? "over" : k === "amt" ? "done" : k) + (UF.st === k ? " on" : "") + '" data-ust="' + k + '">' + sym + " " + word + " <b>" + v + "</b> " + (unit || "มิเตอร์") + "</button>"; }
+    var monthOpts = []; for (var j = 0; j < 13; j++) { var mm = ymAdd(todayIso().slice(0, 7), 1 - j); monthOpts.push([mm, "เดือนบิล: " + ymTh(mm)]); }
+    var svcOpts = [["", "บริการ: ทั้งหมด"]].concat(USVC[w].map(function (s) { return [s, "บริการ: " + s]; }));
+    var bar = '<div class="rgp-flt">' + '<select data-uf="m">' + opts(monthOpts, ym, "เดือนบิล: เดือนนี้") + "</select>" + (USVC[w].length > 1 ? '<select data-uf="svc">' + svcOpts.map(function (o2) { return '<option value="' + esc(o2[0]) + '"' + (o2[0] === UF.svc ? " selected" : "") + ">" + esc(o2[1]) + "</option>"; }).join("") + "</select>" : "") +
+      (UF.st ? '<button type="button" class="rgp-clr" data-ust="">ล้างตัวกรองสถานะ</button>' : "") + '<span class="rgp-cnt">แสดง ' + shown.length + " จาก " + rows.length + " มิเตอร์</span></div>";
+    var errBill = !M.bills ? stateBox("rg-errbox", "<b>🔴 อ่านชีตบิลไม่ได้</b><br>" + esc((OPEN.warn || []).filter(function (x) { return /^utl: บิล/.test(x); }).join(" · ") || "ไม่ทราบสาเหตุ") + "<br>ช่องเดือนขึ้น ? และการ์ดบิลไม่นับ — ไม่ได้แปลว่าไม่มีบิลค้าง") : "";
+    var strip2 = M.bills ? '<div class="rg-strip">' + chip("done", "✓", "จ่ายแล้ว", T.done) + chip("amt", "฿", "มียอด · ยังไม่ระบุสถานะ", T.amt) + chip("pend", "⏳", "ได้รับบิล รอจ่าย", T.pend) +
+      chip("over", "🔴", "ยังไม่ออกบิล / บิลไม่มา", T.over) + chip("jump", "⚠️", "ยอดต่างเดือนก่อน >30%", T.jump) + (T.none ? chip("none", SYM.none, "ยังไม่ถึงรอบ", T.none) : "") + (T.na ? chip("na", "–", "ผรม.จ่าย / ใช้ฟรี", T.na) : "") +
+      '<span class="rg-muted" style="align-self:center">' + esc(ymTh(ym)) + " · " + T.n + " มิเตอร์ที่ต้องมีบิล</span></div>" : "";
+    var th = '<tr><th class="rg-stk">สาขา</th><th>บริการ</th><th>ผู้ให้บริการ</th><th>เลขผู้ใช้ / มิเตอร์</th><th>สถานะมิเตอร์</th>' + months.map(function (x) { return '<th class="rg-sh' + (x === ym ? " rg-ucur" : "") + '">' + esc(ymTh(x)) + "</th>"; }).join("") + "<th>เทียบเดือนก่อน</th></tr>";
+    var key = "utl-" + w, pg = pageOf(key, shown);
+    var body = pg.items.map(function (x) {
+      var m = x.m, r = x.r, j = x.j;
+      return '<tr class="rg-urow" data-umid="' + esc(m.mid) + '" tabindex="0"><td class="rg-stk rg-site"><b>' + esc(m.code) + '</b><div class="rg-d">' + esc(r ? r.name : "") + "</div></td><td>" + esc(m.svc) + "</td><td>" + esc(m.prov || DASH) + (m.prov_office ? '<div class="rg-d">' + esc(m.prov_office) + "</div>" : "") + "</td>" +
+        '<td class="rg-nw">' + esc(m.acct || DASH) + (m.meter ? '<div class="rg-d">มิเตอร์ ' + esc(m.meter) + "</div>" : "") + "</td><td>" + esc(m.stage || "ไม่ทราบ") + "</td>" +
+        months.map(function (x2) { return utlSymTd(x2 === ym ? x.c : utlCell(M, m, x2)); }).join("") +
+        '<td class="rg-nw' + (x.jb ? " rg-badt" : "") + '">' + (j ? (j.pct >= 0 ? "+" : "") + Math.round(j.pct * 100) + "%" + '<div class="rg-d">จาก ' + esc(ymTh(j.prev)) + "</div>" : '<span class="rg-muted">' + DASH + "</span>") + "</td></tr>";
+    }).join("") || emptyRow(6 + UTL_NCOL, rows.length ? "ไม่มีมิเตอร์ตรงตัวกรองสถานะ" : "ไม่มีมิเตอร์ในตัวกรองนี้");
+    var missHtml = miss.length ? details(key + "-miss", tcard("rg-t1", "<tr><th class=\"rg-stk\">สาขา</th><th>จังหวัด</th><th>ยังขาด (งานทีมทะเบียน)</th></tr>",
+      miss.map(function (x) { return '<tr class="rg-orow" data-ocode="' + esc(x.r.code) + '" tabindex="0">' + siteTd(x.r) + '<td class="rg-nw">' + esc(x.r.prov || DASH) + "</td><td>" + esc(x.miss.join(" · ")) + "</td></tr>"; }).join(""), ""),
+      '☐ ร้านที่เปิดแล้วแต่ข้อมูลมิเตอร์ไม่ครบ <span class="rg-dsub2">· ' + miss.length + " ร้าน · งานทีมทะเบียน</span>") : "";
+    return head + warnBox() + errBill + bar + strip2 +
+      details(key + "-t", tcard("rg-t1 rg-ut", th, body, pager(key, pg)), (w === "trash" ? "💰 ค่าขยะรายเดือน" : "💰 บิลน้ำ-ไฟรายเดือน") + ' <span class="rg-dsub2">· 1 แถว = 1 มิเตอร์ · กดแถวดูรายละเอียด + ประวัติ 12 เดือน</span>') + missHtml +
+      '<div class="rg-tnote">฿ = มียอดในบิล (นำเข้าจาก Excel บัญชี ยังไม่ระบุว่าจ่ายแล้วไหม) · 🔴 = บัญชีระบุ "ยังไม่ออกบิล" หรือไม่มีบิลเกิน ' + UTL_LATE_D + " วันหลังวันอ่านมาตร (ไม่รู้วันอ่าน = สิ้นเดือน) → เดือนที่จบแล้วยังเป็น 🔴 = ต้องตั้ง Accrued · ⚠️ = ยอดต่างจากเดือนก่อนที่มียอดเกิน 30% · ช่องว่าง = ยังไม่ต้องมีบิล (ก่อนเดือนแรกที่มีบิล / หลังปิดมิเตอร์) · ดูอย่างเดียว (เฟส ①)</div>" +
+      '<div class="rg-src">ที่มา: มิเตอร์ = Tank G แท็บ APP_UTL_Meter · บิล = ชีต "บิลน้ำ-ไฟ-ขยะ ร้านเปิดแล้ว (บัญชี)" ผ่าน Tank G ACC_live_util · นำเข้าครั้งแรกจาก Excel บัญชี + ชีตทะเบียน 24 พ.ย. 2569 · ข้อมูล ณ ' + esc(M.ts || "ไม่ทราบเวลาข้อมูล") + "</div></div>";
+  }
+  function utlDrawer(mid) {
+    var M = utlModel(), m = M && M.meters && M.meters.filter(function (x) { return x.mid === mid; })[0]; if (!m) return;
+    var o = OM(), r = o && o.rows.filter(function (x) { return x.code === m.code; })[0];
+    function kv(rows) { return '<div class="table-wrap"><table class="data-table rg-dt"><tbody>' + rows.filter(function (x) { return x; }).map(function (x) { return '<tr><td class="rg-muted">' + x[0] + "</td><td>" + x[1] + "</td></tr>"; }).join("") + "</tbody></table></div>"; }
+    var T = function (v) { return txt(v); };
+    var isT = m.svc === "ขยะ";
+    var h = '<div class="rg-dsub">' + [esc(m.svc), esc(m.prov || DASH), esc((r && r.prov) || DASH), "เปิด " + esc((r && fmtIso(r.open_iso)) || DASH)].join(" · ") + "</div>" +
+      '<div class="section-label">🧾 มิเตอร์ / บัญชีผู้ใช้ (ทีมทะเบียน)</div>' +
+      kv([["ผู้ให้บริการ", T(m.prov)], ["สำนักงาน / ผู้รับชำระ", T(m.prov_office)], ["เลขผู้ใช้ / ทะเบียนผู้ใช้", T(m.acct)], ["เลขมิเตอร์", T(m.meter)],
+        m.svc === "น้ำ" ? ["รหัสสาขาในบิลน้ำ 2 หลัก", T(m.code2)] : null, !isT ? ["ประเภทอัตรา · แรงดัน · ขนาด", T([m.rate, m.volt, m.size].filter(Boolean).join(" · "))] : null,
+        ["สถานะมิเตอร์", T(m.stage || "ไม่ทราบ")], !isT ? ["เงินประกัน (ชั่วคราว / ถาวร)", T([m.dep_temp, m.dep_perm].filter(Boolean).join(" / "))] : null, !isT ? ["ขอคืนเงินประกัน", T(m.dep_refund)] : null,
+        ["วันอ่านมาตร (วันที่ของเดือน)", T(m.read_day)],
+        isT ? ["จัดเก็บโดย · รอบเก็บ", T([m.trash_by, m.trash_freq].filter(Boolean).join(" · "))] : null, isT ? ["อัตรา · เรท", T([m.trash_rate, m.trash_band].filter(Boolean).join(" · "))] : null,
+        isT && m.no_year_reason ? ["เหตุผลจ่ายรายปีไม่ได้", T(m.no_year_reason)] : null,
+        ["หมายเหตุ", T(m.note)]]) +
+      '<div class="section-label">💰 การจ่าย (ทีมบัญชี)</div>' +
+      kv([["วิธีจ่าย · รอบ", T([m.pay_method, m.pay_cycle].filter(Boolean).join(" · "))], ["Credit term", T(m.credit_term)], ["ช่องทางส่งใบแจ้งหนี้", T(m.channel)], ["สร้าง Vendor", T(m.vendor)]]);
+    var ym = todayIso().slice(0, 7), hist = [];
+    for (var i = 0; i < 12; i++) hist.push(ymAdd(ym, -i));
+    if (!M.bills) h += '<div class="rg-dsub rg-badt">อ่านชีตบิลไม่ได้ — ประวัติบิลไม่แสดง</div>';
+    else h += '<div class="section-label">📅 บิล 12 เดือนล่าสุด</div><div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เดือน</th><th>สถานะ</th><th>วันอ่าน</th><th>หน่วย</th><th style="text-align:right">ยอด (บาท)</th><th>หมายเหตุ</th></tr></thead><tbody>' +
+      hist.map(function (x) {
+        var c = utlCell(M, m, x), b = c.b || {}, a = utlNum(b.amount);
+        return "<tr><td>" + esc(ymTh(x)) + '</td><td class="rg-nw">' + (c.st === "off" ? '<span class="rg-muted">ยังไม่ต้องมีบิล</span>' : (c.st === "amt" ? "฿" : SYM[c.st]) + " " + esc(c.w)) + "</td><td>" + T(fmtIso(b.read_date)) + "</td><td>" + T(b.units) + '</td><td style="text-align:right">' + (a != null ? esc(a.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })) : '<span class="rg-muted">' + DASH + "</span>") + "</td><td>" + T(b.note) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+    var others = (M.byCode[m.code] || []).filter(function (x) { return x.mid !== mid; });
+    if (others.length) h += '<div class="rg-dsub">มิเตอร์อื่นของร้านนี้: ' + others.map(function (x) { return '<a href="#" class="rg-umo" data-umid="' + esc(x.mid) + '">' + esc(x.svc + " · " + (x.acct || x.meter || x.prov)) + "</a>"; }).join(" · ") + "</div>";
+    h += '<div class="rg-dsub rg-dfoot">ดูอย่างเดียว (เฟส ①) · ' + esc(m.mid) + " · นำเข้าจาก " + esc(m.src || DASH) + " · แก้ล่าสุด " + esc([m.upd_by, m.upd_at].filter(Boolean).join(" ") || DASH) + " · ข้อมูล ณ " + esc(M.ts || "ไม่ทราบเวลาข้อมูล") + "</div>";
+    drawer(m.code + " · " + ((r && r.name) || "") + " · " + m.svc, h);
+    [].forEach.call(document.querySelectorAll("#rg-drawer .rg-umo"), function (a) { a.onclick = function (e) { e.preventDefault(); utlDrawer(a.getAttribute("data-umid")); }; });
+  }
   // 9 พ.ย. (จี "ทำ TAP ภาษีป้าย ภาษีที่ดินใหม่ให้ดูง่ายขึ้น" · "อยากโชว์ข้อมูลจริงให้คนทำงานทำงานได้"):
   //   ช่องโชว์วันที่จริงจากไฟล์บัญชี (ได้รับเอกสาร / จ่าย) + คำ Remark บัญชี แทนสัญลักษณ์อย่างเดียว · ทะเบียน ภป.1/ภป.3 รวมเป็นช่องเดียว
   function txCell(k, line, tip, span) { return '<td class="rg-c rg-mc rg-s-' + k + '"' + (span ? ' colspan="' + span + '"' : "") + ' title="' + esc(tip) + '">' + SYM[k] + (line ? '<div class="rg-ml">' + esc(line) + "</div>" : "") + "</td>"; }
@@ -9644,8 +9810,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       else h += aBlock(function () { return w === "util" ? aUtil() : aDoc(w); }, w === "util" ? function () { return rowsU().length; } : null);
     }
     if (sh.b) {
-      if (w === "util") h += bNote("<b>ร้านที่เปิดแล้ว: จบงานน้ำ-ไฟแล้ว</b><br>แท็บนี้ไล่เฉพาะสาขาที่ยังไม่เปิด");
-      else h += bBlock({ house: bHouse, license: bLic, renew: bRenew, trash: bTrash, signtax: bSign, landtax: bLand }[w]);
+      // 24 พ.ย. (จี PRD_Registration §18–19): ร้านที่เปิดแล้ว = บิลน้ำ-ไฟรายเดือน (แทนข้อความ "จบงานน้ำ-ไฟแล้ว") · เก็บขยะ = ตารางเดิม + ค่าขยะรายเดือน
+      if (w === "util") h += utlBlock("util");
+      else h += bBlock({ house: bHouse, license: bLic, renew: bRenew, trash: bTrash, signtax: bSign, landtax: bLand }[w]) + (w === "trash" ? utlBlock("trash") : "");
     }
     return h;
   }
@@ -9970,6 +10137,10 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     [].forEach.call(v.querySelectorAll("[data-pfclr]"), function (b) { b.onclick = function () { if (b.getAttribute("data-pfclr") === "lic") PF = { fs: "", fl: "", fv: "", so: "code" }; else RF = { rf: "any", rl: "", rs: "w", re: "" }; render(); }; });
     [].forEach.call(v.querySelectorAll("[data-rfe]"), function (b) { b.onclick = function () { RF.re = RF.re === b.getAttribute("data-rfe") ? "" : b.getAttribute("data-rfe"); render(); var t = document.querySelector('details[data-det="ren-site"]'); if (t && RF.re) t.scrollIntoView({ behavior: "smooth" }); }; });
     var cv = v.querySelector("#rgp-csv"); if (cv) cv.onclick = pCsv;
+    // 24 พ.ย.: บิลน้ำ-ไฟ-ขยะ ร้านเปิดแล้ว — ตัวกรองเดือน/บริการ · ปุ่มนับสถานะ · กดแถว = ลิ้นชักมิเตอร์
+    [].forEach.call(v.querySelectorAll("select[data-uf]"), function (el) { el.onchange = function () { UF[el.getAttribute("data-uf")] = el.value; PG = {}; render(); }; });
+    [].forEach.call(v.querySelectorAll("[data-ust]"), function (b) { b.onclick = function () { var s = b.getAttribute("data-ust"); UF.st = (!s || UF.st === s) ? "" : s; PG = {}; render(); }; });
+    [].forEach.call(v.querySelectorAll("tr.rg-urow"), function (tr) { tr.onclick = function () { utlDrawer(tr.getAttribute("data-umid")); }; tr.onkeydown = function (e) { if (e.key === "Enter") tr.click(); }; });
   }
 
   var VIEWS = {
