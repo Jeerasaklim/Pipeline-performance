@@ -1501,7 +1501,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=183026" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=180915" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -3358,7 +3358,7 @@ function build(){IDX={};if(typeof STEP_DETAILS==="undefined")return;for(var k in
 function lab(k){return (typeof DETAIL_LABELS!=="undefined"&&DETAIL_LABELS[k])?DETAIL_LABELS[k]:k;}
 function clr(){var e=document.querySelectorAll(".xsearch-hit");for(var i=0;i<e.length;i++)e[i].classList.remove("xsearch-hit");var g=document.querySelectorAll(".go-chip-hit");for(var j=0;j<g.length;j++)g[j].classList.remove("go-chip-hit");}
 window.xSearch=function(){var q=(document.getElementById("xsearch-in").value||"").trim();var res=document.getElementById("xsearch-res");clr();
-var gp=document.getElementById("tab-grandopen");
+var kp=document.getElementById("tab-kf");if(kp&&kp.offsetParent!==null&&window.KF&&KF.xfind){if(q.length<2){res.className="";res.innerHTML="";return;}var kr=KF.xfind(q);res.className="show";res.innerHTML=(!kr||kr.none)?'<span class="xs-none">'+((kr&&kr.msg)||"ไม่พบใบงานของสาขานี้ในแท็บ Kissflow")+'</span>':'<span class="xs-code">'+kr.code+'</span> '+(kr.name||"")+'<br><span class="xs-at">'+kr.msg+'</span>';return;}var gp=document.getElementById("tab-grandopen");
 if(gp&&gp.offsetParent!==null&&window.GO&&GO.xfind){if(q.length<2){res.className="";res.innerHTML="";return;}var r=GO.xfind(q);res.className="show";if(!r||r.none){res.innerHTML='<span class="xs-none">ไม่พบสาขานี้</span>';}else{res.innerHTML='<span class="xs-code">'+r.code+'</span> '+(r.name||"")+'<br><span class="xs-at">'+r.msg+'</span>';}return;}
 if(!IDX)build();var Q=q.toUpperCase();if(q.length<3){res.className="";res.innerHTML="";return;}
 var codes=[];for(var c in IDX){if(c.toUpperCase().indexOf(Q)>=0||((NM[c]||"").toUpperCase().indexOf(Q)>=0)||((NO[c]||"").toUpperCase().indexOf(Q)>=0))codes.push(c);}
@@ -10970,6 +10970,36 @@ render();
     if (g) { var X = MODEL[+g.getAttribute("data-f")], b = X.boxes[+g.getAttribute("data-b")]; openList(b.n.t, X.F.name + " · " + b.n.team + (b.n.tg ? " (สำนักยังไม่ยืนยัน)" : "") + " · ค้าง " + b.items.length + " ใบ", b.items); return; }
     if (c) { var X2 = MODEL[+c.getAttribute("data-f")], k = c.getAttribute("data-u"); openList(k, X2.F.name + " · ชื่อขั้นนี้ไม่ตรงกล่องไหน · " + X2.un[k].length + " ใบ", X2.un[k]); }
   });
+
+  /* ---- ช่องค้นหาของแอป (มุมขวาบน) เมื่อเปิดแท็บนี้ — 25 พ.ย. (จี "มัน Search ไม่ได้อ่ะ")
+   * ค้นจาก รหัสสาขา / เลขใบงาน / ชื่อในใบ + ชื่อสาขาจากกล่อง Overall (STEP_DETAILS) → หารหัสสาขา → ทุกใบที่ค้างของสาขานั้นทุก flow
+   * สลับไปแท็บย่อยของ flow ที่เจอ (ถ้าแท็บย่อยที่เปิดอยู่มีใบของสาขานี้ = อยู่แท็บเดิม) แล้วไฮไลต์กล่อง · นับเฉพาะใบ InProgress เหมือนตัวเลขในกล่อง */
+  function siteNames() {
+    var m = {}, D = window.STEP_DETAILS || {};
+    Object.keys(D).forEach(function (k) { (D[k] || []).forEach(function (r) { var c = String(r.code || "").trim(); if (c && !m[c]) m[c] = { n: r.name || "", o: r.name_old || "" }; }); });
+    return m;
+  }
+  function xfind(q) {
+    if (ST.st !== "ok" || !MODEL) return { none: 1, msg: ST.st === "err" ? "โหลดข้อมูล Kissflow ไม่สำเร็จ — ยังค้นไม่ได้" : "ข้อมูล Kissflow ยังโหลดไม่เสร็จ" };
+    var Q = String(q || "").trim().toUpperCase(); if (Q.length < 2) return null;
+    var all = []; MODEL.forEach(function (X, fi) {
+      X.boxes.forEach(function (b, bi) { b.items.forEach(function (t) { all.push({ t: t, fi: fi, bi: bi, box: b.n.t }); }); });
+      Object.keys(X.un).forEach(function (k) { X.un[k].forEach(function (t) { all.push({ t: t, fi: fi, bi: -1, box: k + " (ไม่ตรงกล่อง)" }); }); });
+    });
+    var nm = siteNames(), code = null;
+    all.some(function (h) { if (String(h.t.code || "").toUpperCase() === Q || String(h.t.ticket || "").toUpperCase() === Q) { code = h.t.code; return true; } });
+    if (!code) all.some(function (h) { var sn = nm[h.t.code] || {}, s = (h.t.code + " " + h.t.ticket + " " + h.t.name + " " + (sn.n || "") + " " + (sn.o || "")).toUpperCase(); if (s.indexOf(Q) >= 0) { code = h.t.code; return true; } });
+    if (!code) return { none: 1, msg: "ไม่พบใบงานที่ค้างอยู่ใน Kissflow (นับเฉพาะใบ InProgress · ใบที่ปิดแล้ว/ยังไม่เปิดใบ ไม่ขึ้นที่นี่)" };
+    var hits = all.filter(function (h) { return h.t.code === code; });
+    if (!hits.some(function (h) { return h.fi === SUB; })) { SUB = hits[0].fi; try { localStorage.setItem("kfSub", String(SUB)); } catch (x) {} render(); }
+    var first = null;
+    hits.forEach(function (h) { if (h.fi !== SUB || h.bi < 0) return; var g = sec.querySelector('.gnode[data-f="' + h.fi + '"][data-b="' + h.bi + '"]'); if (g) { g.classList.add("xsearch-hit"); if (!first) first = g; } });
+    if (first && first.scrollIntoView) first.scrollIntoView({ behavior: "smooth", block: "center" });
+    var name = (nm[code] && nm[code].n) || String(hits[0].t.name || "").replace(/^.*?:\s*/, "");
+    return { code: esc(code), name: esc(name), msg: hits.map(function (h) { var d = days(h.t.since); return esc(MODEL[h.fi].F.name + " · " + (h.t.ticket || h.t.id) + " → " + h.box + (d != null ? " (" + d + " วัน)" : "")); }).join("<br>") };
+  }
+  window.KF = { xfind: xfind };
+  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.KF.inject = function (d) { ST.d = d; ST.st = "ok"; render(); };   // ทดสอบในเครื่องเท่านั้น
 
   /* ---- โหลด (GAS getKfQueue · หลัง login) ---- */
   function load() {
