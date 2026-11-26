@@ -1501,7 +1501,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=182646" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=103419" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -8544,6 +8544,9 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     "#rg-drawer input.rg-in.rg-exc-in{width:100%;min-width:320px;box-sizing:border-box}#rg-drawer .rg-tw[data-f=excise]{display:block;width:100%}",   /* 13 พ.ย. (จี "อ่านไม่ออก ช่องสั้นไป") */
     /* 24 พ.ย. บิลน้ำ-ไฟ-ขยะ ร้านเปิดแล้ว: ฿ = มียอดยังไม่ระบุสถานะ (โทนเดียวกับ ✓ แต่จาง) · เดือนที่เลือกมีเส้นใต้หัว */
     "#tab-registration .rg-s-amt{color:var(--rg-ok);opacity:.75}#tab-registration th.rg-ucur{box-shadow:inset 0 -3px 0 var(--blue,#2563eb)}#tab-registration tr.rg-urow{cursor:pointer}#tab-registration tr.rg-urow:hover td:not(.rg-c){background:#eef2ff}#tab-registration td.rg-ucell{min-width:64px}#tab-registration .rgp-flt select{font:inherit;font-size:12.5px;padding:4px 8px;border:1px solid var(--border2,#cbd5e1);border-radius:8px;background:var(--surface,#fff)}",
+    /* 26 พ.ย. เฟส ② บัญชีกรอกบิล: ช่องพิมพ์ยอดในตาราง (เหลือง = แก้ยังไม่บันทึก · ม่วง = กำลังบันทึก · เขียว = บันทึกแล้ว · แดง = ไม่สำเร็จ) */
+    "#tab-registration td.rg-uedit{white-space:nowrap}#tab-registration .rg-usym{margin-right:4px}#tab-registration input.rg-uin{width:86px;font:inherit;font-size:12px;padding:2px 5px;border:1px solid var(--border2,#cbd5e1);border-radius:6px;text-align:right;background:var(--surface,#fff);color:var(--t1,#0f172a)}#tab-registration input.rg-uin:focus{outline:2px solid var(--blue,#2563eb);outline-offset:0}#tab-registration input.rg-uin.dirty{background:#fef3c7}#tab-registration input.rg-uin.saving{background:#e0e7ff}#tab-registration input.rg-uin.saved{background:#d1fae5}#tab-registration input.rg-uin.err{background:#fee2e2;border-color:#dc2626}" +
+    "#rg-drawer .rg-uf{display:inline-block;border-radius:8px;padding:2px}#rg-drawer .rg-uf.dirty{background:#fef3c7}#rg-drawer .rg-uf.saved{background:#d1fae5}#rg-drawer .rg-uf.err{background:#fee2e2}#rg-drawer .rg-uf textarea.rg-in{min-width:300px}#rg-drawer tr.rg-uhist{cursor:pointer}#rg-drawer tr.rg-uhist:hover td{background:#eef2ff}#rg-drawer tr.rg-uhist.on td{background:#e0e7ff;font-weight:600}",
     "#rg-drawer .rg-tn{display:block;margin-top:4px;border-radius:7px}#rg-drawer .rg-tn-in{width:100%;min-width:150px;box-sizing:border-box;font:inherit;font-size:12px;padding:3px 6px;border:1px dashed var(--border2,#cbd5e1);border-radius:7px;resize:vertical;background:var(--surface,#fff)}#rg-drawer .rg-tn-in:focus{border-style:solid;border-color:var(--blue)}#rg-drawer .rg-tn.dirty .rg-tn-in{background:#fef3c7}#rg-drawer .rg-tn.saved .rg-tn-in{background:#d1fae5}#rg-drawer .rg-tn.err .rg-tn-in{background:#fee2e2}.rg-tn-ro{font-size:12px;color:var(--t2);margin-top:3px;white-space:pre-wrap}",
     "button.rgd-row{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(150px,210px) 1fr minmax(170px,auto);gap:12px;align-items:center;width:100%;padding:7px 8px;border-radius:8px;cursor:pointer}button.rgd-row:hover{background:var(--bbg,#eef2ff)}button.rgd-row:focus-visible{outline:2px solid var(--blue)}",
     ".rgd-lab{font-size:13px;font-weight:700}.rgd-bar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:#eef1f6;gap:2px}.rgd-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;min-width:3px}",
@@ -9584,12 +9587,12 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       chip("over", "🔴", "ยังไม่ออกบิล / บิลไม่มา", T.over) + chip("jump", "⚠️", "ยอดต่างเดือนก่อน >30%", T.jump) + (T.none ? chip("none", SYM.none, "ยังไม่ถึงรอบ", T.none) : "") + (T.na ? chip("na", "–", "ผรม.จ่าย / ใช้ฟรี", T.na) : "") +
       '<span class="rg-muted" style="align-self:center">' + esc(ymTh(ym)) + " · " + T.n + " มิเตอร์ที่ต้องมีบิล</span></div>" : "";
     var th = '<tr><th class="rg-stk">สาขา</th><th>บริการ</th><th>ผู้ให้บริการ</th><th>เลขผู้ใช้ / มิเตอร์</th><th>สถานะมิเตอร์</th>' + months.map(function (x) { return '<th class="rg-sh' + (x === ym ? " rg-ucur" : "") + '">' + esc(ymTh(x)) + "</th>"; }).join("") + "<th>เทียบเดือนก่อน</th></tr>";
-    var key = "utl-" + w, pg = pageOf(key, shown);
+    var key = "utl-" + w, pg = pageOf(key, shown), inl = utlInline();
     var body = pg.items.map(function (x) {
       var m = x.m, r = x.r, j = x.j;
       return '<tr class="rg-urow" data-umid="' + esc(m.mid) + '" tabindex="0"><td class="rg-stk rg-site"><b>' + esc(m.code) + '</b><div class="rg-d">' + esc([r ? r.name : "", (r && r.prov) || provOfCode(m.code)].filter(Boolean).join(" · ")) + "</div></td><td>" + esc(m.svc) + "</td><td>" + esc(m.prov || DASH) + (m.prov_office ? '<div class="rg-d">' + esc(m.prov_office) + "</div>" : "") + "</td>" +
         '<td class="rg-nw">' + esc(m.acct || DASH) + (m.meter ? '<div class="rg-d">มิเตอร์ ' + esc(m.meter) + "</div>" : "") + "</td><td>" + esc(m.stage || "ไม่ทราบ") + "</td>" +
-        months.map(function (x2) { return utlSymTd(x2 === ym ? x.c : utlCell(M, m, x2)); }).join("") +
+        months.map(function (x2) { return x2 === ym ? (inl && x.c.st !== "off" ? utlEditTd(x.c, m, ym) : utlSymTd(x.c)) : utlSymTd(utlCell(M, m, x2)); }).join("") +
         '<td class="rg-nw' + (x.jb ? " rg-badt" : "") + '">' + (j ? (j.pct >= 0 ? "+" : "") + Math.round(j.pct * 100) + "%" + '<div class="rg-d">จาก ' + esc(ymTh(j.prev)) + "</div>" : '<span class="rg-muted">' + DASH + "</span>") + "</td></tr>";
     }).join("") || emptyRow(6 + UTL_NCOL, rows.length ? "ไม่มีมิเตอร์ตรงตัวกรองสถานะ" : "ไม่มีมิเตอร์ในตัวกรองนี้");
     var missHtml = miss.length ? details(key + "-miss", tcard("rg-t1", "<tr><th class=\"rg-stk\">สาขา</th><th>จังหวัด</th><th>ยังขาด (งานทีมทะเบียน)</th></tr>",
@@ -9597,10 +9600,12 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
       '☐ ร้านที่เปิดแล้วแต่ข้อมูลมิเตอร์ไม่ครบ <span class="rg-dsub2">· ' + miss.length + " ร้าน · งานทีมทะเบียน</span>") : "";
     return head + warnBox() + errBill + bar + strip2 +
       details(key + "-t", tcard("rg-t1 rg-ut", th, body, pager(key, pg)), (w === "trash" ? "💰 ค่าขยะรายเดือน" : "💰 บิลน้ำ-ไฟรายเดือน") + ' <span class="rg-dsub2">· 1 แถว = 1 มิเตอร์ · กดแถวดูรายละเอียด + ประวัติ 12 เดือน</span>') + missHtml +
-      '<div class="rg-tnote">฿ = มียอดในบิล (นำเข้าจาก Excel บัญชี ยังไม่ระบุว่าจ่ายแล้วไหม) · 🔴 = บัญชีระบุ "ยังไม่ออกบิล" หรือไม่มีบิลเกิน ' + UTL_LATE_D + " วันหลังวันอ่านมาตร (ไม่รู้วันอ่าน = สิ้นเดือน) → เดือนที่จบแล้วยังเป็น 🔴 = ต้องตั้ง Accrued · ⚠️ = ยอดต่างจากเดือนก่อนที่มียอดเกิน 30% · ช่องว่าง = ยังไม่ต้องมีบิล (ก่อนเดือนแรกที่มีบิล / หลังปิดมิเตอร์) · ดูอย่างเดียว (เฟส ①)</div>" +
+      '<div class="rg-tnote">฿ = มียอดในบิล (นำเข้าจาก Excel บัญชี ยังไม่ระบุว่าจ่ายแล้วไหม) · 🔴 = บัญชีระบุ "ยังไม่ออกบิล" หรือไม่มีบิลเกิน ' + UTL_LATE_D + " วันหลังวันอ่านมาตร (ไม่รู้วันอ่าน = สิ้นเดือน) → เดือนที่จบแล้วยังเป็น 🔴 = ต้องตั้ง Accrued · ⚠️ = ยอดต่างจากเดือนก่อนที่มียอดเกิน 30% · ช่องว่าง = ยังไม่ต้องมีบิล (ก่อนเดือนแรกที่มีบิล / หลังปิดมิเตอร์) · " +
+      (canUtlBill() ? (inl ? "<b>ทีมบัญชี:</b> ช่องเดือน " + esc(ymTh(ym)) + " พิมพ์ยอด (บาท รวม VAT) ได้เลย · Enter / Tab = บันทึกแล้วไปแถวถัดไป · Esc = คืนค่าเดิม · สถานะ / วันจ่าย / หน่วย กรอกในลิ้นชัก (กดแถว)" : "<b>ทีมบัญชี:</b> กดแถวเพื่อกรอกบิลในลิ้นชัก (จอแคบไม่มีช่องพิมพ์ในตาราง)")
+        : (canTaxAcc() && !M.bills ? "ปิดการกรอกบิลชั่วคราว — อ่านชีตบิลไม่ได้" : "ดูอย่างเดียว · กรอกบิลได้เฉพาะทีมบัญชี (role Accounting)")) + "</div>" +
       '<div class="rg-src">ที่มา: มิเตอร์ = Tank G แท็บ APP_UTL_Meter · บิล = ชีต "บิลน้ำ-ไฟ-ขยะ ร้านเปิดแล้ว (บัญชี)" ผ่าน Tank G ACC_live_util · นำเข้าครั้งแรกจาก Excel บัญชี + ชีตทะเบียน 24 พ.ย. 2569 · ข้อมูล ณ ' + esc(M.ts || "ไม่ทราบเวลาข้อมูล") + "</div></div>";
   }
-  function utlDrawer(mid) {
+  function utlDrawer(mid, em) {
     var M = utlModel(), m = M && M.meters && M.meters.filter(function (x) { return x.mid === mid; })[0]; if (!m) return;
     var o = OM(), r = o && o.rows.filter(function (x) { return x.code === m.code; })[0];
     function kv(rows) { return '<div class="table-wrap"><table class="data-table rg-dt"><tbody>' + rows.filter(function (x) { return x; }).map(function (x) { return '<tr><td class="rg-muted">' + x[0] + "</td><td>" + x[1] + "</td></tr>"; }).join("") + "</tbody></table></div>"; }
@@ -9617,19 +9622,138 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
         ["หมายเหตุ", T(m.note)]]) +
       '<div class="section-label">💰 การจ่าย (ทีมบัญชี)</div>' +
       kv([["วิธีจ่าย · รอบ", T([m.pay_method, m.pay_cycle].filter(Boolean).join(" · "))], ["Credit term", T(m.credit_term)], ["ช่องทางส่งใบแจ้งหนี้", T(m.channel)], ["สร้าง Vendor", T(m.vendor)]]);
-    var ym = todayIso().slice(0, 7), hist = [];
+    var ym = todayIso().slice(0, 7), hist = [], ed = canUtlBill();
     for (var i = 0; i < 12; i++) hist.push(ymAdd(ym, -i));
+    if (!em || em < ymAdd(ym, -11) || em > ymAdd(ym, 1)) em = (UF.m && UF.m >= ymAdd(ym, -11) && UF.m <= ymAdd(ym, 1)) ? UF.m : ym;
+    if (ed) h += utlBillForm(M, m, em);
+    else if (canTaxAcc() && !M.bills) h += '<div class="rg-dsub rg-badt">ปิดการกรอกบิลชั่วคราว — อ่านชีตบิลไม่ได้</div>';
     if (!M.bills) h += '<div class="rg-dsub rg-badt">อ่านชีตบิลไม่ได้ — ประวัติบิลไม่แสดง</div>';
-    else h += '<div class="section-label">📅 บิล 12 เดือนล่าสุด</div><div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เดือน</th><th>สถานะ</th><th>วันอ่าน</th><th>หน่วย</th><th style="text-align:right">ยอด (บาท)</th><th>หมายเหตุ</th></tr></thead><tbody>' +
+    else h += '<div class="section-label">📅 บิล 12 เดือนล่าสุด' + (ed ? ' <span class="rg-dsub2">· กดเดือนไหน = แก้เดือนนั้น</span>' : "") + '</div><div class="table-wrap"><table class="data-table rg-dt"><thead><tr><th>เดือน</th><th>สถานะ</th><th>วันอ่าน</th><th>หน่วย</th><th style="text-align:right">ยอด (บาท)</th><th>หมายเหตุ</th></tr></thead><tbody>' +
       hist.map(function (x) {
-        var c = utlCell(M, m, x), b = c.b || {}, a = utlNum(b.amount);
-        return "<tr><td>" + esc(ymTh(x)) + '</td><td class="rg-nw">' + (c.st === "off" ? '<span class="rg-muted">ยังไม่ต้องมีบิล</span>' : (c.st === "amt" ? "฿" : SYM[c.st]) + " " + esc(c.w)) + "</td><td>" + T(fmtIso(b.read_date)) + "</td><td>" + T(b.units) + '</td><td style="text-align:right">' + (a != null ? esc(a.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })) : '<span class="rg-muted">' + DASH + "</span>") + "</td><td>" + T(b.note) + "</td></tr>";
+        var c = utlCell(M, m, x), b = c.b && c.b.month === x ? c.b : {}, a = utlNum(b.amount);
+        return "<tr" + (ed ? ' class="rg-uhist' + (x === em ? " on" : "") + '" data-uym="' + x + '"' : "") + "><td>" + esc(ymTh(x)) + '</td><td class="rg-nw">' + (c.st === "off" ? '<span class="rg-muted">ยังไม่ต้องมีบิล</span>' : (c.st === "amt" ? "฿" : SYM[c.st]) + " " + esc(c.w)) + "</td><td>" + T(fmtIso(b.read_date)) + "</td><td>" + T(b.units) + '</td><td style="text-align:right">' + (a != null ? esc(a.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })) : '<span class="rg-muted">' + DASH + "</span>") + "</td><td>" + T(b.note) + "</td></tr>";
       }).join("") + "</tbody></table></div>";
     var others = (M.byCode[m.code] || []).filter(function (x) { return x.mid !== mid; });
     if (others.length) h += '<div class="rg-dsub">มิเตอร์อื่นของร้านนี้: ' + others.map(function (x) { return '<a href="#" class="rg-umo" data-umid="' + esc(x.mid) + '">' + esc(x.svc + " · " + (x.acct || x.meter || x.prov)) + "</a>"; }).join(" · ") + "</div>";
-    h += '<div class="rg-dsub rg-dfoot">ดูอย่างเดียว (เฟส ①) · ' + esc(m.mid) + " · นำเข้าจาก " + esc(m.src || DASH) + " · แก้ล่าสุด " + esc([m.upd_by, m.upd_at].filter(Boolean).join(" ") || DASH) + " · ข้อมูล ณ " + esc(M.ts || "ไม่ทราบเวลาข้อมูล") + "</div>";
+    h += '<div class="rg-dsub rg-dfoot">' + (ed ? "บิล: ทีมบัญชีกรอกได้ · มิเตอร์: ดูอย่างเดียว (ทะเบียนกรอก = เฟส ③)" : "ดูอย่างเดียว") + " · " + esc(m.mid) + " · มิเตอร์นำเข้าจาก " + esc(m.src || DASH) + " · มิเตอร์แก้ล่าสุด " + esc([m.upd_by, m.upd_at].filter(Boolean).join(" ") || DASH) + " · ข้อมูล ณ " + esc(M.ts || "ไม่ทราบเวลาข้อมูล") + "</div>";
     drawer(m.code + " · " + ((r && r.name) || "") + " · " + m.svc, h);
-    [].forEach.call(document.querySelectorAll("#rg-drawer .rg-umo"), function (a) { a.onclick = function (e) { e.preventDefault(); utlDrawer(a.getAttribute("data-umid")); }; });
+    [].forEach.call(document.querySelectorAll("#rg-drawer .rg-umo"), function (a) { a.onclick = function (e) { e.preventDefault(); utlDrawer(a.getAttribute("data-umid"), em); }; });
+    if (ed) utlFormBind(mid, em);
+  }
+  /* ===== 26 พ.ย. 2569 (จี "ทำเฟส 2 เลย" · PRD_Registration §19.1 / §19.3 / §20.5) — ทีมบัญชีกรอกบิล
+   * กรอกได้ = OPEN.d.me.tax เป็น all / acc (server ตรวจซ้ำทุกครั้ง) และอ่านชีตบิลได้ · bills = null → ปิดการกรอก (§20.6)
+   * ตาราง: ช่องเดือนที่เลือก = พิมพ์ยอด · Enter / Tab = บันทึก + ไปแถวถัดไป · Esc = คืนค่า · ออกจากช่อง = บันทึก · จอแคบ (≤760px) ไม่มีช่องในตาราง
+   * ลิ้นชัก: เลือกเดือน → ส่งเฉพาะช่องที่แก้ · บันทึกสำเร็จ = ใช้ค่าที่ชีตเก็บจริง (คำตอบ GAS) ทันที · ไม่สำเร็จ = ช่องแดง + ค่าเดิมคงอยู่
+   * คำสถานะต้องตรงกับ UTL_STATUS_ ใน GO_webapp.gs (server ปฏิเสธคำอื่น) */
+  var UTL_STATUS = ["ยังไม่ออกบิล", "ได้รับบิล รอจ่าย", "จ่ายแล้ว", "หักบัญชีแล้ว", "จ่ายล่วงหน้าแล้ว", "ผรม.จ่าย", "ใช้ฟรี/ไม่มีบิล"];
+  var UTL_RT = null;
+  function canUtlBill() { var M = utlModel(); return canTaxAcc() && !!(M && M.bills); }
+  function utlInline() { return canUtlBill() && !(window.matchMedia && window.matchMedia("(max-width:760px)").matches); }
+  function utlAmtStr(v) { var n = utlNum(v); return n == null ? "" : String(Math.round(n * 100) / 100); }
+  function utlApplyRow(row, bcols) {
+    var u = utlRaw(); if (!u || !u.bills || !row) return;
+    var bc = u.bcols || bcols || [];
+    if (bcols && bcols.join() !== bc.join()) row = bc.map(function (k) { var i = bcols.indexOf(k); return i < 0 ? "" : row[i]; });
+    for (var i = 0; i < u.bills.length; i++) if (u.bills[i][0] === row[0] && u.bills[i][1] === row[1]) { u.bills[i] = row; UTLC = null; return; }
+    u.bills.push(row); UTLC = null;
+  }
+  function utlSave(mid, month, fields) {
+    return regPost({ action: "utlBillSet", mid: mid, month: month, fields: fields }).then(function (j) { if (j.row) utlApplyRow(j.row, j.bcols); return j; });
+  }
+  function utlLater() {   // ตารางนับใหม่หลังพิมพ์เสร็จ (ไม่ render ระหว่างพิมพ์ — กันเคอร์เซอร์หลุด / ค่าที่ยังไม่บันทึกหาย)
+    clearTimeout(UTL_RT);
+    UTL_RT = setTimeout(function () {
+      var a = document.activeElement;
+      if ((a && a.classList && a.classList.contains("rg-uin")) || document.querySelector("#tab-registration input.rg-uin.dirty, #tab-registration input.rg-uin.saving")) return utlLater();
+      render();
+    }, 2500);
+  }
+  function utlEditTd(c, m, ym) {
+    var b = c.b && c.b.month === ym ? c.b : null, v = b ? utlAmtStr(b.amount) : "";
+    var sym = c.st === "amt" ? "฿" : SYM[c.st], cls = c.st === "amt" ? "amt" : c.st;
+    return '<td class="rg-c rg-ucell rg-uedit rg-s-' + cls + '" title="' + esc(c.w + (b && b.note ? "\n" + b.note : "") + "\nพิมพ์ยอดบาท (รวม VAT) · Enter / Tab = บันทึก · Esc = คืนค่า") + '"><span class="rg-usym">' + sym + "</span>" +
+      '<input class="rg-uin" inputmode="decimal" autocomplete="off" data-umid="' + esc(m.mid) + '" data-ym="' + ym + '" data-orig="' + esc(v) + '" value="' + esc(v) + '" placeholder="ยอด" aria-label="ยอดบิล ' + esc(m.code + " " + m.svc + " " + ymTh(ym)) + '"></td>';
+  }
+  function utlInlineSave(inp) {
+    var val = inp.value.trim().replace(/[,\s฿]/g, ""), orig = inp.getAttribute("data-orig");
+    if (val === orig || val === inp._pend) return true;
+    if (val && !/^\d+(\.\d{1,2})?$/.test(val)) { inp.classList.add("err"); toast("✗ ยอดต้องเป็นตัวเลขบาท เช่น 1234.50 (ว่าง = ล้างยอด)", false); return false; }
+    var mid = inp.getAttribute("data-umid"), ym = inp.getAttribute("data-ym"); inp._pend = val;
+    inp.classList.remove("dirty", "err", "saved"); inp.classList.add("saving");
+    utlSave(mid, ym, { amount: val }).then(function (j) {
+      var ai = (j.bcols || []).indexOf("amount"), nv = j.row && ai >= 0 ? utlAmtStr(j.row[ai]) : val;
+      inp._pend = null; inp.setAttribute("data-orig", nv); if (document.activeElement !== inp) inp.value = nv;
+      inp.classList.remove("saving"); inp.classList.add("saved"); utlLater();
+    }, function (e) {
+      inp._pend = null; inp.classList.remove("saving"); inp.classList.add("err");
+      toast("✗ บันทึกยอดไม่สำเร็จ (" + mid + " · " + ymTh(ym) + ") — " + ((e && e.message) || e), false);
+    });
+  }
+  function utlInlineBind(v) {
+    var ins = [].slice.call(v.querySelectorAll("input.rg-uin"));
+    ins.forEach(function (inp, i) {
+      inp.onclick = function (e) { e.stopPropagation(); };
+      inp.oninput = function () { inp.classList.remove("saved", "err"); inp.classList.toggle("dirty", inp.value.trim().replace(/[,\s฿]/g, "") !== inp.getAttribute("data-orig")); };
+      inp.onchange = function () { utlInlineSave(inp); };   // ออกจากช่อง (คลิกที่อื่น) = บันทึก
+      inp.onkeydown = function (e) {
+        e.stopPropagation();   // ไม่ให้ Enter ไปเปิดลิ้นชักของแถว
+        if (e.key === "Escape") { inp.value = inp.getAttribute("data-orig"); inp.classList.remove("dirty", "err"); return; }
+        if (e.key !== "Enter" && e.key !== "Tab") return;
+        e.preventDefault(); if (utlInlineSave(inp) === false) return;   // ค่าผิดรูป = อยู่ช่องเดิมให้แก้
+        var nx = ins[i + (e.shiftKey ? -1 : 1)]; if (nx) { nx.focus(); nx.select(); }
+      };
+    });
+  }
+  function utlBillForm(M, m, em) {
+    var eb = (M.bills[m.mid] || {})[em] || {}, mo = [];
+    for (var k = -1; k < 12; k++) { var x = ymAdd(todayIso().slice(0, 7), -k); mo.push('<option value="' + x + '"' + (x === em ? " selected" : "") + ">" + esc(ymTh(x)) + (x === todayIso().slice(0, 7) ? " (เดือนนี้)" : "") + "</option>"); }
+    function wrap(k, inner, orig) { return '<span class="rg-uf" data-k="' + k + '" data-orig="' + esc(orig) + '">' + inner + "</span>"; }
+    function inp(k, type, ph, extra) {
+      var raw = String(eb[k] || "").trim(), v = k === "amount" ? utlAmtStr(raw) : raw;
+      if (type === "date" && !/^\d{4}-\d{2}-\d{2}$/.test(v)) v = "";   // ค่าเดิมไม่ใช่วันที่ ISO = ไม่ใส่ในช่อง (ไม่เผลอส่งล้าง) + โชว์ค่าเดิมใต้ช่อง
+      if (type === "month" && !/^\d{4}-\d{2}$/.test(v)) v = "";
+      return wrap(k, '<input class="rg-in" type="' + type + '"' + (ph ? ' placeholder="' + ph + '"' : "") + (extra || "") + ' value="' + esc(v) + '">' + (raw && raw !== v && k !== "amount" ? '<div class="rg-d">ค่าในชีต: ' + esc(raw) + "</div>" : ""), v);
+    }
+    var st = String(eb.status || ""), so = [""].concat(UTL_STATUS); if (st && so.indexOf(st) < 0) so.push(st);
+    var stSel = wrap("status", '<select class="rg-in">' + so.map(function (o) { return '<option value="' + esc(o) + '"' + (o === st ? " selected" : "") + ">" + (o ? esc(o) : "— ยังไม่ระบุ —") + (o && UTL_STATUS.indexOf(o) < 0 ? " (ค่าเดิม · ไม่อยู่ในรายการ)" : "") + "</option>"; }).join("") + "</select>", st);
+    var note = wrap("note", '<textarea class="rg-in" rows="2" maxlength="500" placeholder="หมายเหตุ (ไม่เกิน 500 ตัวอักษร)">' + esc(eb.note || "") + "</textarea>", String(eb.note || "").trim());
+    var tdy = todayIso();
+    var rows = [["เดือนบิล", '<select class="rg-in" id="rg-uem">' + mo.join("") + "</select>" + (eb.mid ? "" : ' <span class="rg-d">ยังไม่มีบิลเดือนนี้ — บันทึกแล้วจะเพิ่มแถวใหม่</span>')],
+      ["ยอดตามบิล (บาท · รวม VAT)", inp("amount", "text", "เช่น 1234.50", ' inputmode="decimal" autocomplete="off"')],
+      ["สถานะ", stSel],
+      [m.svc === "ขยะ" ? "วันที่บิล / วันอ่าน" : "วันอ่านมาตร", inp("read_date", "date", "", ' min="2023-01-01" max="' + tdy + '"')],
+      ["จำนวนวัน · หน่วยที่ใช้", inp("days", "text", "วัน", ' inputmode="numeric" style="width:70px"') + " " + inp("units", "text", "หน่วย", ' inputmode="decimal" style="width:100px"')],
+      ["วันจ่าย", inp("paid_date", "date", "", ' min="2023-01-01" max="' + tdy + '"')],
+      ["จ่ายล่วงหน้าถึงเดือน <span class=\"rg-d\">(จ่ายรายปี / ล่วงหน้า)</span>", inp("cover_to", "month", "", ' min="' + ymAdd(em, 1) + '"')],
+      ["หมายเหตุ", note]];
+    return '<div class="section-label">✏️ กรอกบิล · ' + esc(ymTh(em)) + ' <span class="rg-dsub2">(ทีมบัญชี)</span></div><div class="table-wrap"><table class="data-table rg-dt"><tbody>' +
+      rows.map(function (x) { return '<tr><td class="rg-muted">' + x[0] + "</td><td>" + x[1] + "</td></tr>"; }).join("") + "</tbody></table></div>" +
+      '<div style="margin:6px 0 12px"><button type="button" id="rg-usave" class="au-save">💾 บันทึกบิล ' + esc(ymTh(em)) + "</button> " +
+      '<span class="rg-dsub">ลงชีต "บิลน้ำ-ไฟ-ขยะ ร้านเปิดแล้ว (บัญชี)" แท็บ Bill · ส่งเฉพาะช่องที่แก้' + (eb.upd_by ? " · แก้ล่าสุด " + esc(eb.upd_by + " " + (eb.upd_at || "")) : "") + "</span></div>";
+  }
+  function utlFormBind(mid, em) {
+    var dw = document.getElementById("rg-drawer"); if (!dw) return;
+    function val(w) { var el = w.querySelector("input,select,textarea"); var v = el ? String(el.value || "").trim() : ""; return w.getAttribute("data-k") === "amount" ? v.replace(/[,\s฿]/g, "") : v; }
+    var ws = [].slice.call(dw.querySelectorAll(".rg-uf"));
+    ws.forEach(function (w) { var el = w.querySelector("input,select,textarea"); if (el) el.oninput = el.onchange = function () { w.classList.remove("saved", "err"); w.classList.toggle("dirty", val(w) !== w.getAttribute("data-orig")); }; });
+    var sel = document.getElementById("rg-uem");
+    function go(x) { if (ws.some(function (w) { return val(w) !== w.getAttribute("data-orig"); }) && !confirm("มีช่องที่แก้แต่ยังไม่บันทึก — เปลี่ยนเดือนแล้วค่าที่แก้จะหาย ต่อไหม?")) { if (sel) sel.value = em; return; } utlDrawer(mid, x); }
+    if (sel) sel.onchange = function () { go(sel.value); };
+    [].forEach.call(dw.querySelectorAll("tr.rg-uhist"), function (tr) { tr.onclick = function () { go(tr.getAttribute("data-uym")); }; });
+    var b = document.getElementById("rg-usave"); if (!b) return;
+    b.onclick = function () {
+      var f = {}, ch = ws.filter(function (w) { return val(w) !== w.getAttribute("data-orig"); });
+      if (!ch.length) { toast("ยังไม่มีช่องที่แก้", false); return; }
+      ch.forEach(function (w) { f[w.getAttribute("data-k")] = val(w); });
+      var label = b.textContent; b.disabled = true; b.textContent = "กำลังบันทึก…";
+      utlSave(mid, em, f).then(function (j) {
+        toast(j.unchanged ? "ค่าเท่าเดิม — ไม่ได้เขียนชีต" : "✓ บันทึกบิล " + ymTh(em) + " แล้ว " + ch.length + " ช่อง" + (j.added ? " (เพิ่มแถวใหม่)" : "") + " · ตารางอัปเดตทันที", true);
+        utlDrawer(mid, em); render();
+      }, function (e) {
+        b.disabled = false; b.textContent = label; ch.forEach(function (w) { w.classList.add("err"); });
+        toast("✗ บันทึกบิลไม่สำเร็จ — " + ((e && e.message) || e), false);
+      });
+    };
   }
   // 9 พ.ย. (จี "ทำ TAP ภาษีป้าย ภาษีที่ดินใหม่ให้ดูง่ายขึ้น" · "อยากโชว์ข้อมูลจริงให้คนทำงานทำงานได้"):
   //   ช่องโชว์วันที่จริงจากไฟล์บัญชี (ได้รับเอกสาร / จ่าย) + คำ Remark บัญชี แทนสัญลักษณ์อย่างเดียว · ทะเบียน ภป.1/ภป.3 รวมเป็นช่องเดียว
@@ -10165,6 +10289,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     [].forEach.call(v.querySelectorAll("select[data-uf]"), function (el) { el.onchange = function () { UF[el.getAttribute("data-uf")] = el.value; PG = {}; render(); }; });
     [].forEach.call(v.querySelectorAll("[data-ust]"), function (b) { b.onclick = function () { var s = b.getAttribute("data-ust"); UF.st = (!s || UF.st === s) ? "" : s; PG = {}; render(); }; });
     [].forEach.call(v.querySelectorAll("tr.rg-urow"), function (tr) { tr.onclick = function () { utlDrawer(tr.getAttribute("data-umid")); }; tr.onkeydown = function (e) { if (e.key === "Enter") tr.click(); }; });
+    utlInlineBind(v);   // 26 พ.ย. เฟส ②: ช่องพิมพ์ยอดในตาราง (ทีมบัญชี)
   }
 
   var VIEWS = {
