@@ -1501,7 +1501,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=174123" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=174936" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -3362,7 +3362,7 @@ function lab(k){return (typeof DETAIL_LABELS!=="undefined"&&DETAIL_LABELS[k])?DE
 function clr(){var e=document.querySelectorAll(".xsearch-hit");for(var i=0;i<e.length;i++)e[i].classList.remove("xsearch-hit");var g=document.querySelectorAll(".go-chip-hit");for(var j=0;j<g.length;j++)g[j].classList.remove("go-chip-hit");}
 window.xSearch=function(){var q=(document.getElementById("xsearch-in").value||"").trim();var res=document.getElementById("xsearch-res");clr();
 var kp=document.getElementById("tab-kf");if(kp&&kp.offsetParent!==null&&window.KF&&KF.xfind){if(q.length<2){res.className="";res.innerHTML="";return;}var kr=KF.xfind(q);res.className="show";res.innerHTML=(!kr||kr.none)?'<span class="xs-none">'+((kr&&kr.msg)||"ไม่พบใบงานของสาขานี้ในแท็บ Kissflow")+'</span>':'<span class="xs-code">'+kr.code+'</span> '+(kr.name||"")+'<br><span class="xs-at">'+kr.msg+'</span>';return;}var gp=document.getElementById("tab-grandopen");
-if(gp&&gp.offsetParent!==null&&window.GO&&GO.xfind){if(q.length<2){res.className="";res.innerHTML="";return;}var r=GO.xfind(q);res.className="show";if(!r||r.none){res.innerHTML='<span class="xs-none">ไม่พบสาขานี้</span>';}else{res.innerHTML='<span class="xs-code">'+r.code+'</span> '+(r.name||"")+'<br><span class="xs-at">'+r.msg+'</span>';}return;}
+if(gp&&gp.offsetParent!==null&&window.GO&&GO.xfind){if(q.length<2){res.className="";res.innerHTML="";return;}var r=GO.xfind(q);res.className="show";if(!r||r.none){res.innerHTML='<span class="xs-none">ไม่พบสาขานี้</span>';}else{res.innerHTML='<span class="xs-code">'+r.code+'</span> '+(r.name||"")+((window.PROV_OF&&PROV_OF[r.code])?(" · "+PROV_OF[r.code]):"")+((window.PRM_OF&&PRM_OF[r.code])?(" · ผรม. "+PRM_OF[r.code]):"")+'<br><span class="xs-at">'+r.msg+'</span>';}return;}
 if(!IDX)build();var Q=q.toUpperCase();if(q.length<3){res.className="";res.innerHTML="";return;}
 var codes=[];for(var c in IDX){if(c.toUpperCase().indexOf(Q)>=0||((NM[c]||"").toUpperCase().indexOf(Q)>=0)||((NO[c]||"").toUpperCase().indexOf(Q)>=0))codes.push(c);}
 if(!codes.length){res.className="show";res.innerHTML='<span class="xs-none">ไม่พบสาขานี้</span>';return;}
