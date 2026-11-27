@@ -1501,7 +1501,7 @@ tr.go-nd-hide{display:none!important}
       <div id="go-editor" class="go-editor"></div>
     </section>
     <section id="tab-sitemgmt" class="tab-panel">
-      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=103419" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
+      <iframe id="sm-frame" data-src="CJX_Map_Prototype.html?_=174123" style="width:100%;height:1500px;border:0;border-radius:12px;background:#fff;display:block"></iframe>
     </section>
 </main>
 
@@ -1708,8 +1708,9 @@ tr.go-nd-hide{display:none!important}
     "util_elec_wait": [ ["code","SITE CODE"], ["name","NAME"], ["o1_status","สถานะ ยื่น อ.1 / อนุมัติผัง"], ["date","วันอนุมัติรถตู้"], ["scan_date","วัน Legal สแกนสัญญาเข้าระบบ"], ["reg_prep","วันเตรียมเอกสารไฟถาวร"], ["reg_req","วันขอไฟถาวร"], ["aging","AGING FROM วันขอไฟถาวร to today (วันทำการ)"] ],
     "util_elec_got": [ ["code","SITE CODE"], ["name","NAME"], ["o1_status","สถานะ ยื่น อ.1 / อนุมัติผัง"], ["date","วันอนุมัติรถตู้"], ["scan_date","วัน Legal สแกนสัญญาเข้าระบบ"], ["reg_prep","วันเตรียมเอกสารไฟถาวร"], ["reg_req","วันขอไฟถาวร"], ["reg_got","วันได้ไฟถาวร"] ]
   };
-  function colsFor(key){ var c = DETAIL_COLS_BY_KEY[key] || DETAIL_COLS_DEFAULT; return provCols(c); }
+  function colsFor(key){ var c = DETAIL_COLS_BY_KEY[key] || DETAIL_COLS_DEFAULT; return prmCols(provCols(c)); }
   function provCols(c){ if(!c || c.some(function(x){ return x[0]==="prov"; })) return c; var i = c.map(function(x){ return x[0]; }).indexOf("name"); if(i<0) return c; return c.slice(0,i+1).concat([["prov","จังหวัด"]], c.slice(i+1)); }
+  function prmCols(c){ if(!c || c.some(function(x){ return x[0]==="prm"; })) return c; var i = c.map(function(x){ return x[0]; }).indexOf("prov"); if(i<0) return c; return c.slice(0,i+1).concat([["prm","ผรม."]], c.slice(i+1)); }
   var currentDetail = null;   // {key, cols, rows} of the open modal, for CSV export
 
   /* ---- hover cross-tab: how many of a box's sites also sit in each other box ---- */
@@ -1806,7 +1807,7 @@ tr.go-nd-hide{display:none!important}
         var cells = cols.map(function(c){
           var key=c[0];
           if(COLLAPSIBLE[key] && COLLAPSED[key]){ return '<td class="col-'+key+' col-collapsed">&middot;</td>'; }
-          var v=(key==="prov"&&!r[key]&&window.PROV_OF)?(PROV_OF[r.code]||""):r[key]; var over=(key==='sla_over' && /^\+/.test(String(v||''))) ? ' sla-over' : ''; var mx=(r.max3 && r.max3.indexOf(key)>=0) ? ' maxdate' : ''; var h=(key==='date' && r.kt_date) ? ktMerge(v, r.kt_date, r.kt_drives) : (v?escHtml(v):'—'); if(key==='code' && r.kt_new) h += ktChip(r.kt_date);
+          var v=(key==="prov"&&!r[key]&&window.PROV_OF)?(PROV_OF[r.code]||""):(key==="prm"&&!r[key])?((window.PRM_OF||{})[r.code]||""):r[key]; var over=(key==='sla_over' && /^\+/.test(String(v||''))) ? ' sla-over' : ''; var mx=(r.max3 && r.max3.indexOf(key)>=0) ? ' maxdate' : ''; var h=(key==='date' && r.kt_date) ? ktMerge(v, r.kt_date, r.kt_drives) : (v?escHtml(v):'—'); if(key==='code' && r.kt_new) h += ktChip(r.kt_date);
           return '<td class="col-'+key+over+mx+'">'+h+'</td>'; }).join('');
         var code = String(r.code||'');
         if(!NO_NOTE[currentDetail.key]){
@@ -2027,7 +2028,7 @@ tr.go-nd-hide{display:none!important}
   function closeDetail(){ document.getElementById('detail-modal').classList.remove('open'); }
   document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDetail(); });
   function moveLogCols(key){
-    var cols = [["code","SITE CODE"], ["name","NAME"], ["prov","จังหวัด"], ["move_date","วันที่เข้า BOX (ล่าสุด)"]];
+    var cols = [["code","SITE CODE"], ["name","NAME"], ["prov","จังหวัด"], ["prm","ผรม."], ["move_date","วันที่เข้า BOX (ล่าสุด)"]];
     var ag = MOVELOG_AGING[key];
     return ag ? cols.concat(ag) : cols;
   }
@@ -2377,7 +2378,7 @@ tr.go-nd-hide{display:none!important}
   // วันอนุมัติรถตู้ 2026 onwards. Grouped เดือน > status > type > site.
   /*SIGNSLA*/var SIGN_SLA_ROWS = [];
   var SS_COLS = [
-    ["status","STATUS"], ["type","TYPE"], ["code","SITE CODE"], ["name","NAME"], ["prov","จังหวัด"],
+    ["status","STATUS"], ["type","TYPE"], ["code","SITE CODE"], ["name","NAME"], ["prov","จังหวัด"], ["prm","ผรม."],
     ["open_date","วันเปิดร้าน"],
     ["sign_date","วันเซ็นสัญญา / วันอนุมัติยกเลิก",
                  'วันเซ็นสัญญา /<br><span class="ssred">วันอนุมัติยกเลิก</span>'],
@@ -3020,7 +3021,7 @@ function renderAfterCounts(){
 }
 </script>
 <script>(function(){
-function goProv(o){var c=o&&o.code;return String((o&&o.prov)||((window.PROV_OF&&c)?(PROV_OF[c]||""):""));}function goNmP(o){var p=goProv(o);return esc((o&&o.name)||"")+(p?'<span class="go-prov"> · '+esc(p)+'</span>':"");}function goNmT(o){var p=goProv(o);return esc(((o&&o.name)||"")+(p?" · "+p:""));}
+function goProv(o){var c=o&&o.code;return String((o&&o.prov)||((window.PROV_OF&&c)?(PROV_OF[c]||""):""));}function goPrm(o){var c=o&&o.code;return String((o&&o.prm)||((window.PRM_OF&&c)?(PRM_OF[c]||""):""));}function goNmP(o){var p=goProv(o),m=goPrm(o);return esc((o&&o.name)||"")+(p?'<span class="go-prov"> · '+esc(p)+'</span>':"")+(m?'<span class="go-prov"> · ผรม. '+esc(m)+'</span>':"");}function goNmT(o){var p=goProv(o),m=goPrm(o);return esc(((o&&o.name)||"")+(p?" · "+p:"")+(m?" · ผรม. "+m:""));}
 var SITES=[];var POOL=[];var VANISHED=[];var CHANGELOG=[];var ALLDATES={};var OPENED_NOW=0;var OPENED_2026=0;var WH="";var WRITE="";var WTOK="";
 var NEWGOT=[];var NEWGOT_SET={};for(var _i=0;_i<NEWGOT.length;_i++)NEWGOT_SET[NEWGOT[_i]]=1;
 var byCode={};SITES.forEach(function(s){byCode[s.code]=s;});
@@ -3065,7 +3066,7 @@ var curYM=null;var filt="all";var pinSel={};
 var BOX4=["สัญญา Final","แบบขออนุญาต Final","เอกสาร น.2+น.4 Final","เตรียมเอกสารยื่น อ.1"];
 function rControls(){var el=document.getElementById("go-controls");if(!el)return;function b(v,lb){return '<button class="go-fbtn'+(filt===v?" active":"")+'" onclick="GO.filt(\'' +v+ '\')">'+lb+'</button>';}function pb(n,lb){return '<button class="go-fbtn'+(pinSel[""+n]?" active":"")+'" onclick="GO.pinFilt(' +n+ ')">'+lb+'</button>';}el.innerHTML='<span class="go-flabel">แสดง:</span>'+b("all","รวมปักวันทั้งหมด")+b("sub","ยื่น อ.1 แล้ว")+b("got","🟢 ได้ อ.1 แล้ว")+b("notgot","⏳ ยื่นแล้ว·ยังไม่ได้เอกสาร")+b("nosub","ยังไม่ยื่น อ.1")+b("noho","ยังไม่ส่งมอบพื้นที่")+'<span class="go-flabel" style="margin-left:6px">ปัก (เลือกได้หลายอัน):</span>'+pb(1,"🔴 ปัก1")+pb(2,"🔵 ปัก2")+pb(3,"🟢 ปัก3")+'<button class="go-export" onclick="GO.exportCsv()">⬇ Export CSV</button>';}
 function csvCell(v){v=(v==null?"":(""+v));return '"'+v.replace(/"/g,'""')+'"';}
-function exportCsv(){var t=todayIso();var tot=SITES.length,sub=0,ns=0,noho=0;SITES.forEach(function(s){if(s.sub)sub++;else ns++;if(!s.ho)noho++;});var L=[];L.push(["Grand Opening Monitor — Export "+t]);L.push(["รวมทั้งหมด (ปักวันแล้ว)",tot]);L.push(["ยื่น อ.1 แล้ว",sub]);L.push(["ยังไม่ยื่น อ.1",ns]);L.push(["ยังไม่ส่งมอบพื้นที่",noho]);L.push([]);L.push(["SITE CODE","NAME","จังหวัด","ผู้รับผิดชอบ","วันเปิด","เดือน","ยื่น อ.1","ส่งมอบพื้นที่","วันส่งมอบ","ค้างที่ (ถ้ายังไม่ยื่น)"]);var arr=SITES.slice().sort(function(a,b){var x=effOpen(a.code),y=effOpen(b.code);return x<y?-1:(x>y?1:0);});arr.forEach(function(s){var o=effOpen(s.code);var hs=s.ho?"ส่งมอบแล้ว":(s.hodate?"อนาคต":"ยังไม่ส่งมอบ");var bk=(!s.sub&&s.blk&&s.blk.length)?s.blk.map(function(b){return b.stage;}).join(" / "):(!s.sub?"(ช่วงต้น)":"");L.push([s.code,s.name||"",goProv(s),s.owner||"",o,(o?o.slice(0,7):""),(s.sub?"ยื่นแล้ว":"ยังไม่ยื่น"),hs,(s.hodate||""),bk]);});var csv="﻿"+L.map(function(r){return r.map(csvCell).join(",");}).join("\r\n");var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="grand_opening_"+t+".csv";document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},150);gtoast("⬇ ดาวน์โหลด grand_opening_"+t+".csv ("+tot+" สาขา)",true);}
+function exportCsv(){var t=todayIso();var tot=SITES.length,sub=0,ns=0,noho=0;SITES.forEach(function(s){if(s.sub)sub++;else ns++;if(!s.ho)noho++;});var L=[];L.push(["Grand Opening Monitor — Export "+t]);L.push(["รวมทั้งหมด (ปักวันแล้ว)",tot]);L.push(["ยื่น อ.1 แล้ว",sub]);L.push(["ยังไม่ยื่น อ.1",ns]);L.push(["ยังไม่ส่งมอบพื้นที่",noho]);L.push([]);L.push(["SITE CODE","NAME","จังหวัด","ผรม.","ผู้รับผิดชอบ","วันเปิด","เดือน","ยื่น อ.1","ส่งมอบพื้นที่","วันส่งมอบ","ค้างที่ (ถ้ายังไม่ยื่น)"]);var arr=SITES.slice().sort(function(a,b){var x=effOpen(a.code),y=effOpen(b.code);return x<y?-1:(x>y?1:0);});arr.forEach(function(s){var o=effOpen(s.code);var hs=s.ho?"ส่งมอบแล้ว":(s.hodate?"อนาคต":"ยังไม่ส่งมอบ");var bk=(!s.sub&&s.blk&&s.blk.length)?s.blk.map(function(b){return b.stage;}).join(" / "):(!s.sub?"(ช่วงต้น)":"");L.push([s.code,s.name||"",goProv(s),goPrm(s),s.owner||"",o,(o?o.slice(0,7):""),(s.sub?"ยื่นแล้ว":"ยังไม่ยื่น"),hs,(s.hodate||""),bk]);});var csv="﻿"+L.map(function(r){return r.map(csvCell).join(",");}).join("\r\n");var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="grand_opening_"+t+".csv";document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},150);gtoast("⬇ ดาวน์โหลด grand_opening_"+t+".csv ("+tot+" สาขา)",true);}
 function setFilt(v){filt=v;if(v==="all")pinSel={};rAll();}
 function pinFilt(n){n=""+n;if(pinSel[n])delete pinSel[n];else pinSel[n]=1;rAll();}
 function matchMain(s){return filt==="all"||(filt==="sub"&&s.sub)||(filt==="got"&&s.status==="ได้ อ.1 แล้ว")||(filt==="notgot"&&s.sub&&s.status!=="ได้ อ.1 แล้ว")||(filt==="nosub"&&!s.sub)||(filt==="noho"&&!s.ho);}
@@ -3097,7 +3098,7 @@ function pinPool(code){var el=document.getElementById("pp-"+code);var v=el?el.va
 function repin(code){var el=document.getElementById("pp-"+code);var v=el?el.value:"";if(!v){if(el)el.style.borderColor="#dc2626";return;}pinned[code]=v;post("OPEN:"+code,v);postSheet(code,v,function(ok){saveCb(code,ok);});curYM=v.slice(0,7);rAll();}
 function rHandover(){var arr=POOL.filter(function(p){return p.ho&&!(p.prog&&p.prog.length);});if(!arr.length)return '<div class="go-empty-msg">ไม่มีสาขาที่ส่งมอบพื้นที่แล้วแต่ยังไม่ปักวัน (ที่ไม่มี progress) 🎉</div>';arr.sort(function(a,b){return (a.hodate<b.hodate?-1:(a.hodate>b.hodate?1:0))||(a.code<b.code?-1:1);});var rows=arr.map(function(p){var neg=gstat[p.code]==="รอเจรจา";var stuck=p.sstep?('<span class="go-blk"><span class="go-blk-stage">'+esc(p.sstep)+'</span></span>'):'<span class="go-blk go-blk-none">พร้อมปักวัน</span>';var blk=(!p.sub&&p.blk&&p.blk.length)?'<div class="go-nosub-blk"><span class="go-blk-label">เอกสารค้าง:</span>'+p.blk.map(function(b){return '<span class="go-blk"><span class="go-blk-stage">'+esc(b.stage)+'</span>'+(b.note?'<span class="go-blk-note"> — '+esc(b.note)+'</span>':'')+'</span>';}).join("")+'</div>':'';var sug=p.sdate?'<div class="go-sug-line">💡 แนะนำวันเปิด (SLA): <b>'+p.sdate+'</b>'+(p.sstep?' · ค้าง '+esc(p.sstep):'')+'</div>':'';return '<div class="go-nosub-row'+(neg?' go-nego-row':'')+'"><div class="go-nosub-head"><b>'+esc(p.code)+'</b> '+goNmP(p)+'<span class="go-nosub-meta">'+(p.owner?esc(p.owner):"")+' · '+(p.sub?"ยื่นแล้ว":"ยังไม่ยื่น")+(neg?' · <b class="go-nego-tag">🕐 รอเจรจา</b>':'')+'</span></div><div class="go-nosub-blk"><span class="go-blk-label" style="color:#16a34a">✅ ส่งมอบพื้นที่แล้ว:</span> '+esc(p.hodate||"")+'</div><div class="go-nosub-blk"><span class="go-blk-label">🔧 ติดอยู่ที่:</span> '+stuck+'</div>'+blk+sug+'<div class="go-ed-row">'+dwHtml("pp-"+esc(p.code),(p.sdate||""),"")+'<button class="go-btn-save" onclick="GO.pinPool(\'' +p.code+ '\')">📌 ปักวันเปิด</button><button class="go-nego-btn'+(neg?" on":"")+'" onclick="GO.goNego(\'' +p.code+ '\')">🕐 '+(neg?"ยกเลิกรอเจรจา":"รอเจรจา")+'</button></div><div class="go-ed-row"><input type="text" class="go-note-in" id="gn-'+esc(p.code)+'" placeholder="Note (เหตุผลที่ยังปักไม่ได้)..." value="'+esc(gnote[p.code]||"")+'"><button class="go-btn-note" onclick="GO.goNote(\'' +p.code+ '\')">💾 Note</button></div></div>';}).join("");return '<div class="go-cal-title">🚚 ส่งมอบพื้นที่แล้ว · ยังไม่ปักวัน — '+arr.length+' สาขา (ไล่ให้ปักวันได้ · ดูว่าติดอะไร)</div>'+rows;}
 function rNotGot(){var arr=SITES.filter(function(s){return s.sub&&s.status!=="ได้ อ.1 แล้ว";});if(!arr.length)return '<div class="go-empty-msg">ทุกสาขาที่ยื่นแล้ว ได้ อ.1 ครบ 🎉</div>';arr.sort(function(a,b){var x=effOpen(a.code),y=effOpen(b.code);return x<y?-1:(x>y?1:0);});var rows=arr.map(function(s){var o=effOpen(s.code);return '<div class="go-nosub-row"><div class="go-nosub-head"><span class="go-chip '+scls(s)+'" onclick="GO.edit(\'' +s.code+ '\')">'+esc(s.code)+' '+goNmP(s)+'</span><span class="go-nosub-meta">'+esc(s.status||"-")+(s.owner?" · "+esc(s.owner):"")+'</span></div><div class="go-nosub-blk"><span class="go-blk-label">วันเปิด:</span> <b>'+esc(o)+'</b>'+(s.sstep?' · <span class="go-blk-label">ค้าง:</span> '+esc(s.sstep):'')+(s.ho?'':' · <span style="color:#dc2626">🏗️ ยังไม่ส่งมอบพื้นที่</span>')+'</div><div class="go-ed-row">'+dwHtml("pp-"+esc(s.code),effOpen(s.code),"")+'<button class="go-btn-save" onclick="GO.repin(\'' +s.code+ '\')">📌 ปัก/แก้วัน</button></div></div>';}).join("");return '<div class="go-cal-title">⏳ ยื่น อ.1 แล้ว·ยังไม่ได้เอกสาร — '+arr.length+' สาขา <button class="go-export" onclick="GO.exportNotGot()">⬇ Export CSV</button></div>'+rows;}
-function exportNotGot(){var t=todayIso();var arr=SITES.filter(function(s){return s.sub&&s.status!=="ได้ อ.1 แล้ว";});arr.sort(function(a,b){var x=effOpen(a.code),y=effOpen(b.code);return x<y?-1:(x>y?1:0);});var L=[];L.push(["ยื่น อ.1 แล้ว·ยังไม่ได้เอกสาร — Export "+t]);L.push(["รวม",arr.length]);L.push([]);L.push(["SITE CODE","NAME","จังหวัด","ผู้รับผิดชอบ","สถานะ อ.1","วันเปิด","เดือน","ค้างที่ (SLA)","ส่งมอบพื้นที่"]);arr.forEach(function(s){var o=effOpen(s.code);var hs=s.ho?"ส่งมอบแล้ว":(s.hodate?"อนาคต":"ยังไม่ส่งมอบ");L.push([s.code,s.name||"",goProv(s),s.owner||"",s.status||"",o,(o?o.slice(0,7):""),(s.sstep||""),hs]);});var csv="﻿"+L.map(function(r){return r.map(csvCell).join(",");}).join("\r\n");var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="notgot_o1_"+t+".csv";document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},150);gtoast("⬇ ดาวน์โหลด notgot_o1_"+t+".csv ("+arr.length+" สาขา)",true);}
+function exportNotGot(){var t=todayIso();var arr=SITES.filter(function(s){return s.sub&&s.status!=="ได้ อ.1 แล้ว";});arr.sort(function(a,b){var x=effOpen(a.code),y=effOpen(b.code);return x<y?-1:(x>y?1:0);});var L=[];L.push(["ยื่น อ.1 แล้ว·ยังไม่ได้เอกสาร — Export "+t]);L.push(["รวม",arr.length]);L.push([]);L.push(["SITE CODE","NAME","จังหวัด","ผรม.","ผู้รับผิดชอบ","สถานะ อ.1","วันเปิด","เดือน","ค้างที่ (SLA)","ส่งมอบพื้นที่"]);arr.forEach(function(s){var o=effOpen(s.code);var hs=s.ho?"ส่งมอบแล้ว":(s.hodate?"อนาคต":"ยังไม่ส่งมอบ");L.push([s.code,s.name||"",goProv(s),goPrm(s),s.owner||"",s.status||"",o,(o?o.slice(0,7):""),(s.sstep||""),hs]);});var csv="﻿"+L.map(function(r){return r.map(csvCell).join(",");}).join("\r\n");var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="notgot_o1_"+t+".csv";document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},150);gtoast("⬇ ดาวน์โหลด notgot_o1_"+t+".csv ("+arr.length+" สาขา)",true);}
 /* Suggest ปัก (กล่อง Work in Process = POOL สาขายังไม่ปักวัน):
    ปัก1 = "Site ใหม่ที่ Feed เข้ามา" (โผล่ครั้งแรกหลัง SUG_ASOF) → ระบบ Suggest วันเปิดให้ (SLA)
    ปัก2 = เอา ปัก1 ทั้งหมดมากองไว้ (set เดียวกัน) + โชว์ว่า 'ทำไปถึงไหน' เพื่อไล่ปัก */
@@ -3126,10 +3127,10 @@ function goVisibleCodes(){var el=document.getElementById("go-cal");if(!el)return
 var _exportCsvBase=exportCsv;
 exportCsv=function(){var codes=goVisibleCodes();if(!codes.length){gtoast("กล่องนี้ไม่มีรายชื่อสาขาให้ส่งออก",false);return;}var t=todayIso();
 var tt=document.querySelector("#go-cal .go-cal-title");var title=tt?String(tt.textContent).replace(/⬇\s*Export CSV/g,"").trim():"Grand Opening";var FN={sub:"ยื่น อ.1 แล้ว",got:"ได้ อ.1 แล้ว",notgot:"ยื่นแล้ว·ยังไม่ได้เอกสาร",nosub:"ยังไม่ยื่น อ.1",noho:"ยังไม่ส่งมอบพื้นที่"};var fl=[];if(filt!=="all")fl.push(FN[filt]||filt);Object.keys(pinSel).forEach(function(k){fl.push("ปัก"+k);});
-var L=[[title+" — Export "+t],["ตัวกรอง",fl.length?fl.join(" + "):"ไม่กรอง"],["รวม",codes.length],[],["SITE CODE","NAME","จังหวัด","ผู้รับผิดชอบ","ปักตอนนี้","วันเปิด (ปัก/เปิดแล้ว)","สถานะ อ.1","เซ็นสัญญา","คัด น.4","ส่งมอบพื้นที่","ค้างที่ (SLA)","Suggest วันเปิด (SLA)","ค่าเช่า"]];
+var L=[[title+" — Export "+t],["ตัวกรอง",fl.length?fl.join(" + "):"ไม่กรอง"],["รวม",codes.length],[],["SITE CODE","NAME","จังหวัด","ผรม.","ผู้รับผิดชอบ","ปักตอนนี้","วันเปิด (ปัก/เปิดแล้ว)","สถานะ อ.1","เซ็นสัญญา","คัด น.4","ส่งมอบพื้นที่","ค้างที่ (SLA)","Suggest วันเปิด (SLA)","ค่าเช่า"]];
 codes.forEach(function(c){var s=goObjOf(c)||{code:c},o=effOpen(c)||s.open||"",rt=(typeof rentTxt==="function")?rentTxt(c,o):null;
 var opd=!byCode[c]&&(OPENED_LIST||[]).some(function(x){return x.code===c;});
-L.push([c,s.name||"",goProv(s),s.owner||"",(effOpen(c)&&!opd)?("ปัก"+pinStat(c)):(opd?"เปิดแล้ว":"ยังไม่ปักวัน"),o,s.status||"",(s.signed===undefined?"":(s.signed?"เซ็นแล้ว":"ยังไม่เซ็น")),(s.n4===undefined?"":(s.n4?"คัดแล้ว":"ยังไม่คัด")),(s.ho===undefined?"":(s.ho?"ส่งมอบแล้ว":(s.hodate?"อนาคต "+s.hodate:"ยังไม่ส่งมอบ"))),(s.sstep||""),(effOpen(c)?"":(s.sdate||"")),(rt?String(rt.h).replace(/<[^>]+>/g,""):"")]);});
+L.push([c,s.name||"",goProv(s),goPrm(s),s.owner||"",(effOpen(c)&&!opd)?("ปัก"+pinStat(c)):(opd?"เปิดแล้ว":"ยังไม่ปักวัน"),o,s.status||"",(s.signed===undefined?"":(s.signed?"เซ็นแล้ว":"ยังไม่เซ็น")),(s.n4===undefined?"":(s.n4?"คัดแล้ว":"ยังไม่คัด")),(s.ho===undefined?"":(s.ho?"ส่งมอบแล้ว":(s.hodate?"อนาคต "+s.hodate:"ยังไม่ส่งมอบ"))),(s.sstep||""),(effOpen(c)?"":(s.sdate||"")),(rt?String(rt.h).replace(/<[^>]+>/g,""):"")]);});
 var csv="﻿"+L.map(function(r){return r.map(csvCell).join(",");}).join("\r\n");var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;var fn="grand_opening_"+String(curYM).replace(/[^A-Za-z0-9_-]/g,"_")+"_"+t+".csv";a.download=fn;document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},150);gtoast("⬇ ดาวน์โหลด "+fn+" ("+codes.length+" สาขา)",true);};
 exportNotGot=function(){return exportCsv();};   /* ปุ่ม Export ในกล่องยื่นแล้ว·ยังไม่ได้เอกสาร = ตามกล่อง+ตัวกรองเหมือนกัน */
 /* 10 พ.ย. (จีเลือกข้อ 2): ยกเลิกสาขา — ใส่เหตุผล · ใช้ได้ทั้งสาขาที่ปักวันแล้วและยังไม่ปัก · ที่เก็บเดียวกับ "ยกเลิก ปัก3" (XC:) → ไปขึ้นกล่องยกเลิก ปัก3
@@ -3155,8 +3156,8 @@ function rNewGot(){
 function rCal(){var el=document.getElementById("go-cal");if(!el)return;if(String(curYM).indexOf("op:")===0){el.innerHTML=rOpenedCal();return;}if(curYM==="none"){el.innerHTML=rUn();return;}if(curYM==="nosub"){el.innerHTML=rNosub();return;}if(curYM==="prog"){el.innerHTML=rProg();return;}if(curYM==="ho"){el.innerHTML=rHandover();return;}if(curYM==="notgot"){el.innerHTML=rNotGot();return;}if(curYM==="sug1"){el.innerHTML=rSugN(1);return;}if(curYM==="sug2"){el.innerHTML=rSugN(2);return;}if(curYM==="sug3"){el.innerHTML=rSugN(3);return;}if(curYM==="newgot"){el.innerHTML=rNewGot();return;}if(curYM==="changelog"){el.innerHTML=rChangelog();return;}if(curYM==="year2026"){el.innerHTML=rYear2026();return;}if(curYM==="rsmove"){el.innerHTML=rPak3Move();return;}if(curYM==="overdue"){el.innerHTML=(function(){var t=new Date(),ti=t.getFullYear()+"-"+("0"+(t.getMonth()+1)).slice(-2)+"-"+("0"+t.getDate()).slice(-2);var L=SITES.filter(function(s){return s.overdue&&!(effOpen(s.code)>ti);});if(!L.length)return '<div class="go-empty-msg">ไม่มีสาขาที่เลยวันเปิดแล้วยังไม่ยืนยันว่าเปิด 🎉</div>';return '<div class="go-cal-title">⏰ เลยวันเปิด · ยังไม่ยืนยันว่าเปิด — '+L.length+' สาขา (กดปักวันเปิดใหม่)</div>'+L.map(function(s){return '<div class="go-nosub-row"><div class="go-nosub-head"><b>'+esc(s.code)+'</b> '+goNmP(s)+'<span class="go-nosub-meta">วันเปิดเดิม '+esc(effOpen(s.code)||s.open||"")+(s.sla_status?' · ชีต SLA: '+esc(s.sla_status):'')+'</span></div><div class="go-ed-row"><button class="go-btn-save" onclick="GO.edit(\''+esc(s.code)+'\')">📅 ปักวันเปิดใหม่</button></div></div>';}).join("");})();return;}if(curYM==="cancel"){el.innerHTML=rCancelList();return;}var y=+curYM.slice(0,4),m=+curYM.slice(5,7);var first=new Date(y,m-1,1).getDay();var dim=new Date(y,m,0).getDate();var byDay={},tot=0;SITES.forEach(function(s){var o=effOpen(s.code);if(o&&o.slice(0,7)===curYM&&passFilt(s)){var d=+o.slice(8,10);(byDay[d]=byDay[d]||[]).push(s);tot++;}});var head='<div class="go-cal-head">'+DOW.map(function(d){return '<div class="go-dow">'+d+'</div>';}).join("")+'</div>';var cells="";for(var i=0;i<first;i++)cells+='<div class="go-cell go-empty"></div>';for(var d=1;d<=dim;d++){var list=byDay[d]||[];var ymd=curYM+"-"+("0"+d).slice(-2);cells+='<div class="go-cell'+(list.length?" go-has":"")+'"><div class="go-daynum">'+d+'<span class="go-add" title="เพิ่มสาขาเปิดวันนี้" onclick="GO.addOn(\'' +ymd+ '\')">＋</span></div>'+list.map(chip).join("")+goGhost(ymd)+'</div>';}el.innerHTML='<div class="go-cal-title">'+thYM(curYM)+' — '+tot+' สาขา</div>'+head+'<div class="go-cal-grid">'+cells+'</div>';}
 function rVanish(){var el=document.getElementById("go-vanish");if(!el)return;var V=(VANISHED||[]).filter(function(v){return !cancelled[v.code];});if(!V.length){el.style.display="none";el.innerHTML="";return;}var rows=V.map(function(v){return '<div class="go-vn-row"><span class="go-vn-code">'+esc(v.code)+'</span> <span class="go-vn-nm">'+goNmP(v)+'</span><span class="go-vn-meta">วันเปิดเดิม: <b>'+esc(v.open||"—")+'</b> · '+esc(v.reason||"หายไป")+' · หายตั้งแต่ '+esc(v.since||"")+'</span> <button class="go-btn-note" style="margin-left:6px" onclick="GO.vanCancel(\'' +v.code+ '\')">🚫 รับทราบ/ยกเลิก</button></div>';}).join("");el.innerHTML='<div class="go-vn-head">⚠️ '+V.length+' สาขาที่เคยมีวันเปิด แล้ววันหายไป (ทีมแม่ลบ/ย้ายในชีต Construction — เช็ค/เอากลับ)</div>'+rows;el.style.display="block";}
 function rChangelog(){var L=(typeof CHANGELOG!=="undefined"&&CHANGELOG)?CHANGELOG:[];if(!L.length)return '<div class="go-empty-msg">ยังไม่มีประวัติวันเปิดถูกแก้ในชีต — พอทีมแม่แก้วันเปิดใน GSheet แล้ว build ใหม่ ระบบจะ log ให้ตรงนี้ (from→to + เวลา + ชนกับที่ปักไว้ไหม)</div>';var rows=L.map(function(x){var dv=x.diverged;return '<div class="go-nosub-row'+(dv?' go-nego-row':'')+'"><div class="go-nosub-head"><b>'+esc(x.code)+'</b> '+goNmP(x)+'<span class="go-nosub-meta">'+(x.owner?esc(x.owner)+' · ':'')+'🕐 '+esc(x.at||"")+'</span></div><div class="go-nosub-blk">วันในชีตขยับ: <b style="color:#dc2626">'+esc(x.from)+'</b> → <b style="color:#16a34a">'+esc(x.to)+'</b>'+(dv?(' · <b class="go-nego-tag">⚠️ ชนกับที่ทีมปักไว้ '+esc(x.pinned)+' — เช็ค/แก้ชีต</b>'):(x.pinned?' · ทีมปักไว้ '+esc(x.pinned)+' (ตรงกัน)':''))+'</div>'+((x.reason||x.who)?'<div class="go-nosub-blk" style="color:#334155">📝 '+(x.who?'<b>เพราะ '+esc(x.who)+'</b> · ':'')+esc(x.reason||'')+'</div>':'')+'<div class="go-ed-row"><input type="text" class="go-cr-who" placeholder="เพราะใคร/ฝ่ายไหน" value="'+esc(x.who||"")+'" style="width:150px;padding:6px 9px;border:1px solid #cbd5e1;border-radius:8px;font:inherit"><input type="text" class="go-cr-reason" placeholder="เหตุผลที่เลื่อน..." value="'+esc(x.reason||"")+'" style="flex:1;padding:6px 9px;border:1px solid #cbd5e1;border-radius:8px;font:inherit"><button class="go-btn-note" data-code="'+esc(x.code)+'" data-to="'+esc(x.to)+'" onclick="GO.clogReason(this)">💾 บันทึก</button></div></div>';}).join("");var ndv=L.filter(function(x){return x.diverged;}).length;return '<div class="go-cal-title">📋 Log วันเปิดถูกแก้ในชีต Construction — '+L.length+' ครั้ง'+(ndv?(' · ⚠️ ชนกับที่ปักไว้ '+ndv):'')+' (ล่าสุดก่อน) <button class="go-export" onclick="GO.exportClog()">⬇ Export CSV</button></div>'+rows;}
-function exportClog(){var L=(typeof CHANGELOG!=="undefined"&&CHANGELOG)?CHANGELOG:[];if(!L.length){gtoast("ยังไม่มีประวัติให้ export",false);return;}var t=todayIso();var R=[["Log วันเปิดถูกแก้ในชีต Construction — Export "+t],["รวม",L.length],[],["SITE CODE","NAME","จังหวัด","ผู้รับผิดชอบ","วันเปิดเดิม (from)","เปลี่ยนเป็น (to)","ทีมปักไว้","ชนกับที่ปักไว้","ตรวจพบเมื่อ","เพราะใคร","เหตุผลที่เลื่อน"]];L.forEach(function(x){R.push([x.code,x.name||"",goProv(x),x.owner||"",x.from||"",x.to||"",x.pinned||"",(x.diverged?"⚠️ ใช่":""),x.at||"",x.who||"",x.reason||""]);});var csv="﻿"+R.map(function(r){return r.map(csvCell).join(",");}).join("\r\n");var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="open_changelog_"+t+".csv";document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},150);gtoast("⬇ ดาวน์โหลด open_changelog_"+t+".csv ("+L.length+" รายการ)",true);}
-function exportRsMove(){var L=rsEntries();if(!L.length){gtoast("ยังไม่มีรายการเลื่อน ปัก3 ให้ export",false);return;}var t=todayIso();var _late=0,_early=0,_dmg=0,_gain=0;L.forEach(function(x){if(x.days>0){_late++;_dmg+=x.days*RS_DMG_PER_DAY;}else if(x.days<0){_early++;_gain+=(-x.days)*RS_DMG_PER_DAY;}});var _net=_gain-_dmg;var R=[["สรุปการเลื่อนวันหลังปัก3 — Export "+t],["รวม",L.length,"🔴 ช้าลง(ครั้ง)",_late,"เสียหาย(฿)",_dmg,"🟢 เร็วขึ้น(ครั้ง)",_early,"ประหยัด(฿)",_gain,"Net(฿)",_net],[],["วันที่ทำการเลื่อน","SITE CODE","NAME","จังหวัด","สำนักที่ทำให้เลื่อน","วันเปิดเดิม","เลื่อนเป็น","ช้าลง(+)/เร็วขึ้น(-) วัน","เสียหาย(฿)","ประหยัด(฿) เปิดเร็วขึ้น","ผลรวม(฿) net","เหตุผล"]];L.forEach(function(x){var loss=x.days>0?x.days*RS_DMG_PER_DAY:0,gain=x.days<0?(-x.days)*RS_DMG_PER_DAY:0;R.push([x.at||"",x.code,x.name||"",goProv(x),x.who||"",x.from||"",x.to||"",x.days,loss,gain,(gain-loss),x.reason||""]);});var csv="﻿"+R.map(function(r){return r.map(csvCell).join(",");}).join("\r\n");var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="pak3_move_"+t+".csv";document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},150);gtoast("⬇ ดาวน์โหลด pak3_move_"+t+".csv ("+L.length+" รายการ)",true);}
+function exportClog(){var L=(typeof CHANGELOG!=="undefined"&&CHANGELOG)?CHANGELOG:[];if(!L.length){gtoast("ยังไม่มีประวัติให้ export",false);return;}var t=todayIso();var R=[["Log วันเปิดถูกแก้ในชีต Construction — Export "+t],["รวม",L.length],[],["SITE CODE","NAME","จังหวัด","ผรม.","ผู้รับผิดชอบ","วันเปิดเดิม (from)","เปลี่ยนเป็น (to)","ทีมปักไว้","ชนกับที่ปักไว้","ตรวจพบเมื่อ","เพราะใคร","เหตุผลที่เลื่อน"]];L.forEach(function(x){R.push([x.code,x.name||"",goProv(x),goPrm(x),x.owner||"",x.from||"",x.to||"",x.pinned||"",(x.diverged?"⚠️ ใช่":""),x.at||"",x.who||"",x.reason||""]);});var csv="﻿"+R.map(function(r){return r.map(csvCell).join(",");}).join("\r\n");var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="open_changelog_"+t+".csv";document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},150);gtoast("⬇ ดาวน์โหลด open_changelog_"+t+".csv ("+L.length+" รายการ)",true);}
+function exportRsMove(){var L=rsEntries();if(!L.length){gtoast("ยังไม่มีรายการเลื่อน ปัก3 ให้ export",false);return;}var t=todayIso();var _late=0,_early=0,_dmg=0,_gain=0;L.forEach(function(x){if(x.days>0){_late++;_dmg+=x.days*RS_DMG_PER_DAY;}else if(x.days<0){_early++;_gain+=(-x.days)*RS_DMG_PER_DAY;}});var _net=_gain-_dmg;var R=[["สรุปการเลื่อนวันหลังปัก3 — Export "+t],["รวม",L.length,"🔴 ช้าลง(ครั้ง)",_late,"เสียหาย(฿)",_dmg,"🟢 เร็วขึ้น(ครั้ง)",_early,"ประหยัด(฿)",_gain,"Net(฿)",_net],[],["วันที่ทำการเลื่อน","SITE CODE","NAME","จังหวัด","ผรม.","สำนักที่ทำให้เลื่อน","วันเปิดเดิม","เลื่อนเป็น","ช้าลง(+)/เร็วขึ้น(-) วัน","เสียหาย(฿)","ประหยัด(฿) เปิดเร็วขึ้น","ผลรวม(฿) net","เหตุผล"]];L.forEach(function(x){var loss=x.days>0?x.days*RS_DMG_PER_DAY:0,gain=x.days<0?(-x.days)*RS_DMG_PER_DAY:0;R.push([x.at||"",x.code,x.name||"",goProv(x),goPrm(x),x.who||"",x.from||"",x.to||"",x.days,loss,gain,(gain-loss),x.reason||""]);});var csv="﻿"+R.map(function(r){return r.map(csvCell).join(",");}).join("\r\n");var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="pak3_move_"+t+".csv";document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},150);gtoast("⬇ ดาวน์โหลด pak3_move_"+t+".csv ("+L.length+" รายการ)",true);}
 function clogReason(btn){var row=btn.closest(".go-ed-row");var who=((row.querySelector(".go-cr-who")||{}).value||"").trim();var reason=((row.querySelector(".go-cr-reason")||{}).value||"").trim();var code=btn.getAttribute("data-code"),to=btn.getAttribute("data-to");post("CR:"+code+":"+to,who+"~|~"+reason);if(typeof CHANGELOG!=="undefined"&&CHANGELOG){for(var i=0;i<CHANGELOG.length;i++){if(CHANGELOG[i].code===code&&CHANGELOG[i].to===to){CHANGELOG[i].who=who;CHANGELOG[i].reason=reason;}}}gtoast((who||reason)?("💾 บันทึกเหตุผลเลื่อน: "+code):("ลบเหตุผลเลื่อน: "+code),true);}
 function rYear2026(){var byM={},tot=0;SITES.forEach(function(s){var o=effOpen(s.code);if(o&&o>="2026-01-01"&&o<="2026-12-31"){(byM[o.slice(0,7)]=byM[o.slice(0,7)]||[]).push(s);tot++;}});var b=(OPENED_NOW||0),gt=b+tot;var head='<div class="go-cal-title">🏪 รวม ณ สิ้นปี 2026 (คาดการณ์ตามที่ปักวัน) — เปิดแล้ว '+b+' + จะเปิดอีก '+tot+' = <b>'+gt+' สาขา</b></div><div style="margin:2px 0 12px;color:#64748b;font-size:12px">ฐาน = ร้านที่เปิดแล้วทั้งหมด '+b+' สาขา + ที่ปักวันเปิดที่เหลือปีนี้ '+tot+' สาขา · ตัวเลขขยับตามที่ปักวันเพิ่ม/เลื่อน</div>';if(!tot)return head+'<div class="go-empty-msg">ยังไม่มีสาขาที่ปักวันเปิดในปี 2026</div>';var months=Object.keys(byM).sort();var body=months.map(function(mk){var arr=byM[mk].slice().sort(function(a,c){return effOpen(a.code)<effOpen(c.code)?-1:1;});return '<div class="go-nosub-row"><div class="go-nosub-head"><b>'+thYM(mk)+'</b> <span class="go-nosub-meta">'+arr.length+' สาขา</span></div><div class="go-nosub-blk">'+arr.map(function(s){return chip(s);}).join(" ")+'</div></div>';}).join("");return head+body;}
 function _rsSum(L){var CAUSES=[{label:"รอ อ.1 / ผอ.ยังไม่เซ็น",kw:["อ.1","เซ็น","ผอ"]},{label:"ติดพื้นที่ / ส่งมอบ",kw:["พื้นที่","ส่งมอบ","เจ้าของที่","เทศบาล","ถนน"]},{label:"เปลี่ยน ผรม.",kw:["ผรม","ผู้รับเหมา"]},{label:"อื่น ๆ",kw:null}];var GCAUSES=[{label:"ได้ อ.1 เร็ว / อนุโลม",kw:["อ.1","อนุโลม"]},{label:"เร่ง ผรม. เข้างานก่อนแผน",kw:["ผรม","เร่ง","ผู้รับเหมา"]},{label:"อื่น ๆ",kw:null}];function bk(r,arr){r=String(r||"");for(var i=0;i<arr.length;i++){var c=arr[i];if(!c.kw)return c.label;for(var j=0;j<c.kw.length;j++)if(r.indexOf(c.kw[j])>=0)return c.label;}return arr[arr.length-1].label;}function ad(m,k,b){var e=m[k]||(m[k]={c:0,b:0});e.c++;e.b+=b;}var o={dN:0,gN:0,dB:0,gB:0,dOff:{},gOff:{},dC:{},gC:{}};L.forEach(function(x){var d=x.days||0;if(!d)return;var baht=Math.abs(d)*RS_DMG_PER_DAY;var offs=String(x.who||"").split(",").map(function(s){return s.trim();}).filter(function(s){return s;});if(!offs.length)offs=["(ไม่ระบุ)"];var cs=bk(x.reason,d>0?CAUSES:GCAUSES);if(d>0){o.dN++;o.dB+=baht;offs.forEach(function(f){ad(o.dOff,f,baht);});ad(o.dC,cs,baht);}else{o.gN++;o.gB+=baht;offs.forEach(function(f){ad(o.gOff,f,baht);});ad(o.gC,cs,baht);}});function rr(m){var ks=Object.keys(m);if(!ks.length)return '<div class="go-sum-row"><span class="go-sum-stage" style="color:#94a3b8">—</span><span class="go-sum-n">0</span></div>';ks.sort(function(a,b){return m[b].b-m[a].b;});return ks.map(function(k){return '<div class="go-sum-row"><span class="go-sum-stage">'+esc(k)+' <span style="color:#94a3b8">('+m[k].c+')</span></span><span class="go-sum-n">'+fmtBaht(m[k].b)+' ฿</span></div>';}).join("");}function bx(lb,val,col,bg){return '<div style="border:1px solid #e2e8f0;border-top:3px solid '+col+';border-radius:10px;padding:5px 12px;background:'+bg+';min-width:120px;text-align:center"><div style="font-size:11px;color:#64748b;font-weight:600">'+lb+'</div><div style="font-size:15px;font-weight:800;color:'+col+';font-family:tahoma">'+val+'</div></div>';}var net=o.gB-o.dB;var nc=net<0?"#dc2626":(net>0?"#16a34a":"#94a3b8");var box='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px">'+bx("ทั้งหมด",(o.dN+o.gN)+" ครั้ง","#334155","#f8fafc")+bx("🔴 เลื่อนออก",o.dN+" · "+fmtBaht(o.dB)+" ฿","#dc2626","#fef2f2")+bx("🟢 เลื่อนเข้า",o.gN+" · "+fmtBaht(o.gB)+" ฿","#16a34a","#f0fdf4")+bx("Net",(net>0?"+":"")+fmtBaht(net)+" ฿",nc,net<0?"#fef2f2":(net>0?"#f0fdf4":"#f8fafc"))+'</div>';function blk(t,offM,cM){return '<div style="flex:1;min-width:240px"><div class="go-ed-sub">'+t+' — ตามสำนัก</div><div class="go-sum">'+rr(offM)+'</div><div class="go-ed-sub">'+t+' — ตามสาเหตุ</div><div class="go-sum">'+rr(cM)+'</div></div>';}var body='<div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:12px">'+blk("🔴 เลื่อนออก",o.dOff,o.dC)+blk("🟢 เลื่อนเข้า",o.gOff,o.gC)+'</div>';return box+body;}
@@ -3207,7 +3208,7 @@ function addFilter(){var qe=document.getElementById("go-add-q");var q=(qe?qe.val
 function addPick(code){var w=document.getElementById("go-editor");var ymd=w.getAttribute("data-ymd");var i=-1;for(var k=0;k<POOL.length;k++){if(POOL[k].code===code){i=k;break;}}if(i<0)return;var p=POOL.splice(i,1)[0];var site={code:p.code,name:p.name,owner:p.owner,status:p.status,open:ymd,sub:p.sub,blk:p.blk||[]};SITES.push(site);byCode[code]=site;pinned[code]=ymd;post("OPEN:"+code,ymd);postSheet(code,ymd,function(ok){saveCb(code,ok);});closeE();curYM=ymd.slice(0,7);rAll();}
 function goMonth(y){curYM=y;rAll();}
 function goHilite(code){var found=false;document.querySelectorAll("#go-cal .go-chip").forEach(function(c){c.classList.remove("go-chip-hit");});document.querySelectorAll("#go-cal .go-chip").forEach(function(c){if(c.textContent.indexOf(code)>=0){c.classList.add("go-chip-hit");if(!found&&c.scrollIntoView)c.scrollIntoView({behavior:"smooth",block:"center"});found=true;}});return found;}
-function xfind(q){q=(q||"").trim();if(q.length<2)return null;var Q=q.toUpperCase();var hit=null,inpool=false,i;for(i=0;i<SITES.length;i++){if((SITES[i].code+" "+(SITES[i].name||"")+" "+(SITES[i].name_old||"")).toUpperCase().indexOf(Q)>=0){hit=SITES[i];break;}}if(!hit){for(i=0;i<POOL.length;i++){if((POOL[i].code+" "+(POOL[i].name||"")+" "+(POOL[i].name_old||"")).toUpperCase().indexOf(Q)>=0){hit=POOL[i];inpool=true;break;}}}if(!hit)return {none:true};if(inpool)return {code:hit.code,name:hit.name,msg:"ยังไม่ปักวันเปิด (รอปัก) — กด ＋ ในปฏิทินเพื่อเพิ่มวัน"};var o=effOpen(hit.code),ym=o?o.slice(0,7):null;if(ym){curYM=ym;rAll();}goHilite(hit.code);return {code:hit.code,name:hit.name,msg:"วันเปิด "+(o||"?")+(hit.sub?" · ยื่น อ.1 แล้ว":" · ⚠️ ยังไม่ยื่น อ.1")+(hit.ho?"":" · 🏗️ ยังไม่ส่งมอบพื้นที่")};}
+function xfind(q){q=(q||"").trim();if(q.length<2)return null;var Q=q.toUpperCase();var hit=null,inpool=false,i;for(i=0;i<SITES.length;i++){if((SITES[i].code+" "+(SITES[i].name||"")+" "+(SITES[i].name_old||"")).toUpperCase().indexOf(Q)>=0){hit=SITES[i];break;}}if(!hit){for(i=0;i<POOL.length;i++){if((POOL[i].code+" "+(POOL[i].name||"")+" "+(POOL[i].name_old||"")).toUpperCase().indexOf(Q)>=0){hit=POOL[i];inpool=true;break;}}}if(!hit)return {none:true};if(inpool)return {code:hit.code,name:hit.name,msg:"ยังไม่ปักวันเปิด (รอปัก) — กด ＋ ในปฏิทินเพื่อเพิ่มวัน"};var o=effOpen(hit.code),ym=o?o.slice(0,7):null;if(ym&&ym!==curYM){curYM=ym;rAll();}goHilite(hit.code);return {code:hit.code,name:hit.name,msg:"วันเปิด "+(o||"?")+(hit.sub?" · ยื่น อ.1 แล้ว":" · ⚠️ ยังไม่ยื่น อ.1")+(hit.ho?"":" · 🏗️ ยังไม่ส่งมอบพื้นที่")};}
 function pval(v){v=String(v||"").trim();if(!v)return "";if(/^\d{4}-\d{2}-\d{2}/.test(v))return v.slice(0,10);var d=new Date(v);if(!isNaN(d.getTime()))return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);return "";}
 function load(){try{fetch(WH,{method:"GET"}).then(function(r){return r.json();}).then(function(j){if(j&&typeof j==="object"){for(var k in j){if(k.indexOf("OPEN:")===0){var v=pval(j[k]);if(v)pinned[k.slice(5)]=v;}else if(k.indexOf("GN:")===0){if(j[k])gnote[k.slice(3)]=j[k];}else if(k.indexOf("GS:")===0){if(j[k])gstat[k.slice(3)]=j[k];}else if(k.indexOf("GV:")===0){if(j[k])gver[k.slice(3)]=1;}else if(k.indexOf("G2:")===0){if(j[k])g2[k.slice(3)]=1;}else if(k.indexOf("RS:")===0){if(j[k]){var _pp=String(j[k]).split("~|~");rslog[k.slice(3)]={from:_pp[0]||"",who:_pp[1]||"",reason:_pp[2]||"",at:_pp[3]||""};}}else if(k.indexOf("XC:")===0){if(j[k]){var _xx=String(j[k]).split("~|~");cancelled[k.slice(3)]={from:_xx[0]||"",reason:_xx[1]||"",at:_xx[2]||"",name:_xx[3]||""};}}}Object.keys(cancelled).forEach(function(_cc){delete pinned[_cc];if(byCode[_cc]){var _si=SITES.indexOf(byCode[_cc]);if(_si>=0)SITES.splice(_si,1);delete byCode[_cc];}for(var _pi=POOL.length-1;_pi>=0;_pi--){if(POOL[_pi].code===_cc)POOL.splice(_pi,1);}});rAll();}}).catch(function(){});}catch(e){}}
 function goNote(code){var el=document.getElementById("gn-"+code);var v=el?el.value:"";gnote[code]=v;post("GN:"+code,v);gtoast(v?("✓ บันทึก Note: "+code):("✓ ลบ Note: "+code),true);}
@@ -3230,7 +3231,7 @@ var cnt=cByMonth(),ms=bMonths();var _n=new Date();var nowYM=_n.getFullYear()+"-"
 function pickYM(){var _c=cByMonth(),_m=bMonths();var _n=new Date();var _ny=_n.getFullYear()+"-"+("0"+(_n.getMonth()+1)).slice(-2);curYM=(_c[_ny]?_ny:null);if(!curYM){for(var _i2=0;_i2<_m.length;_i2++){if(_c[_m[_i2]]){curYM=_m[_i2];break;}}}if(!curYM)curYM=_m[0]||_ny;}
 function setModel(model){if(!model)return;SITES=model.sites||[];POOL=model.pool||[];VANISHED=model.vanished||[];CHANGELOG=model.changelog||[];ALLDATES=model.alldates||{};OPENED_NOW=model.opened_now||0;OPENED_2026=model.opened_2026||0;OPENED_LIST=model.opened_list||[];NEWGOT=model.newgot||[];NEWGOT_SET={};for(var _j=0;_j<NEWGOT.length;_j++)NEWGOT_SET[NEWGOT[_j]]=1;byCode={};SITES.forEach(function(s){byCode[s.code]=s;});pickYM();rAll();}
 function applyOverlay(ov){if(!ov)return;pinned=ov.pinned||{};gnote=ov.gnote||{};gstat=ov.gstat||{};gver=ov.gver||{};g2=ov.g2||{};rslog=ov.rslog||{};if(ov.rsDmgPerDay!=null&&!isNaN(+ov.rsDmgPerDay))RS_DMG_PER_DAY=+ov.rsDmgPerDay;cancelled=ov.cancelled||{};Object.keys(cancelled).forEach(function(_cc){delete pinned[_cc];if(byCode[_cc]){var _si=SITES.indexOf(byCode[_cc]);if(_si>=0)SITES.splice(_si,1);delete byCode[_cc];}for(var _pi=POOL.length-1;_pi>=0;_pi--){if(POOL[_pi].code===_cc)POOL.splice(_pi,1);}});rAll();}
-post=function(k,v){try{var _r=window.DPT_ROLE;if(_r==="member"||_r==="construction_management"||_r==="qs"||_r==="qs_manager"||_r==="registration"||_r==="accounting"){if(typeof gtoast==="function")gtoast("แท็บนี้ดูอย่างเดียว — ไม่มีสิทธิ์แก้ไข",false);return;}if(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL){fetch(window.DPT_GAS_URL,{method:"post",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"note",key:k,value:v})});}}catch(e){}};postSheet=function(code,date,cb,_try){var _r2=window.DPT_ROLE;if(_r2==="member"||_r2==="construction_management"||_r2==="qs"||_r2==="qs_manager"||_r2==="registration"||_r2==="accounting"){if(cb)cb(false);return;}if(!(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL)){if(cb)cb(true);return;}_try=_try||0;fetch(window.DPT_GAS_URL,{method:"post",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"sheet",code:code,date:date})}).then(function(r){return r.json();}).then(function(j){if(j&&j.ok){if(cb)cb(true,j);}else if(_try<2){postSheet(code,date,cb,_try+1);}else{if(cb)cb(false,j);}}).catch(function(){if(_try<2){setTimeout(function(){postSheet(code,date,cb,_try+1);},600);}else{if(cb)cb(false);}});};
+post=function(k,v){try{var _r=window.DPT_ROLE;if(_r==="member"||_r==="construction_management"||_r==="qs"||_r==="qs_manager"||_r==="registration"||_r==="accounting"||_r==="site_negotiation"){if(typeof gtoast==="function")gtoast("แท็บนี้ดูอย่างเดียว — ไม่มีสิทธิ์แก้ไข",false);return;}if(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL){fetch(window.DPT_GAS_URL,{method:"post",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"note",key:k,value:v})});}}catch(e){}};postSheet=function(code,date,cb,_try){var _r2=window.DPT_ROLE;if(_r2==="member"||_r2==="construction_management"||_r2==="qs"||_r2==="qs_manager"||_r2==="registration"||_r2==="accounting"||_r2==="site_negotiation"){if(cb)cb(false);return;}if(!(window.USE_GAS_BACKEND===true&&window.DPT_GAS_URL)){if(cb)cb(true);return;}_try=_try||0;fetch(window.DPT_GAS_URL,{method:"post",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:window.DPT_ID_TOKEN,action:"sheet",code:code,date:date})}).then(function(r){return r.json();}).then(function(j){if(j&&j.ok){if(cb)cb(true,j);}else if(_try<2){postSheet(code,date,cb,_try+1);}else{if(cb)cb(false,j);}}).catch(function(){if(_try<2){setTimeout(function(){postSheet(code,date,cb,_try+1);},600);}else{if(cb)cb(false);}});};
 var OPENED_LIST=[],OPSHOW=null;
 function opPref(){try{return localStorage.getItem("go_opened_show")==="1";}catch(e){return false;}}
 function opToggle(){OPSHOW=!(OPSHOW===null?opPref():OPSHOW);try{localStorage.setItem("go_opened_show",OPSHOW?"1":"0");}catch(e){}if(!OPSHOW&&String(curYM).indexOf("op:")===0){pickYM();rAll();return;}rOpened();}
@@ -3353,7 +3354,7 @@ dm.addEventListener("click",function(e){var td=(e.target&&e.target.closest)?e.ta
 .xsearch-hit rect{stroke:#f59e0b!important;stroke-width:4px!important}
 .xsearch-hit{filter:drop-shadow(0 0 5px rgba(245,158,11,.85))}
 </style>
-<div id="xsearch"><input id="xsearch-in" type="text" placeholder="🔍 ค้นหา Site Code / ชื่อ..." oninput="xSearch()" autocomplete="off"><div id="xsearch-res"></div></div>
+<div id="xsearch"><input id="xsearch-in" type="text" placeholder="🔍 ค้นหา Site Code / ชื่อ..." oninput="clearTimeout(window.__xsT);window.__xsT=setTimeout(xSearch,400)" autocomplete="off"><div id="xsearch-res"></div></div>
 <script>(function(){
 var IDX=null,NM={},NO={};
 function build(){IDX={};if(typeof STEP_DETAILS==="undefined")return;for(var k in STEP_DETAILS){var a=STEP_DETAILS[k];if(!a||!a.length)continue;for(var i=0;i<a.length;i++){var c=((a[i].code||"")+"").trim();if(!c)continue;if(!IDX[c])IDX[c]=[];IDX[c].push(k);if(a[i].name)NM[c]=a[i].name;if(a[i].name_old)NO[c]=a[i].name_old;}}}
@@ -3368,7 +3369,7 @@ if(!codes.length){res.className="show";res.innerHTML='<span class="xs-none">ไ�
 var code=null;for(var i=0;i<codes.length;i++){if(codes[i].toUpperCase()===Q){code=codes[i];break;}}if(!code)code=codes[0];
 var keys=IDX[code]||[];var first=null,labs=[];
 for(var j=0;j<keys.length;j++){var sel=document.querySelectorAll('[onclick*="openDetail(\'' +keys[j]+ '\')"]');for(var m=0;m<sel.length;m++){var g=sel[m];var pn=g.closest?g.closest(".tab-panel"):null;if(pn&&pn.offsetParent!==null){g.classList.add("xsearch-hit");if(!first)first=g;var L=lab(keys[j]);if(labs.indexOf(L)<0)labs.push(L);}}}
-var nm=(NM[code]?(" · "+NM[code]):"")+((window.PROV_OF&&PROV_OF[code])?(" · "+PROV_OF[code]):"");
+var nm=(NM[code]?(" · "+NM[code]):"")+((window.PROV_OF&&PROV_OF[code])?(" · "+PROV_OF[code]):"")+((window.PRM_OF&&PRM_OF[code])?(" · ผรม. "+PRM_OF[code]):"");
 if(labs.length){res.className="show";res.innerHTML='<span class="xs-code">'+code+'</span>'+nm+'<br><span class="xs-at">อยู่ที่กล่อง:</span> '+labs.join(", ");if(first&&first.scrollIntoView)first.scrollIntoView({behavior:"smooth",block:"center"});}
 else{res.className="show";res.innerHTML='<span class="xs-code">'+code+'</span>'+nm+'<br>(ไม่มีกล่องบนแท็บนี้ — ลองสลับไปแท็บ Overall หรือ After อ.1)';}
 };})();</script>
@@ -3672,6 +3673,15 @@ setTimeout(applyBoard,300);
     const sl = tabs.sla || [];
     for (let i = HEADER_ROW + 1; i < sl.length; i++) { const c = cell(sl[i], COL_CODE), p = cell(sl[i], COL_PROV); if (c && p) m[c] = p; }
     if (_provCache) _provCache.set(tabs, m);
+    return m;
+  }
+  /** 27 พ.ย. 69 (จี "อยากได้ชื่อผรม.ด้วย ในทุกที่เลย"): ผรม. รายสาขา ชุดเดียวทั้งแอป = ตัวเดียวกับแผนที่ Site Management
+   *  Construction col8 (แถวแรกของรหัสชนะ · ล้าง "ผรม.ใหม่"/Cancel) → ทับด้วยที่ปักในแอป (overlay PRM:รหัส) · ไม่มี = "" (ไม่เดา) */
+  function prmMap(tabs, prmOver) {
+    const m = {}, cr = (tabs && tabs.constr) || [], ov = prmOver || {};
+    for (let i = AF_CONSTR_DATA_ROW; i < cr.length; i++) { const c = cell(cr[i], AC_CODE); if (!c || (c in m)) continue; m[c] = smCleanPrm(cell(cr[i], AC_PRM)); }
+    Object.keys(ov).forEach(k => { if (k === "__LIST__") return; const p = smCleanPrm(ov[k]); if (p) m[k] = p; });
+    Object.keys(m).forEach(k => { if (!m[k]) delete m[k]; });
     return m;
   }
   /** เติม .prov ให้ทุกแถวที่ยังไม่มี (ไม่ทับค่าที่มีอยู่) */
@@ -5616,7 +5626,7 @@ setTimeout(applyBoard,300);
     afterCohort, assignAfterBuckets, buildAfterModel, computeAfterSla, formatAfterCounts,
     // Grand Opening tab (calendar-based open-date planner) — client-computable model
     // + the 3 cross-day pure engines the daily GAS mirrors (SPEC §GO / GO-2).
-    buildGrandOpenModel, goSuggest, goIsoOpen, goPinIso, goThDateToEn, afParseO1, o1Rows, goOpenDates, rentStartMap, provMap,   // provMap: 25 พ.ย. จังหวัดรายสาขา · afParseO1: 4 พ.ย. ให้หน้า Check List QS (PR-Alert) อ่าน อ.1 ชุดเดียวกับ Grand Opening
+    buildGrandOpenModel, goSuggest, goIsoOpen, goPinIso, goThDateToEn, afParseO1, o1Rows, goOpenDates, rentStartMap, provMap, prmMap, cleanPrm: smCleanPrm,   // provMap: 25 พ.ย. จังหวัดรายสาขา · afParseO1: 4 พ.ย. ให้หน้า Check List QS (PR-Alert) อ่าน อ.1 ชุดเดียวกับ Grand Opening
     goWipUpdate, goSnapshotDiff, goChangelogAppend,
     // Site Management map model (chunk 2) — merges GO model + Construction + AR coords.
     buildSiteMgmtModel, smCleanPrm, SM_PROV_REGION,
@@ -5688,92 +5698,17 @@ setTimeout(applyBoard,300);
     };
   }
 
-  // Live source-of-truth: Google Sheets *export* CSV (SPEC §10.1). Read-only.
-  //   MUST use /export?format=csv&gid=  — NOT /gviz/tq?tqx=out:csv, which returns
-  //   only the ~26 filtered rows (verified 1588 vs 123 lines) and would silently
-  //   undercount the funnel. export also sends ACAO:* so the browser can fetch it.
-  const SHEET_ID_DEFAULT = "1Fnlv8S9uBVL_u_JpoajkNoI0zoyvDj5usCXx6uCtzIk";
+  // 27 พ.ย. 69 (จี "ลบทิ้งเลย" · ถัง G เป็นแหล่งหลัก): ลบตัวอ่านสำรองฝั่งเว็บ 3 ตัว — SheetExportRepo (ถังเก่า 1Fnlv8),
+  //   AfterExtraRepo (ชีตทะเบียน 18gVIl2 + pub รัฐกิจ), ArCoordRepo (pub พิกัด AR) — ทุกข้อมูลมาทาง Apps Script (GasRepo)
+  //   ซึ่งอ่านจากถัง G · ต่อ Apps Script ไม่ได้ = แจ้งโหลดไม่สำเร็จ (ไม่แอบหยิบไฟล์เก่ามาแทน) · สำรองไฟล์เดิม repository.js.bak-20261127-nofallback
+  // EXPORT_GIDS เหลือไว้เป็นรายชื่อแท็บที่ GasRepo.getTabs ต้องได้ (ไม่ได้ใช้ดึงชีตตรงแล้ว)
   const EXPORT_GIDS = {
     sla: "0", nego: "1549155273", constr: "1005640128", ratkit: "1153633451",
     rangwat: "737721254", reg: "347920672", pnego: "1464560053", tj: "1839838784",
   };
-  function SheetExportRepo(opts) {
-    opts = opts || {};
-    const id = opts.sheetId || SHEET_ID_DEFAULT;
-    const CsvUtil = opts.CsvUtil || root.CsvUtil;
-    const gids = opts.gids || EXPORT_GIDS;
-    function url(gid) {
-      return "https://docs.google.com/spreadsheets/d/" + id + "/export?format=csv&gid=" + gid;
-    }
-    this.getTabs = function () {
-      const keys = Object.keys(gids);
-      return Promise.all(keys.map(function (k) {
-        return fetch(url(gids[k]), { redirect: "follow" }).then(function (res) {
-          if (!res.ok) throw new Error("โหลดแท็บ " + k + " (gid=" + gids[k] + ") ไม่สำเร็จ: HTTP " + res.status);
-          return res.text();
-        }).then(function (txt) {
-          const rows = CsvUtil.parse(txt);
-          // Guard vs gviz-style truncation (SPEC §12 F4/F6): loud fail, never a fake short page.
-          if (rows.length < 50) throw new Error("แท็บ " + k + " ได้แค่ " + rows.length + " แถว (ถูกตัด? อย่าใช้ gviz)");
-          return [k, rows];
-        });
-      })).then(function (pairs) {
-        const tabs = {};
-        pairs.forEach(function (p) { tabs[p[0]] = p[1]; });
-        const now = new Date();
-        const stamp = now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-          + " " + now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-        return { tabs: tabs, meta: { source: "live", served_from: "live", is_stale: false, snapshot_date: stamp } };
-      });
-    };
-  }
 
-  /* ---- After อ.1 tab: 3 extra published sources (SPEC §5.6) --------------
-   * These live outside the 8 main tabs:
-   *   (slaO1 เลิกใช้ 13 พ.ย. 69 → สถานะ อ.1 อ่านจากแท็บ sla ชุดหลัก)
-   *   regNf  : registry Template — a DIFFERENT spreadsheet (SHEET_NF), export CSV
-   *   ratkit : รัฐกิจ daily-note, published CSV (popup note only; not counts)
-   * All read-only.  Same loud-fail guard as SheetExportRepo (no fake short page).
-   * Online phase: Apps Script serves these after login (SPEC §7/§10). */
-  const AFTER_SHEET_NF = "18gVIl2NztRw-HUgpSbpjXNO5I_tj7Yuci5Zp9YskCAo";
-  const AFTER_NF_GID = "1656848721";
-  const AFTER_SOURCES = {
-    // slaO1 (pub gid 238646031) เลิกใช้ 13 พ.ย. 69 — สถานะ อ.1 อ่านจาก tabs.sla (CalcEngine.o1Rows)
-    regNf: "https://docs.google.com/spreadsheets/d/" + AFTER_SHEET_NF + "/export?format=csv&gid=" + AFTER_NF_GID,
-    ratkit: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQUJHYbkRQeludCnbLks5JVdaZV6hsAnJDhLi5iX6Yqo3-8SWnxZVxPoleVMbTKri8w3Q6zAFjoAvp/pub?output=csv",
-  };
-  function AfterExtraRepo(opts) {
-    opts = opts || {};
-    const CsvUtil = opts.CsvUtil || root.CsvUtil;
-    const src = opts.sources || AFTER_SOURCES;
-    this.getAfterExtra = function () {
-      const keys = Object.keys(src);
-      return Promise.all(keys.map(function (k) {
-        return fetch(src[k], { redirect: "follow" }).then(function (res) {
-          if (!res.ok) throw new Error("โหลด After source " + k + " ไม่สำเร็จ: HTTP " + res.status);
-          return res.text();
-        }).then(function (txt) {
-          const rows = CsvUtil.parse(txt);
-          if (rows.length < 20) throw new Error("After source " + k + " ได้แค่ " + rows.length + " แถว (ถูกตัด?)");
-          return [k, rows];
-        });
-      })).then(function (pairs) {
-        const extra = {};
-        pairs.forEach(function (p) { extra[p[0]] = p[1]; });
-        return extra;   // { slaO1, regNf, ratkit }  -> CalcEngine.buildAfterModel(tabs, L, extra)
-      });
-    };
-  }
-
-  /* ---- Site Management map: AR sheet coordinates (SPEC §14.5 / chunk 2) ----
-   * The Site Management map needs lat/lng per site. Source of truth = the AR (Architecture)
-   * published sheet, gid=488496931, pub CSV — the SAME source build_after_tab.py build_sitemgmt
-   * reads (col60 = Site Code, col7 = "lat,lon"). pub?output=csv (NOT gviz) so all rows come
-   * back and the browser may fetch it (ACAO:*). Read-only.
-   * getCoords() -> Promise<{ CODE_UPPERCASE: [lat, lng] }>, bounds-checked + 6-dp rounded,
-   * byte-for-byte the same filter as the Python (5<lat<21, 96<lng<107). Loud-fail on a short
-   * read (truncation) so the map never silently loses every pin. */
-  const AR_PUB = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQL4Y1drTceD498AU_dy1jAtck8Z-lFsS6yGR0ycJtNECgtaIJvkRYON-STBI3etIf42dRPOvVWrpa8/pub?output=csv&gid=488496931";
+  /* ---- Site Management map: AR coordinates (col60 = Site Code, col7 = "lat,lon") — rows มาจาก GasRepo (j.ar) ----
+   * bounds-checked + 6-dp rounded, same filter as the Python (5<lat<21, 96<lng<107). */
   const AR_CODE_COL = 60, AR_LATLON_COL = 7;
   const AR_LL_RE = /(\d{1,2}\.\d{3,})\s*[, ]\s*(\d{2,3}\.\d{3,})/;
   // Pure parse extracted so BOTH ArCoordRepo (fetch CSV) and GasRepo (rows from GAS) use the
@@ -5810,22 +5745,6 @@ setTimeout(applyBoard,300);
     }
     out.sort();
     return out;
-  }
-  function ArCoordRepo(opts) {
-    opts = opts || {};
-    const CsvUtil = opts.CsvUtil || root.CsvUtil;
-    const url = opts.url || AR_PUB;
-    this.getCoords = function () {
-      return fetch(url, { redirect: "follow" }).then(function (res) {
-        if (!res.ok) throw new Error("โหลดพิกัด AR (map) ไม่สำเร็จ: HTTP " + res.status);
-        return res.text();
-      }).then(function (txt) {
-        const rows = CsvUtil.parse(txt);
-        // Loud fail vs truncation (SPEC §12 F4/F6) — never a map with zero pins pretending to be fine.
-        if (rows.length < 50) throw new Error("AR coords ได้แค่ " + rows.length + " แถว (ถูกตัด?)");
-        return parseArCoords(rows);
-      });
-    };
   }
 
   /* ---- GasRepo (SPEC §0/§8/§10) — READ backbone through the Apps Script Web App ----------
@@ -6138,16 +6057,18 @@ setTimeout(applyBoard,300);
    *   new window.Repository.ArCoordRepo({...})       ->  window.Repository.arRepo({...})
    * and set window.USE_GAS_BACKEND=true + window.DPT_GAS_URL. When ON, all three factories
    * return ONE shared GasRepo so the whole app is served by a single memoised bundle fetch. */
+  // 27 พ.ย. 69: ตัวอ่านสำรอง (CSV ตรง) ลบแล้ว → ไม่ได้เปิด USE_GAS_BACKEND = แจ้ง error ชัด ๆ (ห้ามดึงไฟล์เก่าเงียบ ๆ)
   function useGas() { return root.USE_GAS_BACKEND === true; }
   let _sharedGas = null;
   function sharedGas(opts) { if (!_sharedGas) _sharedGas = new GasRepo(opts || {}); return _sharedGas; }
-  function coreRepo(opts)  { return useGas() ? sharedGas(opts) : new SheetExportRepo(opts || {}); }
-  function afterRepo(opts) { return useGas() ? sharedGas(opts) : new AfterExtraRepo(opts || {}); }
-  function arRepo(opts)    { return useGas() ? sharedGas(opts) : new ArCoordRepo(opts || {}); }
+  function needGas() { throw new Error("แอปต้องโหลดผ่าน Apps Script (USE_GAS_BACKEND) — ตัวอ่านชีตตรงถูกลบแล้ว 27 พ.ย. 69"); }
+  function coreRepo(opts)  { return useGas() ? sharedGas(opts) : needGas(); }
+  function afterRepo(opts) { return useGas() ? sharedGas(opts) : needGas(); }
+  function arRepo(opts)    { return useGas() ? sharedGas(opts) : needGas(); }
 
-  return { BundleRepo, LocalCsvRepo, SheetExportRepo, AfterExtraRepo, ArCoordRepo, GasRepo,
+  return { BundleRepo, LocalCsvRepo, GasRepo,
     parseArCoords, parseSvmCodes, coreRepo, afterRepo, arRepo, useGas,
-    TAB_FILES, EXPORT_GIDS, AFTER_SOURCES, AR_PUB };
+    TAB_FILES, EXPORT_GIDS };
 });
 
 </script>
@@ -6241,7 +6162,8 @@ setTimeout(applyBoard,300);
     var L = window.CalcEngine.buildLookups(r.tabs);
     var res = window.CalcEngine.computeCounts(r.tabs.sla, L);
     window.STEP_COUNTS = window.CalcEngine.formatCounts(res.counts);
-    try { window.PROV_OF = window.CalcEngine.provMap(r.tabs); } catch (e) { window.PROV_OF = {}; }   // 25 พ.ย.: จังหวัดรายสาขา ชุดเดียวทั้งแอป
+    try { window.PROV_OF = window.CalcEngine.provMap(r.tabs); } catch (e) { window.PROV_OF = {}; }
+    try { window.PRM_OF = window.CalcEngine.prmMap(r.tabs, {}); } catch (e) { window.PRM_OF = {}; }   // 27 พ.ย.: ผรม. รายสาขา (Construction col8) · overlay ปักในแอปทับตอนโหลด overlay   // 25 พ.ย.: จังหวัดรายสาขา ชุดเดียวทั้งแอป
     window.COUNT_VIEW = null;                          // show unfiltered live counts
     window.DATA_STAMP = r.meta.snapshot_date + " (สด)";
     window.DATA_SOURCE = { backup: [], error: [] };   // clean -> no banner
@@ -6296,6 +6218,7 @@ setTimeout(applyBoard,300);
       }
       _repo.getOverlay().then(function (ov) {
         window.TEAM_NOTES = (ov && ov.teamNotes) || {};
+        try { var _po = (ov && ov.prm) || {}; window.PRM_OF = window.PRM_OF || {}; Object.keys(_po).forEach(function (k) { if (k === "__LIST__") return; var p = window.CalcEngine.cleanPrm(_po[k]); if (p) window.PRM_OF[k] = p; }); } catch (e3) {}   // 27 พ.ย.: ผรม. ที่ปักในแอปชนะชีต
         _reopenIfOpen();
         console.log("[live] team notes loaded — " + Object.keys(window.TEAM_NOTES).length + " sites");
       }).catch(function (e) { console.warn("[live] team notes read failed — notes stay empty:", e); });
@@ -6671,6 +6594,7 @@ setTimeout(applyBoard,300);
     // 9 พ.ย. (จี): เดิม no-cors = ไม่รู้ผล → 5–6 พ.ย. เขียนชีต Construction Tracking ไม่ลงเงียบ ๆ · ตอนนี้อ่านผลแล้วเตือน
     var isPrm = String(d.key || "").indexOf("PRM:") === 0 && d.key !== "PRM:__LIST__";
     var code = isPrm ? String(d.key).slice(4) : "";
+    if (isPrm && code) { try { window.PRM_OF = window.PRM_OF || {}; var _np = window.CalcEngine.cleanPrm(d.value); if (_np) window.PRM_OF[code] = _np; else delete window.PRM_OF[code]; } catch (e4) {} }   // 27 พ.ย.
     try {
       fetch(window.DPT_GAS_URL, { method: "post",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -7042,7 +6966,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
           head_site_negotiation:['Head of Site Negotiation','#047857','#d1fae5','#6ee7b7'],
           managing_director:['Managing Director','#047857','#d1fae5','#6ee7b7'],
           head_business_strategy:['Head of Business Strategy Excellent','#047857','#d1fae5','#6ee7b7'],
-          construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],registration:['Registration (ทีมทะเบียน)','#1d4ed8','#eff6ff','#bfdbfe'],accounting:['Accounting (ทีมบัญชี)','#047857','#ecfdf5','#a7f3d0'],
+          construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],registration:['Registration (ทีมทะเบียน)','#1d4ed8','#eff6ff','#bfdbfe'],accounting:['Accounting (ทีมบัญชี)','#047857','#ecfdf5','#a7f3d0'],site_negotiation:['Site Negotiation (ทีมเจรจา)','#be185d','#fdf2f8','#f9a8d4'],
           qs:['QS','#7c3aed','#ede9fe','#c4b5fd'],qs_manager:['QS Department Manager','#7c3aed','#ede9fe','#c4b5fd'],
           member:['ดูอย่างเดียว (Member)','#475569','#f1f5f9','#cbd5e1']};
         function paintUser(){
@@ -7094,14 +7018,14 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
   var ROLES=[['Admin','admin'],['Head of Construction','head_construction'],
     ['Head of Site Expansion','head_site_expansion'],['Head of Site Negotiation','head_site_negotiation'],
     ['Managing Director','managing_director'],['Head of Business Strategy Excellent','head_business_strategy'],
-    ['Construction Management','construction_management'],['QS','qs'],['QS Department Manager','qs_manager'],['Registration','registration'],['Accounting','accounting'],['Member','member']];
+    ['Construction Management','construction_management'],['QS','qs'],['QS Department Manager','qs_manager'],['Registration','registration'],['Accounting','accounting'],['Site Negotiation','site_negotiation'],['Member','member']];
   var RM={admin:['Admin','#1d4ed8','#dbeafe','#93c5fd'],
     head_construction:['Head of Construction','#047857','#d1fae5','#6ee7b7'],
     head_site_expansion:['Head of Site Expansion','#047857','#d1fae5','#6ee7b7'],
     head_site_negotiation:['Head of Site Negotiation','#047857','#d1fae5','#6ee7b7'],
           managing_director:['Managing Director','#047857','#d1fae5','#6ee7b7'],
           head_business_strategy:['Head of Business Strategy Excellent','#047857','#d1fae5','#6ee7b7'],
-    construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],registration:['Registration (ทีมทะเบียน)','#1d4ed8','#eff6ff','#bfdbfe'],accounting:['Accounting (ทีมบัญชี)','#047857','#ecfdf5','#a7f3d0'],
+    construction_management:['Construction Management','#b45309','#fef3c7','#fcd34d'],registration:['Registration (ทีมทะเบียน)','#1d4ed8','#eff6ff','#bfdbfe'],accounting:['Accounting (ทีมบัญชี)','#047857','#ecfdf5','#a7f3d0'],site_negotiation:['Site Negotiation (ทีมเจรจา)','#be185d','#fdf2f8','#f9a8d4'],
           qs:['QS','#7c3aed','#ede9fe','#c4b5fd'],qs_manager:['QS Department Manager','#7c3aed','#ede9fe','#c4b5fd'],
     member:['ดูอย่างเดียว (Member)','#475569','#f1f5f9','#cbd5e1']};
   var DOMAIN='cjmart.co.th';
@@ -8773,7 +8697,7 @@ body[data-dpt-noedit] .go-note-in, body[data-dpt-noedit] .note-input {
     if (CURV === "util") { /* 13 พ.ย.: แท็บน้ำ-ไฟ ดูอย่างเดียว — ไม่มีช่องให้บันทึกลง Template (หมายเหตุใช้ปุ่ม 📝 ด้านบน) */ }
     else h += canEdit() ? '<div class="rg-savebar"><button type="button" class="sp-btn pri" id="rg-save">💾 บันทึกที่แก้</button><span class="rg-dsub">บันทึกลงชีต Template_งานทะเบียน (ชีตเดิมของทีมทะเบียน) · ตัวเลขทุกแท็บอัปเดตรอบโหลดถัดไป (~5–10 นาที) · ทุกการแก้ถูกบันทึกในประวัติ (Audit)</span></div>'
       : '<div class="rg-dsub" style="margin-top:12px">ดูอย่างเดียว — บันทึกได้เฉพาะ Admin / ทีมทะเบียน</div>';
-    drawer(code + " · " + ((r && r.name) || (u && u.name) || "") + (((r && r.prov) || provOfCode(code)) ? " · " + ((r && r.prov) || provOfCode(code)) : ""), h);
+    drawer(code + " · " + ((r && r.name) || (u && u.name) || "") + (((r && r.prov) || provOfCode(code)) ? " · " + ((r && r.prov) || provOfCode(code)) : "") + (((window.PRM_OF || {})[code]) ? " · ผรม. " + window.PRM_OF[code] : ""), h);   // 27 พ.ย.: ผรม.
     var sb = document.getElementById("rg-save"); if (sb) sb.onclick = function () { saveDrawer(code); };
     tNoteBind();
     var eb = document.getElementById("rg-tsave-lic"); if (eb && r && r.tcode) eb.onclick = function () { taxSave(r.tcode, "lic", eb); };
@@ -10756,7 +10680,7 @@ render();
       var wg = s.s2 === S2_GOT ? "✅ ได้ อ.1" + (g && g.got ? " " + fd(g.got.ts) : "") : s.s2 === S2_WAI ? "🟦 อนุโลม" + (g && g.wai ? " " + fd(g.wai.ts) : "") : (g && g.exp ? '<span class="o1-mute">คาดว่าได้ ' + esc(fd(g.exp)) + "</span>" : '<span class="o1-mute">–</span>');
       var la = g ? fd(g.last.ts) + ' <span class="o1-mute">(' + ago(g.last.ts) + " วันก่อน)</span><div>" + esc(g.last.t) + '</div><div class="o1-clip o1-mute">' + esc(g.last.note || g.last.conf || "") + "</div>" : '<span class="o1-mute">ยังไม่มีบันทึก</span>';
       var lk = g && (g.link || g.pipe) ? (g.link ? "ทาง: " + esc(g.link) : "") + (g.link && g.pipe ? "<br>" : "") + (g.pipe ? "ท่อ: " + esc(g.pipe) : "") : '<span class="o1-mute">–</span>';
-      h += '<tr class="r" data-c="' + esc(s.code) + '"><td><div class="o1-code">' + esc(s.code) + (s.warn.length ? ' <span class="o1-warn" title="' + esc(s.warn.join("\n")) + '">⚠</span>' : "") + '</div><div class="o1-nm">' + esc(s.name) + (s.prov ? ' <span class="o1-mute">· ' + esc(s.prov) + "</span>" : "") + "</div></td><td>" + chips + "</td><td>" + (s.over != null ? '<span class="o1-over">+' + s.over + " วัน</span>" : '<span class="o1-mute">–</span>') + "</td><td>" + esc((g && g.who) || s.pic || "–") + "</td><td>" + sub + "</td><td>" + fix + "</td><td>" + rs + "</td><td>" + wg + "</td><td>" + la + "</td><td>" + lk + '</td><td class="nt">' + tnHtml(s.code, "o1") + "</td></tr>";
+      h += '<tr class="r" data-c="' + esc(s.code) + '"><td><div class="o1-code">' + esc(s.code) + (s.warn.length ? ' <span class="o1-warn" title="' + esc(s.warn.join("\n")) + '">⚠</span>' : "") + '</div><div class="o1-nm">' + esc(s.name) + (s.prov ? ' <span class="o1-mute">· ' + esc(s.prov) + "</span>" : "") + (((window.PRM_OF || {})[s.code]) ? ' <span class="o1-mute">· ผรม. ' + esc(window.PRM_OF[s.code]) + "</span>" : "") + "</div></td><td>" + chips + "</td><td>" + (s.over != null ? '<span class="o1-over">+' + s.over + " วัน</span>" : '<span class="o1-mute">–</span>') + "</td><td>" + esc((g && g.who) || s.pic || "–") + "</td><td>" + sub + "</td><td>" + fix + "</td><td>" + rs + "</td><td>" + wg + "</td><td>" + la + "</td><td>" + lk + '</td><td class="nt">' + tnHtml(s.code, "o1") + "</td></tr>";
     });
     return h + "</tbody>";
   }
@@ -10793,7 +10717,7 @@ render();
   /* ---- ลิ้นชักรายสาขา: ไทม์ไลน์ AppSheet ทั้งหมด ---- */
   function openSite(code) {
     var s = LIST.filter(function (x) { return x.code === code; })[0]; if (!s) return;
-    var g = s.g, h = '<button type="button" class="o1-x" id="o1-dx">×</button><h3>' + esc(s.code) + " · " + esc(s.name) + (s.prov ? " · " + esc(s.prov) : "") + "</h3>";
+    var g = s.g, h = '<button type="button" class="o1-x" id="o1-dx">×</button><h3>' + esc(s.code) + " · " + esc(s.name) + (s.prov ? " · " + esc(s.prov) : "") + (((window.PRM_OF || {})[s.code]) ? " · ผรม. " + esc(window.PRM_OF[s.code]) : "") + "</h3>";   /* 27 พ.ย.: ผรม. */
     h += '<div>' + s.steps.map(function (k) { return '<span class="o1-chip' + (k.indexOf("post_") === 0 ? " post" : "") + '">' + esc(LAB[k]) + "</span>"; }).join("") + "</div>";
     if (s.warn.length) h += '<div class="o1-amb" style="margin-top:10px">⚠ ' + s.warn.map(esc).join("<br>⚠ ") + "<br>สถานะในแอปยึดชีต SLA (เหมือนแท็บ After อ.1) — ให้ทีมแก้ต้นทางที่ไม่ตรง</div>";
     h += '<div class="o1-dsec"><div class="o1-dh">สรุป</div><div class="o1-kv">' +
@@ -11100,7 +11024,7 @@ render();
     drw.innerHTML = '<button class="kf-x" type="button">×</button><h3>' + esc(title) + '</h3><div class="kf-sub">' + esc(sub) + "</div>" +
       (rows.length ? "<table><tr><th>ใบงาน</th><th>สาขา / เรื่อง</th><th style=\"text-align:right\">ค้างขั้นนี้</th></tr>" + rows.map(function (t) {
         var d = days(t.since);
-        return '<tr><td class="c">' + esc(t.ticket || t.id) + "</td><td>" + esc(t.code) + (((window.PROV_OF || {})[t.code]) ? ' <span class="mute">· ' + esc(window.PROV_OF[t.code]) + "</span>" : "") + (t.name ? '<br><span class="mute">' + esc(t.name) + "</span>" : "") + (/Suspended/.test(t.step) ? '<br><span class="mute">ถูกพัก (Suspended)</span>' : "") +
+        return '<tr><td class="c">' + esc(t.ticket || t.id) + "</td><td>" + esc(t.code) + (((window.PROV_OF || {})[t.code]) ? ' <span class="mute">· ' + esc(window.PROV_OF[t.code]) + "</span>" : "") + (((window.PRM_OF || {})[t.code]) ? ' <span class="mute">· ผรม. ' + esc(window.PRM_OF[t.code]) + "</span>" : "") + (t.name ? '<br><span class="mute">' + esc(t.name) + "</span>" : "") + (/Suspended/.test(t.step) ? '<br><span class="mute">ถูกพัก (Suspended)</span>' : "") +
           '</td><td class="n">' + (d == null ? '<span class="mute">—</span>' : d + " วัน") + "</td></tr>";
       }).join("") + "</table>" : '<p class="mute">ไม่มีใบค้างที่ขั้นนี้</p>');
     drw.classList.add("on"); dbg.classList.add("on");
@@ -11145,8 +11069,8 @@ render();
     hits.forEach(function (h) { if (h.fi !== SUB || h.bi < 0) return; var g = sec.querySelector('.gnode[data-f="' + h.fi + '"][data-b="' + h.bi + '"]'); if (g) { g.classList.add("xsearch-hit"); if (!first) first = g; } });
     if (first && first.scrollIntoView) first.scrollIntoView({ behavior: "smooth", block: "center" });
     var name = (nm[code] && nm[code].n) || String(hits[0].t.name || "").replace(/^.*?:\s*/, "");
-    var pv = (window.PROV_OF || {})[code] || "";
-    return { code: esc(code), name: esc(name + (pv ? " · " + pv : "")), msg: hits.map(function (h) { var d = days(h.t.since); return esc(MODEL[h.fi].F.name + " · " + (h.t.ticket || h.t.id) + " → " + h.box + (d != null ? " (" + d + " วัน)" : "")); }).join("<br>") };
+    var pv = (window.PROV_OF || {})[code] || "", pm = (window.PRM_OF || {})[code] || "";   // 27 พ.ย.: ผรม.
+    return { code: esc(code), name: esc(name + (pv ? " · " + pv : "") + (pm ? " · ผรม. " + pm : "")), msg: hits.map(function (h) { var d = days(h.t.since); return esc(MODEL[h.fi].F.name + " · " + (h.t.ticket || h.t.id) + " → " + h.box + (d != null ? " (" + d + " วัน)" : "")); }).join("<br>") };
   }
   window.KF = { xfind: xfind };
   if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.KF.inject = function (d) { ST.d = d; ST.st = "ok"; render(); };   // ทดสอบในเครื่องเท่านั้น
